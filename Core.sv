@@ -30,8 +30,6 @@ module Core (
    int 			    comb_opcode_length = 0;
    bit 			    comb_opcode_valid = 0;
    logic [0:7] 		    comb_opcode = 0;
-//   logic [0:3] 		    comb_operand1 = 0;
-//   logic [0:3] 		    comb_operand2 = 0;
    logic [0:63]		    comb_operand1_val = 0;
    logic [0:63]		    comb_operand2_val = 0;
    int 			    comb_imm_len = 0;
@@ -131,8 +129,6 @@ module Core (
    int latch_opcode_length = 0;
    bit latch_opcode_valid = 0;
    logic [0:7] latch_opcode = 0;
-//   logic [0:3] latch_operand1 = 0;
-//   logic [0:3] latch_operand2 = 0;
    logic [0:63] latch_operand1_val = 0;
    logic [0:63] latch_operand2_val = 0;
    int latch_imm_len = 0;
@@ -188,8 +184,6 @@ module Core (
         latch_has_extended_opcode <= 0;
         latch_opcode_length <= 0;
         latch_opcode <= 0;
-//        latch_operand1 <= 0;
-//        latch_operand2 <= 0;
         latch_operand1_val <= 0;
         latch_operand2_val <= 0;
         latch_imm_len <= 0;
@@ -213,8 +207,6 @@ module Core (
         latch_has_extended_opcode <= comb_has_extended_opcode;
         latch_opcode_length <= comb_opcode_length;
         latch_opcode <= comb_opcode;
-//        latch_operand1 <= comb_operand1;
-//        latch_operand2 <= comb_operand2;
         latch_operand1_val <= comb_operand1_val;
         latch_operand2_val <= comb_operand2_val;
         latch_imm_len <= comb_imm_len;
@@ -232,6 +224,30 @@ module Core (
 	latch_alu_result <= comb_alu_result;
 	latch_alu_result_special <= comb_alu_result_special;
 	latch_dest_reg_special_valid <= comb_dest_reg_special_valid;
+     end
+
+   always @ (posedge bus.clk)
+     if (bus.reset) begin
+
+        decode_offset <= 0;
+        decode_buffer <= 0;
+
+     end else begin // !bus.reset
+
+        decode_offset <= decode_offset + { 3'b0, bytes_decoded_this_cycle };
+        if (bytes_decoded_this_cycle > 0) begin
+           can_execute <= 1;
+        end else begin
+           can_execute <= 0;
+        end
+
+        /* verilator lint_off WIDTH */
+        if (current_rip == 0) begin
+           current_rip <= fetch_rip;
+        end else begin
+           current_rip <= current_rip + bytes_decoded_this_cycle;
+        end
+        /* verilator lint_on WIDTH */
      end
 
    /* Initialize the Execute module */
@@ -269,33 +285,10 @@ module Core (
 		if (latch_dest_reg_special_valid == 1) begin
 			regfile[latch_dest_reg_special] = comb_alu_result_special;
 		end
+
+		$write("\nLATCHING RESULT into REGFILE: reg: %d, value: %d\n", latch_dest_reg, regfile[latch_dest_reg]);
  	end
    end
-   
-
-   always @ (posedge bus.clk)
-     if (bus.reset) begin
-
-        decode_offset <= 0;
-        decode_buffer <= 0;
-
-     end else begin // !bus.reset
-
-        decode_offset <= decode_offset + { 3'b0, bytes_decoded_this_cycle };
-        if (bytes_decoded_this_cycle > 0) begin
-           can_execute <= 1;
-        end else begin
-           can_execute <= 0;
-        end
-
-        /* verilator lint_off WIDTH */
-        if (current_rip == 0) begin
-           current_rip <= fetch_rip;
-        end else begin
-           current_rip <= current_rip + bytes_decoded_this_cycle;
-        end
-        /* verilator lint_on WIDTH */
-     end
 
    always @ (posedge bus.clk)
      if (bus.reset) begin
@@ -350,6 +343,8 @@ module Core (
 	latch_alu_result <= comb_alu_result;
 	latch_alu_result_special <= comb_alu_result_special;
 	latch_dest_reg_special_valid <= comb_dest_reg_special_valid;
+
+	$write("\n********************************* FINAL LATCH OF RESULTS\n");
      end
 
         // cse502 : Use the following as a guide to print the Register File contents.

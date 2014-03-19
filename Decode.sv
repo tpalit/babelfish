@@ -10,8 +10,6 @@ module Decode (
 	       output [0:31] 	comb_opcode_length,
 	       output [0:0] 	comb_opcode_valid, 
 	       output [0:7] 	comb_opcode,
-	       //output [0:3] 	comb_operand1,
-	       //output [0:3] 	comb_operand2,
 	       output [0:63] 	comb_operand1_val,
 	       output [0:63] 	comb_operand2_val,
 	       output [0:31] 	comb_imm_len,
@@ -1092,8 +1090,6 @@ module Decode (
          comb_has_extended_opcode = 0;
          comb_opcode_length = 0;
          comb_opcode = 0;
-         //comb_operand1 = 0;
-         //comb_operand2 = 0;
          comb_operand1_val = 0;
          comb_operand2_val = 0;
          comb_imm_len = 0;
@@ -1341,8 +1337,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // write operand
-//                  comb_operand2 = 0;
 		  comb_operand1_val = 0;
 		  comb_operand2_val = 0;
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -1358,8 +1352,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // write operand
-//                  comb_operand2 = { rex_field[5], reg_field }; // read operand
                   comb_operand1_val = 0; // write operand
                   comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -1368,14 +1360,14 @@ module Decode (
                   comb_extended_opcode = 0;
                   comb_has_extended_opcode = 0;
                   comb_opcode_valid = 1;
+
+		  $write("\nDecode::: MOV::: operand1: %d, operand2: %d", comb_operand1_val, comb_operand2_val);
                end
             end else if (opcode == 8'h8B) begin
                decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[5], reg_field }; // write operand
-//                  comb_operand2 = { rex_field[7], rm_field }; // read operand
                   comb_operand1_val = 0; // write operand
                   comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
 		  comb_dest_reg = { rex_field[5], reg_field }; // write operand
@@ -1397,8 +1389,6 @@ module Decode (
                decode_OI(rex_field, imm64, oi_reg[5:7]);
 
                /* Extra processing for EXECUTE */
-//               comb_operand1 = { rex_field[7], oi_reg[5:7] }; //write operand
-//               comb_operand2 = 0;
 	       comb_operand1_val = 0; // write operand
                comb_operand2_val = 0;
                comb_dest_reg = { rex_field[7], oi_reg[5:7] }; //write operand
@@ -1408,14 +1398,14 @@ module Decode (
                comb_extended_opcode = 0;
                comb_has_extended_opcode = 0;
                comb_opcode_valid = 1;
+
+               $write("\nDecode::: MOV()::: operand1: %d, operand2: %d, imm: %d", comb_operand1_val, comb_operand2_val, comb_imm64);
             end else if (opcode == 8'h83 && reg_field == 3'b110) begin
                /****************** For XOR *************/
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count, 2'b10);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-//                  comb_operand2 = 0;
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = 0;
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -1431,8 +1421,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  //comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-                  //comb_operand2 = 0;
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = 0;
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -1448,8 +1436,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-//                  comb_operand2 = { rex_field[5], reg_field }; // read operand
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = registerfile[{ rex_field[5], reg_field }]; // read operand
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -1464,8 +1450,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  //comb_operand1 = { rex_field[5], reg_field }; // read and write operand
-                  //comb_operand2 = { rex_field[7], rm_field }; // read operand
                   comb_operand1_val = registerfile[{ rex_field[5], reg_field }]; // read and write operand
                   comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
 		  comb_dest_reg = { rex_field[5], reg_field }; // write operand
@@ -1479,8 +1463,6 @@ module Decode (
                decode_I(imm32, 1);
 
                /* Extra processing for EXECUTE */
-//               comb_operand1 = 4'b0000; // read and write operand %RAX
-//               comb_operand2 = 0;
                comb_operand1_val = registerfile[4'b0000]; // read and write operand %RAX
                comb_operand2_val = 0;
 	       comb_dest_reg = 4'b0000; // write operand
@@ -1496,8 +1478,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-//                  comb_operand2 = 0;
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = 0;
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -1513,8 +1493,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-//                  comb_operand2 = 0;
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = 0;
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -1530,8 +1508,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-//                  comb_operand2 = { rex_field[5], reg_field }; // read operand
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = registerfile[{ rex_field[5], reg_field }]; // read operand
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -1546,8 +1522,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[5], reg_field }; // read and write operand
-//                  comb_operand2 = { rex_field[7], rm_field }; // read operand
                   comb_operand1_val = registerfile[{ rex_field[5], reg_field }]; // read and write operand
                   comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
 		  comb_dest_reg = { rex_field[5], reg_field }; // write operand
@@ -1561,8 +1535,6 @@ module Decode (
                decode_I(imm32, 1);
 
                /* Extra processing for EXECUTE */
-//               comb_operand1 = 4'b0000; // read and write operand %RAX
-//               comb_operand2 = 0;
                comb_operand1_val = registerfile[4'b0000]; // read and write operand %RAX
                comb_operand2_val = 0;
 	       comb_dest_reg = 4'b0000; // write operand
@@ -1578,8 +1550,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-//                  comb_operand2 = 0;
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = 0;
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -1595,8 +1565,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-//                  comb_operand2 = 0;
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = 0;
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -1612,8 +1580,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-//                  comb_operand2 = { rex_field[5], reg_field }; // read operand
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = registerfile[{ rex_field[5], reg_field }]; // read operand
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -1622,14 +1588,14 @@ module Decode (
                   comb_extended_opcode = 0;
                   comb_has_extended_opcode = 0;
                   comb_opcode_valid = 1;
+
+		  $write("\nDecode::: ADD::: operand1: %d, operand2: %d", comb_operand1_val, comb_operand2_val);
                end
             end else if (opcode == 8'h03) begin
                decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[5], reg_field }; // read and write operand
-//                  comb_operand2 = { rex_field[7], rm_field }; // read operand
                   comb_operand1_val = registerfile[{ rex_field[5], reg_field }]; // read and write operand
                   comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
 		  comb_dest_reg = { rex_field[5], reg_field }; // write operand
@@ -1643,8 +1609,6 @@ module Decode (
                decode_I(imm32, 1);
 
                /* Extra processing for EXECUTE */
-//               comb_operand1 = 4'b0000; // read and write operand %RAX
-//               comb_operand2 = 0;
                comb_operand1_val = registerfile[4'b0000]; // read and write operand %RAX
                comb_operand2_val = 0;
 	       comb_dest_reg = 4'b0000; // write operand
@@ -1660,8 +1624,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-//                  comb_operand2 = 0;
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = 0;
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -1677,8 +1639,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-//                  comb_operand2 = 0;
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = 0;
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -1694,8 +1654,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-//                  comb_operand2 = { rex_field[5], reg_field }; // read operand
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = registerfile[{ rex_field[5], reg_field }]; // read operand
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -1710,8 +1668,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[5], reg_field }; // read and write operand
-//                  comb_operand2 = { rex_field[7], rm_field }; // read operand
                   comb_operand1_val = registerfile[{ rex_field[5], reg_field }]; // read and write operand
                   comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
 		  comb_dest_reg = { rex_field[5], reg_field }; // write operand
@@ -1725,8 +1681,6 @@ module Decode (
                decode_I(imm32, 1);    
 
                /* Extra processing for EXECUTE */
-//               comb_operand1 = 4'b0000; // read and write operand %RAX
-//               comb_operand2 = 0;
                comb_operand1_val = registerfile[4'b0000]; // read and write operand %RAX
                comb_operand2_val = 0;
 	       comb_dest_reg = 4'b0000; // write operand
@@ -1742,8 +1696,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-//                  comb_operand2 = 0;
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = 0;
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -1759,8 +1711,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-//                  comb_operand2 = 0;
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = 0;
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -1776,8 +1726,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-//                  comb_operand2 = { rex_field[5], reg_field }; // read operand
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = registerfile[{ rex_field[5], reg_field }]; // read operand
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -1792,8 +1740,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[5], reg_field }; // read and write operand
-//                  comb_operand2 = { rex_field[7], rm_field }; // read operand
                   comb_operand1_val = registerfile[{ rex_field[5], reg_field }]; // read and write operand
                   comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
 		  comb_dest_reg = { rex_field[5], reg_field }; // write operand
@@ -1807,8 +1753,6 @@ module Decode (
                decode_I(imm32, 1);
 
                /* Extra processing for EXECUTE */
-//               comb_operand1 = 4'b0000; // read and write operand %RAX
-//               comb_operand2 = 0;
                comb_operand1_val = registerfile[4'b0000]; // read and write operand %RAX
                comb_operand2_val = 0;
 	       comb_dest_reg = 4'b0000; // write operand
@@ -1824,8 +1768,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-//                  comb_operand2 = 0;
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = 0;
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -1841,8 +1783,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-//                  comb_operand2 = 0;
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = 0;
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -1858,8 +1798,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-//                  comb_operand2 = { rex_field[5], reg_field }; // read operand
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = registerfile[{ rex_field[5], reg_field }]; // read operand
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -1874,8 +1812,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[5], reg_field }; // read and write operand
-//                  comb_operand2 = { rex_field[7], rm_field }; // read operand
                   comb_operand1_val = registerfile[{ rex_field[5], reg_field }]; // read and write operand
                   comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
 		  comb_dest_reg = { rex_field[5], reg_field }; // write operand
@@ -1889,8 +1825,6 @@ module Decode (
                decode_I(imm32, 1);    
 
                /* Extra processing for EXECUTE */
-//               comb_operand1 = 4'b0000; // read and write operand %RAX
-//               comb_operand2 = 0;
                comb_operand1_val = registerfile[4'b0000]; // read and write operand %RAX
                comb_operand2_val = 0;
 	       comb_dest_reg = 4'b0000; // write operand
@@ -1906,8 +1840,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-//                  comb_operand2 = 0;
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = 0;
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -1923,8 +1855,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-//                  comb_operand2 = 0;
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = 0;
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -1940,8 +1870,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-//                  comb_operand2 = { rex_field[5], reg_field }; // read operand
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = registerfile[{ rex_field[5], reg_field }]; // read operand
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -1956,8 +1884,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[5], reg_field }; // read and write operand
-//                  comb_operand2 = { rex_field[7], rm_field }; // read operand
                   comb_operand1_val = registerfile[{ rex_field[5], reg_field }]; // read and write operand
                   comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
 		  comb_dest_reg = { rex_field[5], reg_field }; // write operand
@@ -1971,8 +1897,6 @@ module Decode (
                decode_I(imm32, 1);    
 
                /* Extra processing for EXECUTE */
-//               comb_operand1 = 4'b0000; // read and write operand %RAX
-//               comb_operand2 = 0;
                comb_operand1_val = registerfile[4'b0000]; // read and write operand %RAX
                comb_operand2_val = 0;
 	       comb_dest_reg = 4'b0000; // write operand
@@ -1989,8 +1913,6 @@ module Decode (
                /* TODO: Find out whether sign extension is required or not! */
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-//                  comb_operand2 = 0;
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = 0;
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -2006,8 +1928,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-//                  comb_operand2 = 0;
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = 0;
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -2023,8 +1943,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read and write operand
-//                  comb_operand2 = { rex_field[5], reg_field }; // read operand
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
                   comb_operand2_val = registerfile[{ rex_field[5], reg_field }]; // read operand
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -2039,8 +1957,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[5], reg_field }; // read and write operand
-//                  comb_operand2 = { rex_field[7], rm_field }; // read operand
                   comb_operand1_val = registerfile[{ rex_field[5], reg_field }]; // read and write operand
                   comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
 		  comb_dest_reg = { rex_field[5], reg_field }; // write operand
@@ -2054,8 +1970,6 @@ module Decode (
                decode_I(imm32, 1);
 
                /* Extra processing for EXECUTE */
-//               comb_operand1 = 4'b0000; // read and write operand %RAX
-//               comb_operand2 = 0;
                comb_operand1_val = registerfile[4'b0000]; // read and write operand %RAX
                comb_operand2_val = 0;
 	       comb_dest_reg = 4'b0000; // write operand
@@ -2145,8 +2059,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read operand
-//                  comb_operand2 = 4'b0000; // read RAX, write RDX:RAX
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read operand
                   comb_operand2_val = registerfile[4'b0000]; // read RAX, write RDX:RAX
 		  comb_dest_reg = 4'b0000; // write operand RDX:RAX (TODO: special case)
@@ -2164,8 +2076,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read operand
-//                  comb_operand2 = 4'b0000; // read RAX, write RDX:RAX
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read operand
                   comb_operand2_val = registerfile[4'b0000]; // read RAX, write RDX:RAX
 		  comb_dest_reg = 4'b0000; // write operand RDX:RAX (TODO: special case)
@@ -2183,8 +2093,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read operand
-//                  comb_operand2 = 4'b0000; // read RAX, write RDX:RAX
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read operand
                   comb_operand2_val = registerfile[4'b0000]; // read RAX, write RDX:RAX
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -2200,8 +2108,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read operand
-//                  comb_operand2 = 4'b0000; // read RAX, write RDX:RAX
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read operand
                   comb_operand2_val = registerfile[4'b0000]; // read RAX, write RDX:RAX
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
@@ -2220,8 +2126,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[5], reg_field }; // write operand
-//                  comb_operand2 = { rex_field[7], rm_field }; // read operand
                   comb_operand1_val = 0;
                   comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
 		  comb_dest_reg = { rex_field[5], reg_field }; // write operand
@@ -2237,8 +2141,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[5], reg_field }; // write operand
-//                  comb_operand2 = { rex_field[7], rm_field }; // read operand
                   comb_operand1_val = 0;
                   comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
 		  comb_dest_reg = { rex_field[5], reg_field };  // write operand
@@ -2288,7 +2190,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read operand
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read operand
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
                   comb_imm_len = 0;
@@ -2303,7 +2204,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read operand
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read operand
 		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
                   comb_imm_len = 0;
@@ -2405,8 +2305,6 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-//                  comb_operand1 = { rex_field[7], rm_field }; // read operand
-//                  comb_operand1 = { rex_field[5], reg_field }; // write operand
                   comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read operand
                   comb_operand2_val = registerfile[{ rex_field[5], reg_field }]; // write operand
 		  comb_dest_reg = { rex_field[5], reg_field }; // write operand
