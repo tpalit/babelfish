@@ -10,13 +10,11 @@ module Core (
    logic[5:0] fetch_skip;
    logic[6:0] fetch_offset, decode_offset;
 
-   wire can_execute;
-
-   logic [31:0] 	    current_rip;
+   wire canExecute;
+   wire canRead;
 
    logic [63:0] regfile[16];
 
-   logic [63:0] latch_regfile[16];
    /* verilator lint_off UNUSED */
    /* verilator lint_off UNDRIVEN */
    logic [63:0] rflags;
@@ -48,8 +46,57 @@ module Core (
    logic [0:3] 		    comb_dest_reg_special = 0;
    bit 			    comb_dest_reg_special_valid = 0;
 
+   /* TODO: Change this to 64 bits */
+   logic [31:0] 	ifidCurrentRip;
+   logic [31:0] 	idrdCurrentRip;
+   logic [31:0] 	rdexCurrentRip;
+
+   logic [0:2] 		idrdExtendedOpcode = 0;
+   logic [0:31] 	idrdHasExtendedOpcode = 0;
+   logic [0:31] 	idrdOpcodeLength = 0;
+   logic [0:0] 		idrdOpcodeValid = 0; 
+   logic [0:7] 		idrdOpcode = 0;
+   logic [0:63] 	idrdOperandVal1 = 0;
+   logic [0:63] 	idrdOperand2Val = 0;
+   logic [0:31] 	idrdImmLen = 0;
+   logic [0:31] 	idrdDispLen = 0;
+   logic [0:7] 		idrdImm8 = 0;
+   logic [0:15] 	idrdImm16 = 0;
+   logic [0:31] 	idrdImm32 = 0;
+   logic [0:63] 	idrdImm64 = 0;
+   logic [0:7] 		idrdDisp8 = 0;
+   logic [0:15] 	idrdDisp16 = 0;
+   logic [0:31] 	idrdDisp32 = 0;
+   logic [0:63] 	idrdDisp64 = 0;
+   logic [0:3]		idrdDestReg = 0;
+   logic [0:3]		idrdDestRegSpecial = 0;
+   bit	 		idrdDestRegSpecialValid = 0;
+
+   logic [0:2] 		rdexExtendedOpcode = 0;
+   logic [0:31] 	rdexHasExtendedOpcode = 0;
+   logic [0:31] 	rdexOpcodeLength = 0;
+   logic [0:0] 		rdexOpcodeValid = 0; 
+   logic [0:7] 		rdexOpcode = 0;
+   logic [0:63] 	rdexOperandVal1 = 0;
+   logic [0:63] 	rdexOperand2Val = 0;
+   logic [0:31] 	rdexImmLen = 0;
+   logic [0:31] 	rdexDispLen = 0;
+   logic [0:7] 		rdexImm8 = 0;
+   logic [0:15] 	rdexImm16 = 0;
+   logic [0:31] 	rdexImm32 = 0;
+   logic [0:63] 	rdexImm64 = 0;
+   logic [0:7] 		rdexDisp8 = 0;
+   logic [0:15] 	rdexDisp16 = 0;
+   logic [0:31] 	rdexDisp32 = 0;
+   logic [0:63] 	rdexDisp64 = 0;
+   logic [0:3]		rdexDestReg = 0;
+   logic [0:3]		rdexDestRegSpecial = 0;
+   bit	 		rdexDestRegSpecialValid = 0;
+
    initial begin
-      current_rip = 0;
+      ifidCurrentRip = 0;
+      idrdCurrentRip = 0;
+      rdexCurrentRip = 0;
 
       for(int k=0; k<16; k=k+1) begin
          regfile[k] = 0;
@@ -236,9 +283,9 @@ module Core (
 
         decode_offset <= decode_offset + { 3'b0, bytes_decoded_this_cycle };
         if (bytes_decoded_this_cycle > 0) begin
-           can_execute <= 1;
+           canExecute <= 1;
         end else begin
-           can_execute <= 0;
+           canExecute <= 0;
         end
 
         /* verilator lint_off WIDTH */
@@ -254,7 +301,7 @@ module Core (
    /* TODO: Add output ports: target (pc+1+offset: jmps/jcc), ALU result, valB (val of regB), dest reg, eq? */
    Execute execute(	       
 			current_rip,
-			can_execute,
+			canExecute,
 			latch_extended_opcode,
 			latch_has_extended_opcode,
 			latch_opcode_length,
@@ -279,7 +326,7 @@ module Core (
 			comb_alu_result_special);
 
    always_comb begin
-	if ((latch_opcode_valid == 1) && (can_execute == 1)) begin
+	if ((latch_opcode_valid == 1) && (canExecute == 1)) begin
 		regfile[latch_dest_reg] = comb_alu_result;
 
 		if (latch_dest_reg_special_valid == 1) begin
@@ -293,22 +340,22 @@ module Core (
    always @ (posedge bus.clk)
      if (bus.reset) begin
 
-        latch_regfile[0] <= 0;
-        latch_regfile[1] <= 0;
-        latch_regfile[2] <= 0;
-        latch_regfile[3] <= 0;
-        latch_regfile[4] <= 0;
-        latch_regfile[5] <= 0;
-        latch_regfile[6] <= 0;
-        latch_regfile[7] <= 0;
-        latch_regfile[8] <= 0;
-        latch_regfile[9] <= 0;
-        latch_regfile[10] <= 0;
-        latch_regfile[11] <= 0;
-        latch_regfile[12] <= 0;
-        latch_regfile[13] <= 0;
-        latch_regfile[14] <= 0;
-        latch_regfile[15] <= 0;
+        regfile[0] <= 0;
+        regfile[1] <= 0;
+        regfile[2] <= 0;
+        regfile[3] <= 0;
+        regfile[4] <= 0;
+        regfile[5] <= 0;
+        regfile[6] <= 0;
+        regfile[7] <= 0;
+        regfile[8] <= 0;
+        regfile[9] <= 0;
+        regfile[10] <= 0;
+        regfile[11] <= 0;
+        regfile[12] <= 0;
+        regfile[13] <= 0;
+        regfile[14] <= 0;
+        regfile[15] <= 0;
 
         latch_rflags <= 0;
 
@@ -319,23 +366,9 @@ module Core (
 	latch_dest_reg_special_valid <= 0;
      end else begin // !bus.reset
 
-        latch_regfile[0] <= regfile[0];
-        latch_regfile[1] <= regfile[1];
-        latch_regfile[2] <= regfile[2];
-        latch_regfile[3] <= regfile[3];
-        latch_regfile[4] <= regfile[4];
-        latch_regfile[5] <= regfile[5];
-        latch_regfile[6] <= regfile[6];
-        latch_regfile[7] <= regfile[7];
-        latch_regfile[8] <= regfile[8];
-        latch_regfile[9] <= regfile[9];
-        latch_regfile[10] <= regfile[10];
-        latch_regfile[11] <= regfile[11];
-        latch_regfile[12] <= regfile[12];
-        latch_regfile[13] <= regfile[13];
-        latch_regfile[14] <= regfile[14];
-        latch_regfile[15] <= regfile[15];
-
+/*
+        regfile[dest_reg] <= alu_result;
+*/
         latch_rflags <= rflags;
 
 	latch_dest_reg <= comb_dest_reg;
@@ -349,21 +382,21 @@ module Core (
 
         // cse502 : Use the following as a guide to print the Register File contents.
         final begin
-                $display("RAX = %x", latch_regfile[0]);
-                $display("RBX = %x", latch_regfile[3]);
-                $display("RCX = %x", latch_regfile[1]);
-                $display("RDX = %x", latch_regfile[2]);
-                $display("RSI = %x", latch_regfile[6]);
-                $display("RDI = %x", latch_regfile[7]);
-                $display("RBP = %x", latch_regfile[5]);
-                $display("RSP = %x", latch_regfile[4]);
-                $display("R8  = %x", latch_regfile[8]);
-                $display("R9  = %x", latch_regfile[9]);
-                $display("R10 = %x", latch_regfile[10]);
-                $display("R11 = %x", latch_regfile[11]);
-                $display("R12 = %x", latch_regfile[12]);
-                $display("R13 = %x", latch_regfile[13]);
-                $display("R14 = %x", latch_regfile[14]);
-                $display("R15 = %x", latch_regfile[15]);
+                $display("RAX = %x", regfile[0]);
+                $display("RBX = %x", regfile[3]);
+                $display("RCX = %x", regfile[1]);
+                $display("RDX = %x", regfile[2]);
+                $display("RSI = %x", regfile[6]);
+                $display("RDI = %x", regfile[7]);
+                $display("RBP = %x", regfile[5]);
+                $display("RSP = %x", regfile[4]);
+                $display("R8  = %x", regfile[8]);
+                $display("R9  = %x", regfile[9]);
+                $display("R10 = %x", regfile[10]);
+                $display("R11 = %x", regfile[11]);
+                $display("R12 = %x", regfile[12]);
+                $display("R13 = %x", regfile[13]);
+                $display("R14 = %x", regfile[14]);
+                $display("R15 = %x", regfile[15]);
         end
 endmodule
