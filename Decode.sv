@@ -2,30 +2,30 @@
 
 module Decode (
 	       input [0:15*8-1] decode_bytes,
-	       input [0:31] 	current_rip,
-	       input 		can_decode,
-	       input [63:0] 	registerfile[16],
-	       output [0:2] 	comb_extended_opcode,
-	       output [0:31] 	comb_has_extended_opcode,
-	       output [0:31] 	comb_opcode_length,
-	       output [0:0] 	comb_opcode_valid, 
-	       output [0:7] 	comb_opcode,
-	       output [0:63] 	comb_operand1_val,
-	       output [0:63] 	comb_operand2_val,
-	       output [0:31] 	comb_imm_len,
-	       output [0:31] 	comb_disp_len,
-	       output [0:7] 	comb_imm8,
-	       output [0:15] 	comb_imm16,
-	       output [0:31] 	comb_imm32,
-	       output [0:63] 	comb_imm64,
-	       output [0:7] 	comb_disp8,
-	       output [0:15] 	comb_disp16,
-	       output [0:31] 	comb_disp32,
-	       output [0:63] 	comb_disp64,
-               output [0:3]	comb_dest_reg,	// TODO: Treat IMUL as special case with dest as RDX:RAX
-               output [0:3]	comb_dest_reg_special,	// TODO: Treat IMUL as special case with dest as RDX:RAX
-               output 		comb_dest_reg_special_valid,	// TODO: Treat IMUL as special case with dest as RDX:RAX
-	       output [0:3] 	bytes_decoded_this_cycle 	
+	       input [0:31] 	currentRipIn,
+	       input 		canDecodeIn,
+	       input [63:0] 	registerFileIn[16],
+	       output [0:2] 	extendedOpcodeOut,
+	       output [0:31] 	hasExtendedOpcodeOut,
+	       output [0:31] 	opcodeLengthOut,
+	       output [0:0] 	opcodeValidOut, 
+	       output [0:7] 	opcodeOut,
+	       output [0:63] 	operandVal1Out,
+	       output [0:63] 	operand2ValOut,
+	       output [0:31] 	immLenOut,
+	       output [0:31] 	dispLenOut,
+	       output [0:7] 	imm8Out,
+	       output [0:15] 	imm16Out,
+	       output [0:31] 	imm32Out,
+	       output [0:63] 	imm64Out,
+	       output [0:7] 	disp8Out,
+	       output [0:15] 	disp16Out,
+	       output [0:31] 	disp32Out,
+	       output [0:63] 	disp64Out,
+               output [0:3]	destRegOut,	// TODO: Treat IMUL as special case with dest as RDX:RAX
+               output [0:3]	destRegSpecialOut,	// TODO: Treat IMUL as special case with dest as RDX:RAX
+               output 		destRegSpecialValidOut,	// TODO: Treat IMUL as special case with dest as RDX:RAX
+	       output [0:3] 	bytesDecodedThisCycleOut 	
 	       );
    
    bit 				modrm_array[0:255];
@@ -1056,7 +1056,7 @@ module Decode (
    endfunction
 
    always_comb begin
-      if (can_decode) begin : decode_block
+      if (canDecodeIn) begin : decode_block
          int instr_count = 0;
          int opcode_start_index = 0; // the index of the first byte of the opcode
          int opcode_end_index = 0; // the index of the last byte of the opcode.
@@ -1085,26 +1085,26 @@ module Decode (
          bit is_prefix_flag = is_prefix(decode_bytes[instr_count*8 +: 8] );
 
          /* Reset output values */
-         comb_opcode_valid = 0;
-         comb_extended_opcode = 0;
-         comb_has_extended_opcode = 0;
-         comb_opcode_length = 0;
-         comb_opcode = 0;
-         comb_operand1_val = 0;
-         comb_operand2_val = 0;
-         comb_imm_len = 0;
-         comb_disp_len = 0;
-         comb_imm8 = 0;
-         comb_imm16 = 0;
-         comb_imm32 = 0;
-         comb_imm64 = 0;
-         comb_disp8 = 0;
-         comb_disp16 = 0;
-         comb_disp32 = 0;
-         comb_disp64 = 0;
-	 comb_dest_reg = 0;
-	 comb_dest_reg_special = 0;
-	 comb_dest_reg_special_valid = 0;
+         opcodeValidOut = 0;
+         extendedOpcodeOut = 0;
+         hasExtendedOpcodeOut = 0;
+         opcodeLengthOut = 0;
+         opcodeOut = 0;
+         operandVal1Out = 0;
+         operand2ValOut = 0;
+         immLenOut = 0;
+         dispLenOut = 0;
+         imm8Out = 0;
+         imm16Out = 0;
+         imm32Out = 0;
+         imm64Out = 0;
+         disp8Out = 0;
+         disp16Out = 0;
+         disp32Out = 0;
+         disp64Out = 0;
+	 destRegOut = 0;
+	 destRegSpecialOut = 0;
+	 destRegSpecialValidOut = 0;
 
          while (is_prefix_flag) begin
             instr_count = instr_count + 1;
@@ -1121,18 +1121,18 @@ module Decode (
          if (decode_bytes[instr_count*8 +:8] == 8'h0f) begin
             if (decode_bytes[(instr_count+1)*8 +: 8] == 8'h38 || decode_bytes[(instr_count+1)*8 +: 8] == 8'h3a) begin
                instr_count = instr_count+3; // opcode of length 3 bytes
-               comb_opcode_length = 3;
+               opcodeLengthOut = 3;
             end else begin
                instr_count = instr_count+2; // opcode of length 2 bytes
-               comb_opcode_length = 2;
+               opcodeLengthOut = 2;
             end
          end else begin
             instr_count = instr_count+1; // opcode of length 1 byte
-               comb_opcode_length = 1;
+               opcodeLengthOut = 1;
          end
          opcode_end_index = instr_count-1;
 
-         comb_opcode = decode_bytes[opcode_end_index*8 +: 8];
+         opcodeOut = decode_bytes[opcode_end_index*8 +: 8];
 
          if (opcode_start_index == opcode_end_index) begin
             opcode = decode_bytes[opcode_start_index*8 +: 8];
@@ -1291,13 +1291,13 @@ module Decode (
             instr_count = instr_count + imm_len;
          end // if ((opcode_end_index - opcode_start_index) == 1)
 
-         bytes_decoded_this_cycle = instr_count[3:0];
-         //$write("%x:   ", current_rip);
+         bytesDecodedThisCycleOut = instr_count[3:0];
+         //$write("%x:   ", currentRipIn);
          
-         for(int i=0; i< {28'b0,bytes_decoded_this_cycle}; i=i+1) begin
+         for(int i=0; i< {28'b0,bytesDecodedThisCycleOut}; i=i+1) begin
             //$write("%x ", decode_bytes[i*8+:8]);
          end
-         /* verilator lint_off WIDTH */ for(int i=0; i<(12-bytes_decoded_this_cycle); i=i+1) begin /* verilator lint_on WIDTH */
+         /* verilator lint_off WIDTH */ for(int i=0; i<(12-bytesDecodedThisCycleOut); i=i+1) begin /* verilator lint_on WIDTH */
             //$write("   ");
          end
          //$write("  ");
@@ -1333,49 +1333,49 @@ module Decode (
          if ((opcode_start_index == opcode_end_index) && (exit_after_print == 0)) begin //Length 1 opcodes
             /********* For MOV ************/
             if (opcode ==  8'hC7 && reg_field == 3'b000) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, current_rip+instr_count, 2'b11);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count, 2'b11);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-		  comb_operand1_val = 0;
-		  comb_operand2_val = 0;
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm64 = sign_extend_32_to_64(imm32);
-                  comb_imm_len = 8;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 3'b000;
-                  comb_has_extended_opcode = 1;
-                  comb_opcode_valid = 1;
+		  operandVal1Out = 0;
+		  operand2ValOut = 0;
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  imm64Out = sign_extend_32_to_64(imm32);
+                  immLenOut = 8;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 3'b000;
+                  hasExtendedOpcodeOut = 1;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h89) begin
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = 0; // write operand
-                  comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 0;
-                  comb_has_extended_opcode = 0;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = 0; // write operand
+                  operand2ValOut = registerFileIn[{ rex_field[7], rm_field }]; // read operand
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 0;
+                  hasExtendedOpcodeOut = 0;
+                  opcodeValidOut = 1;
 
-		  $write("\nDecode::: MOV::: operand1: %d, operand2: %d", comb_operand1_val, comb_operand2_val);
+		  $write("\nDecode::: MOV::: operand1: %d, operand2: %d", operandVal1Out, operand2ValOut);
                end
             end else if (opcode == 8'h8B) begin
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = 0; // write operand
-                  comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
-		  comb_dest_reg = { rex_field[5], reg_field }; // write operand
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 0;
-                  comb_has_extended_opcode = 0;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = 0; // write operand
+                  operand2ValOut = registerFileIn[{ rex_field[7], rm_field }]; // read operand
+		  destRegOut = { rex_field[5], reg_field }; // write operand
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 0;
+                  hasExtendedOpcodeOut = 0;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'hB8 ||
                          opcode == 8'hB9 ||
@@ -1389,596 +1389,596 @@ module Decode (
                decode_OI(rex_field, imm64, oi_reg[5:7]);
 
                /* Extra processing for EXECUTE */
-	       comb_operand1_val = 0; // write operand
-               comb_operand2_val = 0;
-               comb_dest_reg = { rex_field[7], oi_reg[5:7] }; //write operand
-               comb_imm64 = imm64;
-               comb_imm_len = 8;
-               comb_disp_len = 0;
-               comb_extended_opcode = 0;
-               comb_has_extended_opcode = 0;
-               comb_opcode_valid = 1;
+	       operandVal1Out = 0; // write operand
+               operand2ValOut = 0;
+               destRegOut = { rex_field[7], oi_reg[5:7] }; //write operand
+               imm64Out = imm64;
+               immLenOut = 8;
+               dispLenOut = 0;
+               extendedOpcodeOut = 0;
+               hasExtendedOpcodeOut = 0;
+               opcodeValidOut = 1;
 
-               $write("\nDecode::: MOV()::: operand1: %d, operand2: %d, imm: %d", comb_operand1_val, comb_operand2_val, comb_imm64);
+               $write("\nDecode::: MOV()::: operand1: %d, operand2: %d, imm: %d", operandVal1Out, operand2ValOut, imm64Out);
             end else if (opcode == 8'h83 && reg_field == 3'b110) begin
                /****************** For XOR *************/
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count, 2'b10);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b10);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = 0;
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm64 = sign_extend_8_to_64(imm8);
-                  comb_imm_len = 8;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 3'b110;
-                  comb_has_extended_opcode = 1;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = 0;
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  imm64Out = sign_extend_8_to_64(imm8);
+                  immLenOut = 8;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 3'b110;
+                  hasExtendedOpcodeOut = 1;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b110) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, current_rip+instr_count, 2'b11);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count, 2'b11);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = 0;
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm64 = sign_extend_32_to_64(imm32);
-                  comb_imm_len = 8;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 3'b110;
-                  comb_has_extended_opcode = 1;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = 0;
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  imm64Out = sign_extend_32_to_64(imm32);
+                  immLenOut = 8;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 3'b110;
+                  hasExtendedOpcodeOut = 1;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h31) begin
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = registerfile[{ rex_field[5], reg_field }]; // read operand
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 0;
-                  comb_has_extended_opcode = 0;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = registerFileIn[{ rex_field[5], reg_field }]; // read operand
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 0;
+                  hasExtendedOpcodeOut = 0;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h33) begin
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[5], reg_field }]; // read and write operand
-                  comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
-		  comb_dest_reg = { rex_field[5], reg_field }; // write operand
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 0;
-                  comb_has_extended_opcode = 0;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[5], reg_field }]; // read and write operand
+                  operand2ValOut = registerFileIn[{ rex_field[7], rm_field }]; // read operand
+		  destRegOut = { rex_field[5], reg_field }; // write operand
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 0;
+                  hasExtendedOpcodeOut = 0;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h35) begin
                decode_I(imm32, 1);
 
                /* Extra processing for EXECUTE */
-               comb_operand1_val = registerfile[4'b0000]; // read and write operand %RAX
-               comb_operand2_val = 0;
-	       comb_dest_reg = 4'b0000; // write operand
-               comb_imm64 = sign_extend_32_to_64(imm32);
-               comb_imm_len = 8;
-               comb_disp_len = 0;
-               comb_extended_opcode = 0;
-               comb_has_extended_opcode = 0;
-               comb_opcode_valid = 1;
+               operandVal1Out = registerFileIn[4'b0000]; // read and write operand %RAX
+               operand2ValOut = 0;
+	       destRegOut = 4'b0000; // write operand
+               imm64Out = sign_extend_32_to_64(imm32);
+               immLenOut = 8;
+               dispLenOut = 0;
+               extendedOpcodeOut = 0;
+               hasExtendedOpcodeOut = 0;
+               opcodeValidOut = 1;
             end else if (opcode == 8'h83 && reg_field == 3'b100) begin
                /****************** For AND *************/
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count, 2'b10);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b10);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = 0;
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm64 = sign_extend_8_to_64(imm8);
-                  comb_imm_len = 8;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 3'b100;
-                  comb_has_extended_opcode = 1;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = 0;
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  imm64Out = sign_extend_8_to_64(imm8);
+                  immLenOut = 8;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 3'b100;
+                  hasExtendedOpcodeOut = 1;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b100) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, current_rip+instr_count, 2'b11);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count, 2'b11);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = 0;
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm64 = sign_extend_32_to_64(imm32);
-                  comb_imm_len = 8;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 3'b100;
-                  comb_has_extended_opcode = 1;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = 0;
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  imm64Out = sign_extend_32_to_64(imm32);
+                  immLenOut = 8;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 3'b100;
+                  hasExtendedOpcodeOut = 1;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h21) begin
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = registerfile[{ rex_field[5], reg_field }]; // read operand
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 0;
-                  comb_has_extended_opcode = 0;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = registerFileIn[{ rex_field[5], reg_field }]; // read operand
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 0;
+                  hasExtendedOpcodeOut = 0;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h23) begin
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[5], reg_field }]; // read and write operand
-                  comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
-		  comb_dest_reg = { rex_field[5], reg_field }; // write operand
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 0;
-                  comb_has_extended_opcode = 0;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[5], reg_field }]; // read and write operand
+                  operand2ValOut = registerFileIn[{ rex_field[7], rm_field }]; // read operand
+		  destRegOut = { rex_field[5], reg_field }; // write operand
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 0;
+                  hasExtendedOpcodeOut = 0;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h25) begin
                decode_I(imm32, 1);
 
                /* Extra processing for EXECUTE */
-               comb_operand1_val = registerfile[4'b0000]; // read and write operand %RAX
-               comb_operand2_val = 0;
-	       comb_dest_reg = 4'b0000; // write operand
-               comb_imm64 = sign_extend_32_to_64(imm32);
-               comb_imm_len = 8;
-               comb_disp_len = 0;
-               comb_extended_opcode = 0;
-               comb_has_extended_opcode = 0;
-               comb_opcode_valid = 1;
+               operandVal1Out = registerFileIn[4'b0000]; // read and write operand %RAX
+               operand2ValOut = 0;
+	       destRegOut = 4'b0000; // write operand
+               imm64Out = sign_extend_32_to_64(imm32);
+               immLenOut = 8;
+               dispLenOut = 0;
+               extendedOpcodeOut = 0;
+               hasExtendedOpcodeOut = 0;
+               opcodeValidOut = 1;
             end else if (opcode == 8'h83 && reg_field == 3'b000) begin
                /****************** For ADD *************/
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count, 2'b10);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b10);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = 0;
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm64 = sign_extend_8_to_64(imm8);
-                  comb_imm_len = 8;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 3'b000;
-                  comb_has_extended_opcode = 1;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = 0;
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  imm64Out = sign_extend_8_to_64(imm8);
+                  immLenOut = 8;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 3'b000;
+                  hasExtendedOpcodeOut = 1;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b000) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, current_rip+instr_count, 2'b11);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count, 2'b11);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = 0;
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm64 = sign_extend_32_to_64(imm32);
-                  comb_imm_len = 8;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 3'b000;
-                  comb_has_extended_opcode = 1;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = 0;
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  imm64Out = sign_extend_32_to_64(imm32);
+                  immLenOut = 8;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 3'b000;
+                  hasExtendedOpcodeOut = 1;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h01) begin
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = registerfile[{ rex_field[5], reg_field }]; // read operand
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 0;
-                  comb_has_extended_opcode = 0;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = registerFileIn[{ rex_field[5], reg_field }]; // read operand
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 0;
+                  hasExtendedOpcodeOut = 0;
+                  opcodeValidOut = 1;
 
-		  $write("\nDecode::: ADD::: operand1: %d, operand2: %d", comb_operand1_val, comb_operand2_val);
+		  $write("\nDecode::: ADD::: operand1: %d, operand2: %d", operandVal1Out, operand2ValOut);
                end
             end else if (opcode == 8'h03) begin
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[5], reg_field }]; // read and write operand
-                  comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
-		  comb_dest_reg = { rex_field[5], reg_field }; // write operand
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 0;
-                  comb_has_extended_opcode = 0;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[5], reg_field }]; // read and write operand
+                  operand2ValOut = registerFileIn[{ rex_field[7], rm_field }]; // read operand
+		  destRegOut = { rex_field[5], reg_field }; // write operand
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 0;
+                  hasExtendedOpcodeOut = 0;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h05) begin
                decode_I(imm32, 1);
 
                /* Extra processing for EXECUTE */
-               comb_operand1_val = registerfile[4'b0000]; // read and write operand %RAX
-               comb_operand2_val = 0;
-	       comb_dest_reg = 4'b0000; // write operand
-               comb_imm64 = sign_extend_32_to_64(imm32);
-               comb_imm_len = 8;
-               comb_disp_len = 0;
-               comb_extended_opcode = 0;
-               comb_has_extended_opcode = 0;
-               comb_opcode_valid = 1;
+               operandVal1Out = registerFileIn[4'b0000]; // read and write operand %RAX
+               operand2ValOut = 0;
+	       destRegOut = 4'b0000; // write operand
+               imm64Out = sign_extend_32_to_64(imm32);
+               immLenOut = 8;
+               dispLenOut = 0;
+               extendedOpcodeOut = 0;
+               hasExtendedOpcodeOut = 0;
+               opcodeValidOut = 1;
             end else if (opcode == 8'h83 && reg_field == 3'b010) begin
                /****************** For ADC *************/
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count, 2'b10);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b10);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = 0;
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm64 = sign_extend_8_to_64(imm8);
-                  comb_imm_len = 8;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 3'b010;
-                  comb_has_extended_opcode = 1;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = 0;
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  imm64Out = sign_extend_8_to_64(imm8);
+                  immLenOut = 8;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 3'b010;
+                  hasExtendedOpcodeOut = 1;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b010) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, current_rip+instr_count, 2'b11);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count, 2'b11);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = 0;
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm64 = sign_extend_32_to_64(imm32);
-                  comb_imm_len = 8;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 3'b010;
-                  comb_has_extended_opcode = 1;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = 0;
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  imm64Out = sign_extend_32_to_64(imm32);
+                  immLenOut = 8;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 3'b010;
+                  hasExtendedOpcodeOut = 1;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h11) begin
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = registerfile[{ rex_field[5], reg_field }]; // read operand
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 0;
-                  comb_has_extended_opcode = 0;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = registerFileIn[{ rex_field[5], reg_field }]; // read operand
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 0;
+                  hasExtendedOpcodeOut = 0;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h13) begin
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[5], reg_field }]; // read and write operand
-                  comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
-		  comb_dest_reg = { rex_field[5], reg_field }; // write operand
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 0;
-                  comb_has_extended_opcode = 0;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[5], reg_field }]; // read and write operand
+                  operand2ValOut = registerFileIn[{ rex_field[7], rm_field }]; // read operand
+		  destRegOut = { rex_field[5], reg_field }; // write operand
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 0;
+                  hasExtendedOpcodeOut = 0;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h15) begin
                decode_I(imm32, 1);    
 
                /* Extra processing for EXECUTE */
-               comb_operand1_val = registerfile[4'b0000]; // read and write operand %RAX
-               comb_operand2_val = 0;
-	       comb_dest_reg = 4'b0000; // write operand
-               comb_imm64 = sign_extend_32_to_64(imm32);
-               comb_imm_len = 8;
-               comb_disp_len = 0;
-               comb_extended_opcode = 0;
-               comb_has_extended_opcode = 0;
-               comb_opcode_valid = 1;
+               operandVal1Out = registerFileIn[4'b0000]; // read and write operand %RAX
+               operand2ValOut = 0;
+	       destRegOut = 4'b0000; // write operand
+               imm64Out = sign_extend_32_to_64(imm32);
+               immLenOut = 8;
+               dispLenOut = 0;
+               extendedOpcodeOut = 0;
+               hasExtendedOpcodeOut = 0;
+               opcodeValidOut = 1;
             end else if (opcode == 8'h83 && reg_field == 3'b001) begin
                /****************** For OR *************/
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count, 2'b10);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b10);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = 0;
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm64 = sign_extend_8_to_64(imm8);
-                  comb_imm_len = 8;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 3'b001;
-                  comb_has_extended_opcode = 1;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = 0;
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  imm64Out = sign_extend_8_to_64(imm8);
+                  immLenOut = 8;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 3'b001;
+                  hasExtendedOpcodeOut = 1;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b001) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, current_rip+instr_count, 2'b11);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count, 2'b11);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = 0;
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm64 = sign_extend_32_to_64(imm32);
-                  comb_imm_len = 8;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 3'b001;
-                  comb_has_extended_opcode = 1;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = 0;
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  imm64Out = sign_extend_32_to_64(imm32);
+                  immLenOut = 8;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 3'b001;
+                  hasExtendedOpcodeOut = 1;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h09) begin
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = registerfile[{ rex_field[5], reg_field }]; // read operand
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 0;
-                  comb_has_extended_opcode = 0;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = registerFileIn[{ rex_field[5], reg_field }]; // read operand
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 0;
+                  hasExtendedOpcodeOut = 0;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h0B) begin
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[5], reg_field }]; // read and write operand
-                  comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
-		  comb_dest_reg = { rex_field[5], reg_field }; // write operand
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 0;
-                  comb_has_extended_opcode = 0;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[5], reg_field }]; // read and write operand
+                  operand2ValOut = registerFileIn[{ rex_field[7], rm_field }]; // read operand
+		  destRegOut = { rex_field[5], reg_field }; // write operand
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 0;
+                  hasExtendedOpcodeOut = 0;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h0D) begin
                decode_I(imm32, 1);
 
                /* Extra processing for EXECUTE */
-               comb_operand1_val = registerfile[4'b0000]; // read and write operand %RAX
-               comb_operand2_val = 0;
-	       comb_dest_reg = 4'b0000; // write operand
-               comb_imm64 = sign_extend_32_to_64(imm32);
-               comb_imm_len = 8;
-               comb_disp_len = 0;
-               comb_extended_opcode = 0;
-               comb_has_extended_opcode = 0;
-               comb_opcode_valid = 1;
+               operandVal1Out = registerFileIn[4'b0000]; // read and write operand %RAX
+               operand2ValOut = 0;
+	       destRegOut = 4'b0000; // write operand
+               imm64Out = sign_extend_32_to_64(imm32);
+               immLenOut = 8;
+               dispLenOut = 0;
+               extendedOpcodeOut = 0;
+               hasExtendedOpcodeOut = 0;
+               opcodeValidOut = 1;
             end else if (opcode == 8'h83 && reg_field == 3'b011) begin
                /****************** For SBB *************/
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count, 2'b10);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b10);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = 0;
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm64 = sign_extend_8_to_64(imm8);
-                  comb_imm_len = 8;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 3'b011;
-                  comb_has_extended_opcode = 1;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = 0;
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  imm64Out = sign_extend_8_to_64(imm8);
+                  immLenOut = 8;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 3'b011;
+                  hasExtendedOpcodeOut = 1;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b011) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, current_rip+instr_count, 2'b11);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count, 2'b11);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = 0;
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm64 = sign_extend_32_to_64(imm32);
-                  comb_imm_len = 8;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 3'b011;
-                  comb_has_extended_opcode = 1;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = 0;
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  imm64Out = sign_extend_32_to_64(imm32);
+                  immLenOut = 8;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 3'b011;
+                  hasExtendedOpcodeOut = 1;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h19) begin
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = registerfile[{ rex_field[5], reg_field }]; // read operand
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 0;
-                  comb_has_extended_opcode = 0;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = registerFileIn[{ rex_field[5], reg_field }]; // read operand
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 0;
+                  hasExtendedOpcodeOut = 0;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h1B) begin
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[5], reg_field }]; // read and write operand
-                  comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
-		  comb_dest_reg = { rex_field[5], reg_field }; // write operand
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 0;
-                  comb_has_extended_opcode = 0;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[5], reg_field }]; // read and write operand
+                  operand2ValOut = registerFileIn[{ rex_field[7], rm_field }]; // read operand
+		  destRegOut = { rex_field[5], reg_field }; // write operand
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 0;
+                  hasExtendedOpcodeOut = 0;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h1D) begin
                decode_I(imm32, 1);    
 
                /* Extra processing for EXECUTE */
-               comb_operand1_val = registerfile[4'b0000]; // read and write operand %RAX
-               comb_operand2_val = 0;
-	       comb_dest_reg = 4'b0000; // write operand
-               comb_imm64 = sign_extend_32_to_64(imm32);
-               comb_imm_len = 8;
-               comb_disp_len = 0;
-               comb_extended_opcode = 0;
-               comb_has_extended_opcode = 0;
-               comb_opcode_valid = 1;
+               operandVal1Out = registerFileIn[4'b0000]; // read and write operand %RAX
+               operand2ValOut = 0;
+	       destRegOut = 4'b0000; // write operand
+               imm64Out = sign_extend_32_to_64(imm32);
+               immLenOut = 8;
+               dispLenOut = 0;
+               extendedOpcodeOut = 0;
+               hasExtendedOpcodeOut = 0;
+               opcodeValidOut = 1;
             end else if (opcode == 8'h83 && reg_field == 3'b101) begin
                /****************** For SUB *************/
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count, 2'b10);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b10);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = 0;
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm64 = sign_extend_8_to_64(imm8);
-                  comb_imm_len = 8;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 3'b101;
-                  comb_has_extended_opcode = 1;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = 0;
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  imm64Out = sign_extend_8_to_64(imm8);
+                  immLenOut = 8;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 3'b101;
+                  hasExtendedOpcodeOut = 1;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b101) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, current_rip+instr_count, 2'b11);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count, 2'b11);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = 0;
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm64 = sign_extend_32_to_64(imm32);
-                  comb_imm_len = 8;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 3'b101;
-                  comb_has_extended_opcode = 1;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = 0;
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  imm64Out = sign_extend_32_to_64(imm32);
+                  immLenOut = 8;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 3'b101;
+                  hasExtendedOpcodeOut = 1;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h29) begin
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = registerfile[{ rex_field[5], reg_field }]; // read operand
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 0;
-                  comb_has_extended_opcode = 0;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = registerFileIn[{ rex_field[5], reg_field }]; // read operand
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 0;
+                  hasExtendedOpcodeOut = 0;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h2B) begin
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[5], reg_field }]; // read and write operand
-                  comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
-		  comb_dest_reg = { rex_field[5], reg_field }; // write operand
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 0;
-                  comb_has_extended_opcode = 0;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[5], reg_field }]; // read and write operand
+                  operand2ValOut = registerFileIn[{ rex_field[7], rm_field }]; // read operand
+		  destRegOut = { rex_field[5], reg_field }; // write operand
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 0;
+                  hasExtendedOpcodeOut = 0;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h2D) begin
                decode_I(imm32, 1);    
 
                /* Extra processing for EXECUTE */
-               comb_operand1_val = registerfile[4'b0000]; // read and write operand %RAX
-               comb_operand2_val = 0;
-	       comb_dest_reg = 4'b0000; // write operand
-               comb_imm64 = sign_extend_32_to_64(imm32);
-               comb_imm_len = 8;
-               comb_disp_len = 0;
-               comb_extended_opcode = 0;
-               comb_has_extended_opcode = 0;
-               comb_opcode_valid = 1;
+               operandVal1Out = registerFileIn[4'b0000]; // read and write operand %RAX
+               operand2ValOut = 0;
+	       destRegOut = 4'b0000; // write operand
+               imm64Out = sign_extend_32_to_64(imm32);
+               immLenOut = 8;
+               dispLenOut = 0;
+               extendedOpcodeOut = 0;
+               hasExtendedOpcodeOut = 0;
+               opcodeValidOut = 1;
             end else if (opcode == 8'h83 && reg_field == 3'b111) begin
                /****************** For CMP *************/
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
 
                /* TODO: Find out whether sign extension is required or not! */
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = 0;
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm64 = sign_extend_8_to_64(imm8);
-                  comb_imm_len = 8;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 3'b111;
-                  comb_has_extended_opcode = 1;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = 0;
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  imm64Out = sign_extend_8_to_64(imm8);
+                  immLenOut = 8;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 3'b111;
+                  hasExtendedOpcodeOut = 1;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b111) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, current_rip+instr_count, 2'b11);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count, 2'b11);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = 0;
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm64 = sign_extend_32_to_64(imm32);
-                  comb_imm_len = 8;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 3'b111;
-                  comb_has_extended_opcode = 1;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = 0;
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  imm64Out = sign_extend_32_to_64(imm32);
+                  immLenOut = 8;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 3'b111;
+                  hasExtendedOpcodeOut = 1;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h39) begin
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read and write operand
-                  comb_operand2_val = registerfile[{ rex_field[5], reg_field }]; // read operand
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 0;
-                  comb_has_extended_opcode = 0;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read and write operand
+                  operand2ValOut = registerFileIn[{ rex_field[5], reg_field }]; // read operand
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 0;
+                  hasExtendedOpcodeOut = 0;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h3B) begin
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[5], reg_field }]; // read and write operand
-                  comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
-		  comb_dest_reg = { rex_field[5], reg_field }; // write operand
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 0;
-                  comb_has_extended_opcode = 0;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[5], reg_field }]; // read and write operand
+                  operand2ValOut = registerFileIn[{ rex_field[7], rm_field }]; // read operand
+		  destRegOut = { rex_field[5], reg_field }; // write operand
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 0;
+                  hasExtendedOpcodeOut = 0;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h3D) begin
                decode_I(imm32, 1);
 
                /* Extra processing for EXECUTE */
-               comb_operand1_val = registerfile[4'b0000]; // read and write operand %RAX
-               comb_operand2_val = 0;
-	       comb_dest_reg = 4'b0000; // write operand
-               comb_imm64 = sign_extend_32_to_64(imm32);
-               comb_imm_len = 8;
-               comb_disp_len = 0;
-               comb_extended_opcode = 0;
-               comb_has_extended_opcode = 0;
-               comb_opcode_valid = 1;
+               operandVal1Out = registerFileIn[4'b0000]; // read and write operand %RAX
+               operand2ValOut = 0;
+	       destRegOut = 4'b0000; // write operand
+               imm64Out = sign_extend_32_to_64(imm32);
+               immLenOut = 8;
+               dispLenOut = 0;
+               extendedOpcodeOut = 0;
+               hasExtendedOpcodeOut = 0;
+               opcodeValidOut = 1;
             end else if (opcode == 8'h70 ||
                                  opcode == 8'h71 ||
                                  opcode == 8'h72 ||
@@ -1996,166 +1996,166 @@ module Decode (
                                  opcode == 8'h7E ||
                                  opcode == 8'h7F ||
                                  opcode == 8'hE3 ) begin
-               decode_D(imm8, imm32, 1, current_rip+instr_count);
+               decode_D(imm8, imm32, 1, currentRipIn+instr_count);
             end else if (opcode == 8'hD1 && reg_field == 3'b100) begin
                /****************** For SAL/SHL *************/
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count);
             end else if (opcode == 8'hD3 && reg_field == 3'b100) begin
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, current_rip+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count);
             end else if (opcode == 8'hC1 && reg_field == 3'b100) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
             end else if (opcode == 8'hD1 && reg_field == 3'b111) begin
                /****************** For SAR *************/
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count);
             end else if (opcode == 8'hD3 && reg_field == 3'b111) begin
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, current_rip+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count);
             end else if (opcode == 8'hC1 && reg_field == 3'b111) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
             end else if (opcode == 8'hD1 && reg_field == 3'b101) begin
                /****************** For SHR *************/
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count);
             end else if (opcode == 8'hD3 && reg_field == 3'b101) begin
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, current_rip+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count);
             end else if (opcode == 8'hC1 && reg_field == 3'b101) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
             end else if (opcode == 8'hD1 && reg_field == 3'b010) begin
                /****************** For RCL *************/
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count);
             end else if (opcode == 8'hD3 && reg_field == 3'b010) begin
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, current_rip+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count);
             end else if (opcode == 8'hC1 && reg_field == 3'b010) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
             end else if (opcode == 8'hD1 && reg_field == 3'b011) begin
                /****************** For RCR *************/
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count);
             end else if (opcode == 8'hD3 && reg_field == 3'b011) begin
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, current_rip+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count);
             end else if (opcode == 8'hC1 && reg_field == 3'b011) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
             end else if (opcode == 8'hD1 && reg_field == 3'b000) begin
                /****************** For ROL *************/
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count);
             end else if (opcode == 8'hD3 && reg_field == 3'b000) begin
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, current_rip+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count);
             end else if (opcode == 8'hC1 && reg_field == 3'b000) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
             end else if (opcode == 8'hD1 && reg_field == 3'b001) begin
                /****************** For ROR *************/
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count);
             end else if (opcode == 8'hD3 && reg_field == 3'b001) begin
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, current_rip+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count);
             end else if (opcode == 8'hC1 && reg_field == 3'b001) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
 
             end else if (opcode == 8'hF7 && reg_field == 3'b110) begin
                /****************** For DIV *************/
-               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+instr_count);
             end else if (opcode == 8'hF7 && reg_field == 3'b111) begin
                /****************** For IDIV *************/
-               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+instr_count);
             end else if (opcode == 8'hF7 && reg_field == 3'b101) begin
                /****************** For IMUL *************/
-               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read operand
-                  comb_operand2_val = registerfile[4'b0000]; // read RAX, write RDX:RAX
-		  comb_dest_reg = 4'b0000; // write operand RDX:RAX (TODO: special case)
-		  comb_dest_reg_special = 4'b0010; // write operand RDX:RAX (TODO: special case)
-		  comb_dest_reg_special_valid = 1;
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 3'b101;
-                  comb_has_extended_opcode = 1;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read operand
+                  operand2ValOut = registerFileIn[4'b0000]; // read RAX, write RDX:RAX
+		  destRegOut = 4'b0000; // write operand RDX:RAX (TODO: special case)
+		  destRegSpecialOut = 4'b0010; // write operand RDX:RAX (TODO: special case)
+		  destRegSpecialValidOut = 1;
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 3'b101;
+                  hasExtendedOpcodeOut = 1;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'hF7 && reg_field == 3'b100) begin
                /****************** For MUL *************/
-               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read operand
-                  comb_operand2_val = registerfile[4'b0000]; // read RAX, write RDX:RAX
-		  comb_dest_reg = 4'b0000; // write operand RDX:RAX (TODO: special case)
-		  comb_dest_reg_special = 4'b0010; // write operand RDX:RAX (TODO: special case)
-		  comb_dest_reg_special_valid = 1;
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 3'b100;
-                  comb_has_extended_opcode = 1;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read operand
+                  operand2ValOut = registerFileIn[4'b0000]; // read RAX, write RDX:RAX
+		  destRegOut = 4'b0000; // write operand RDX:RAX (TODO: special case)
+		  destRegSpecialOut = 4'b0010; // write operand RDX:RAX (TODO: special case)
+		  destRegSpecialValidOut = 1;
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 3'b100;
+                  hasExtendedOpcodeOut = 1;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'hF7 && reg_field == 3'b011) begin
                /****************** For NEG *************/
-               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read operand
-                  comb_operand2_val = registerfile[4'b0000]; // read RAX, write RDX:RAX
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 3'b011;
-                  comb_has_extended_opcode = 1;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read operand
+                  operand2ValOut = registerFileIn[4'b0000]; // read RAX, write RDX:RAX
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 3'b011;
+                  hasExtendedOpcodeOut = 1;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'hF7 && reg_field == 3'b010) begin
                /****************** For NOT *************/
-               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read operand
-                  comb_operand2_val = registerfile[4'b0000]; // read RAX, write RDX:RAX
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 3'b010;
-                  comb_has_extended_opcode = 1;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read operand
+                  operand2ValOut = registerFileIn[4'b0000]; // read RAX, write RDX:RAX
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 3'b010;
+                  hasExtendedOpcodeOut = 1;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'hF7 && reg_field == 3'b000) begin
                /****************** For TEST *************/
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, current_rip+instr_count, 2'b11);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count, 2'b11);
             end else if (opcode == 8'h69) begin
                /****************** For IMUL *************/
-               decode_RMI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, 1, current_rip+instr_count);
+               decode_RMI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = 0;
-                  comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
-		  comb_dest_reg = { rex_field[5], reg_field }; // write operand
-                  comb_imm64 = sign_extend_32_to_64(imm32);
-                  comb_imm_len = 8;
-                  comb_disp_len = 0;
-                  comb_has_extended_opcode = 0;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = 0;
+                  operand2ValOut = registerFileIn[{ rex_field[7], rm_field }]; // read operand
+		  destRegOut = { rex_field[5], reg_field }; // write operand
+                  imm64Out = sign_extend_32_to_64(imm32);
+                  immLenOut = 8;
+                  dispLenOut = 0;
+                  hasExtendedOpcodeOut = 0;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'h6B) begin
                /****************** For IMUL *************/
-               decode_RMI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, 0, current_rip+instr_count);
+               decode_RMI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = 0;
-                  comb_operand2_val = registerfile[{ rex_field[7], rm_field }]; // read operand
-		  comb_dest_reg = { rex_field[5], reg_field };  // write operand
-                  comb_imm64 = sign_extend_8_to_64(imm8);
-                  comb_imm_len = 8;
-                  comb_disp_len = 0;
-                  comb_has_extended_opcode = 0;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = 0;
+                  operand2ValOut = registerFileIn[{ rex_field[7], rm_field }]; // read operand
+		  destRegOut = { rex_field[5], reg_field };  // write operand
+                  imm64Out = sign_extend_8_to_64(imm8);
+                  immLenOut = 8;
+                  dispLenOut = 0;
+                  hasExtendedOpcodeOut = 0;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'hA9) begin
                /****************** For TEST *************/
                decode_I(imm32, 1);
             end else if (opcode == 8'h85) begin
                /****************** For TEST *************/
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
             end else if (opcode == 8'h58 ||
                 opcode == 8'h59 ||
                 opcode == 8'h5A ||
@@ -2169,7 +2169,7 @@ module Decode (
                decode_O(rex_field, oi_reg[5:7]);
             end else if (opcode == 8'h8F && reg_field == 3'b000) begin
                /****************** For POP *************/
-               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+instr_count);
             end else if (opcode == 8'h50 ||
                 opcode == 8'h51 ||
                 opcode == 8'h52 ||
@@ -2183,38 +2183,38 @@ module Decode (
                decode_O(rex_field, oi_reg[5:7]);
             end else if (opcode == 8'hFF && reg_field == 3'b110) begin
                /****************** For PUSH *************/
-               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+instr_count);
             end else if (opcode == 8'hFF && reg_field == 3'b000) begin
                /****************** For INC *************/
-               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read operand
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 3'b000;
-                  comb_has_extended_opcode = 1;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read operand
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 3'b000;
+                  hasExtendedOpcodeOut = 1;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'hFF && reg_field == 3'b001) begin
                /****************** For DEC *************/
-               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read operand
-		  comb_dest_reg = { rex_field[7], rm_field }; // write operand
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_extended_opcode = 3'b001;
-                  comb_has_extended_opcode = 1;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read operand
+		  destRegOut = { rex_field[7], rm_field }; // write operand
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  extendedOpcodeOut = 3'b001;
+                  hasExtendedOpcodeOut = 1;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'hFF && reg_field == 3'b100) begin
                /****************** For JMP *************/
-               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+instr_count);
             end else if (opcode == 8'h6A) begin
                /****************** For PUSH *************/
                //$write("$0x%x", imm8);
@@ -2222,11 +2222,11 @@ module Decode (
                /****************** For PUSH *************/
                //$write("$0x%x", flip_byte_order_32(imm32));
             end else if (opcode == 8'hEB) begin
-               decode_D(imm8, imm32, 1, current_rip+instr_count);
+               decode_D(imm8, imm32, 1, currentRipIn+instr_count);
             end else if (opcode == 8'hE9) begin
-               decode_D(imm8, imm32, 0, current_rip+instr_count);
+               decode_D(imm8, imm32, 0, currentRipIn+instr_count);
             end else if (opcode == 8'hE8) begin
-               decode_D(imm8, imm32, 0, current_rip+instr_count);       
+               decode_D(imm8, imm32, 0, currentRipIn+instr_count);       
             end else if (opcode == 8'h91 ||
                 opcode == 8'h92 ||
                 opcode == 8'h93 ||
@@ -2239,10 +2239,10 @@ module Decode (
                //$write("%s, %s ", decode_64_reg({rex_field[7], rm_field}),  decode_64_reg(4'b000));
             end else if (opcode == 8'h87) begin
                /****************** For XCHG *************/
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
             end else if (opcode == 8'h8D) begin
                /****************** For LEA *************/
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
             end else if (opcode == 8'hC2 || opcode == 8'hCA) begin
                /****************** For RET *************/
                //$write("$0x%x", flip_byte_order_16(imm16));
@@ -2257,10 +2257,10 @@ module Decode (
          end else if (((opcode_end_index - opcode_start_index) == 1) && (exit_after_print == 0)) begin
             if (opcode == 8'hBC) begin
                //$write("bsf     ,");
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
             end else if (opcode == 8'hBD) begin
                //$write("bsr     ,");
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
             end else if (opcode == 8'hC8 ||
                 opcode == 8'hC9 ||
                 opcode == 8'hCA ||
@@ -2274,44 +2274,44 @@ module Decode (
                decode_O(rex_field, oi_reg[5:7]);
             end else if (opcode == 8'hA3) begin
                //$write("bt      ,");
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
             end else if (opcode == 8'hBA && reg_field == 3'b100) begin
                //$write("bt      ,");
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
             end else if (opcode == 8'hBB) begin
                //$write("btc     ,");
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
             end else if (opcode == 8'hBA && reg_field == 3'b111) begin
                //$write("btc     ,");
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
             end else if (opcode == 8'hB3) begin
                //$write("btr     ,");
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
             end else if (opcode == 8'hBA && reg_field == 3'b110) begin
                //$write("btr     ,");
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
             end else if (opcode == 8'hAB) begin
                //$write("bts     ,");
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
             end else if (opcode == 8'hBA && reg_field == 3'b101) begin
                //$write("bts     ,");
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, current_rip+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
             end else if (opcode == 8'hB1) begin //TODO: Implement 0f b0 too?? 8 byte regs used.
                //$write("cmpxchg ,");
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
             end else if (opcode == 8'hAF) begin
                //$write("imul    ,");
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, current_rip+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  comb_operand1_val = registerfile[{ rex_field[7], rm_field }]; // read operand
-                  comb_operand2_val = registerfile[{ rex_field[5], reg_field }]; // write operand
-		  comb_dest_reg = { rex_field[5], reg_field }; // write operand
-                  comb_imm_len = 0;
-                  comb_disp_len = 0;
-                  comb_has_extended_opcode = 0;
-                  comb_opcode_valid = 1;
+                  operandVal1Out = registerFileIn[{ rex_field[7], rm_field }]; // read operand
+                  operand2ValOut = registerFileIn[{ rex_field[5], reg_field }]; // write operand
+		  destRegOut = { rex_field[5], reg_field }; // write operand
+                  immLenOut = 0;
+                  dispLenOut = 0;
+                  hasExtendedOpcodeOut = 0;
+                  opcodeValidOut = 1;
                end
             end else if (opcode == 8'hA1) begin
                //$write("pop fs");
@@ -2331,65 +2331,65 @@ module Decode (
                //$write("sysret");
             end else if (opcode == 8'h80) begin
                //$write("jo       ");
-               decode_D(imm8, imm32, 0, current_rip+instr_count);
+               decode_D(imm8, imm32, 0, currentRipIn+instr_count);
             end else if (opcode == 8'h81) begin
                //$write("jno      ");
-               decode_D(imm8, imm32, 0, current_rip+instr_count);
+               decode_D(imm8, imm32, 0, currentRipIn+instr_count);
             end else if (opcode == 8'h82) begin
                //$write("jb       ");
-               decode_D(imm8, imm32, 0, current_rip+instr_count);
+               decode_D(imm8, imm32, 0, currentRipIn+instr_count);
             end else if (opcode == 8'h83) begin
                //$write("jae      ");
-               decode_D(imm8, imm32, 0, current_rip+instr_count);       
+               decode_D(imm8, imm32, 0, currentRipIn+instr_count);       
             end else if (opcode == 8'h84) begin
                //$write("je       ");
-               decode_D(imm8, imm32, 0, current_rip+instr_count);
+               decode_D(imm8, imm32, 0, currentRipIn+instr_count);
             end else if (opcode == 8'h85) begin
                //$write("jne      ");
-               decode_D(imm8, imm32, 0, current_rip+instr_count);       
+               decode_D(imm8, imm32, 0, currentRipIn+instr_count);       
             end else if (opcode == 8'h86) begin
                //$write("jna      ");
-               decode_D(imm8, imm32, 0, current_rip+instr_count);      
+               decode_D(imm8, imm32, 0, currentRipIn+instr_count);      
             end else if (opcode == 8'h87) begin
                //$write("ja       ");
-               decode_D(imm8, imm32, 0, current_rip+instr_count);       
+               decode_D(imm8, imm32, 0, currentRipIn+instr_count);       
             end else if (opcode == 8'h88) begin
                //$write("js       ");
-               decode_D(imm8, imm32, 0, current_rip+instr_count);       
+               decode_D(imm8, imm32, 0, currentRipIn+instr_count);       
             end else if (opcode == 8'h89) begin
                //$write("jns      ");
-               decode_D(imm8, imm32, 0, current_rip+instr_count);       
+               decode_D(imm8, imm32, 0, currentRipIn+instr_count);       
             end else if (opcode == 8'h8A) begin
                //$write("jp       ");
-               decode_D(imm8, imm32, 0, current_rip+instr_count);       
+               decode_D(imm8, imm32, 0, currentRipIn+instr_count);       
             end else if (opcode == 8'h8B) begin
                //$write("jpo      ");
-               decode_D(imm8, imm32, 0, current_rip+instr_count);       
+               decode_D(imm8, imm32, 0, currentRipIn+instr_count);       
             end else if (opcode == 8'h8C) begin
                //$write("jnge     ");
-               decode_D(imm8, imm32, 0, current_rip+instr_count);       
+               decode_D(imm8, imm32, 0, currentRipIn+instr_count);       
             end else if (opcode == 8'h8D) begin
                //$write("jnl      ");
-               decode_D(imm8, imm32, 0, current_rip+instr_count);
+               decode_D(imm8, imm32, 0, currentRipIn+instr_count);
             end else if (opcode == 8'h8E) begin
                //$write("jle      ");
-               decode_D(imm8, imm32, 0, current_rip+instr_count); 
+               decode_D(imm8, imm32, 0, currentRipIn+instr_count); 
             end else if (opcode == 8'h8F) begin
                //$write("jnle     ");
-               decode_D(imm8, imm32, 0, current_rip+instr_count);       
+               decode_D(imm8, imm32, 0, currentRipIn+instr_count);       
             end else begin
                //$write("Couldn't decode this!!\n");
             end
          end
          $write("\n"); 
 
-         if((opcode_start_index == opcode_end_index) && (comb_opcode == 8'hC3 || comb_opcode == 8'hCB || comb_opcode == 8'hCF)) begin
-            comb_opcode_valid = 1;
+         if((opcode_start_index == opcode_end_index) && (opcodeOut == 8'hC3 || opcodeOut == 8'hCB || opcodeOut == 8'hCF)) begin
+            opcodeValidOut = 1;
          end
 
          //if (decode_bytes == 0 && fetch_state == fetch_idle) $finish;
       end else begin
-         bytes_decoded_this_cycle = 0;
+         bytesDecodedThisCycleOut = 0;
       end
    end   
 endmodule
