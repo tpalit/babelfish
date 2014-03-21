@@ -77,7 +77,7 @@ module Execute (
 
 				aluResultOut = operand2ValIn;
 
-				$write("\nMOV::: operand1: %d, operand2: %d, aluResultOut: %d\n", operand1ValIn, operand2ValIn, aluResultOut);
+				$write("\nMOV::: operand1: %h, operand2: %h, aluResultOut: %h\n", operand1ValIn, operand2ValIn, aluResultOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hB8 ||
 				opcodeIn == 8'hB9 ||
 				opcodeIn == 8'hBA ||
@@ -90,7 +90,7 @@ module Execute (
 
 				aluResultOut = imm64In;
 
-				$write("\nMOV()::: operand1: %d, operand2: %d, imm: %d, aluResultOut: %d\n", operand1ValIn, operand2ValIn, imm64In, aluResultOut);
+				$write("\nMOV()::: operand1: %h, operand2: %h, imm: %h, aluResultOut: %h\n", operand1ValIn, operand2ValIn, imm64In, aluResultOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h83 || opcodeIn == 8'h81)
 				&& (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b001)) begin
 				/* OR operand 1 with immediate and write into operand 1 */
@@ -98,18 +98,24 @@ module Execute (
 				temp_var = operand1ValIn | imm64In;
 
 				aluResultOut = temp_var;
+
+				$write("\nEXECUTE:::OR: opcode: %h, operandVal1In: %h, imm64In: %h, temp_var: %h, aluResult: %h\n", opcodeIn, operand1ValIn, imm64In, temp_var, aluResultOut);
 			end else if ((opcodeLengthIn == 1) && ((opcodeIn == 8'h09) || (opcodeIn == 8'h0B))) begin
 				/* OR operand 1 with operand 2 and write into operand 1 */
 
 				temp_var = operand1ValIn | operand2ValIn;
 
 				aluResultOut = temp_var;
+
+				$write("\nEXECUTE:::OR: opcode: %h, operandVal1In: %h, operandVal2In: %h, temp_var: %h, aluResult: %h\n", opcodeIn, operand1ValIn, operand2ValIn, temp_var, aluResultOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h0D)) begin
 				/* OR operand 1 (RAX) with immediate and write into operand 1 (RAX) */
 
 				temp_var = operand1ValIn | imm64In;
 
 				aluResultOut = temp_var;
+
+				$write("\nEXECUTE:::OR: opcode: %h, operandVal1In: %h, imm64In: %h, temp_var: %h, aluResult: %h\n", opcodeIn, operand1ValIn, imm64In, temp_var, aluResultOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h83 || opcodeIn == 8'h81)
 				&& (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b000)) begin
 				/* ADD operand 1 with immediate and write into operand 1 */

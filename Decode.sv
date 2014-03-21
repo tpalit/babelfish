@@ -1409,6 +1409,8 @@ module Decode (
                extendedOpcodeOut = 0;
                hasExtendedOpcodeOut = 0;
                opcodeValidOut = 1;
+
+	       $write("\nDECODE::MOV opcode: %h, sourceReg1: %d, sourceReg1Val: %d, sourceReg2: %d, sourceReg2Val: %d, destReg: %d\n", opcode, sourceRegCode1Out, sourceRegCode1ValidOut, sourceRegCode2Out, sourceRegCode2ValidOut, destRegOut);
             end else if (opcode == 8'h83 && reg_field == 3'b110) begin
                /****************** For XOR *************/
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b10);
@@ -1754,6 +1756,8 @@ module Decode (
                   extendedOpcodeOut = 3'b001;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+
+		  $write("\nDECODE:::OR OPCODE: %h, sourceReg1: %d, sourceReg1Val: %d, sourceReg2: %d, sourceReg2Val: %d Destreg: %d\n", opcode, sourceRegCode1Out, sourceRegCode1ValidOut, sourceRegCode2Out, sourceRegCode2ValidOut, destRegOut);
                end
             end else if (opcode == 8'h81 && reg_field == 3'b001) begin
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count, 2'b11);
@@ -1771,6 +1775,8 @@ module Decode (
                   extendedOpcodeOut = 3'b001;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+
+		  $write("\nDECODE:::OR OPCODE: %h, sourceReg1: %d, sourceReg1Val: %d, sourceReg2: %d, sourceReg2Val: %d  Destreg: %d\n", opcode, sourceRegCode1Out, sourceRegCode1ValidOut, sourceRegCode2Out, sourceRegCode2ValidOut, destRegOut);
                end
             end else if (opcode == 8'h09) begin
                decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
@@ -1787,6 +1793,8 @@ module Decode (
                   extendedOpcodeOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
+
+		  $write("\nDECODE:::OR OPCODE: %h, sourceReg1: %d, sourceReg1Val: %d, sourceReg2: %d, sourceReg2Val: %d Destreg: %d\n", opcode, sourceRegCode1Out, sourceRegCode1ValidOut, sourceRegCode2Out, sourceRegCode2ValidOut, destRegOut);
                end
             end else if (opcode == 8'h0B) begin
                decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
@@ -1803,6 +1811,8 @@ module Decode (
                   extendedOpcodeOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
+
+		  $write("\nDECODE:::OR OPCODE: %h, sourceReg1: %d, sourceReg1Val: %d, sourceReg2: %d, sourceReg2Val: %d Destreg: %d\n", opcode, sourceRegCode1Out, sourceRegCode1ValidOut, sourceRegCode2Out, sourceRegCode2ValidOut, destRegOut);
                end
             end else if (opcode == 8'h0D) begin
                decode_I(imm32, 1);
@@ -1819,6 +1829,8 @@ module Decode (
                extendedOpcodeOut = 0;
                hasExtendedOpcodeOut = 0;
                opcodeValidOut = 1;
+
+               $write("\nDECODE:::OR OPCODE: %h, sourceReg1: %d, sourceReg1Val: %d, sourceReg2: %d, sourceReg2Val: %d Destreg: %d\n", opcode, sourceRegCode1Out, sourceRegCode1ValidOut, sourceRegCode2Out, sourceRegCode2ValidOut, destRegOut);
             end else if (opcode == 8'h83 && reg_field == 3'b011) begin
                /****************** For SBB *************/
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b10);

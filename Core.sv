@@ -189,6 +189,25 @@ module Core (
       mtrr_is_mmio = ((physaddr > 640*1024 && physaddr < 1024*1024));
    endfunction
 
+   function void print_stall_bitmap();
+	$write("\nregInUseBitmap[0]: %d", regInUseBitMap[0]);
+	$write("\nregInUseBitmap[1]: %d", regInUseBitMap[1]);
+	$write("\nregInUseBitmap[2]: %d", regInUseBitMap[2]);
+	$write("\nregInUseBitmap[3]: %d", regInUseBitMap[3]);
+	$write("\nregInUseBitmap[4]: %d", regInUseBitMap[4]);
+	$write("\nregInUseBitmap[5]: %d", regInUseBitMap[5]);
+	$write("\nregInUseBitmap[6]: %d", regInUseBitMap[6]);
+	$write("\nregInUseBitmap[7]: %d", regInUseBitMap[7]);
+	$write("\nregInUseBitmap[8]: %d", regInUseBitMap[8]);
+	$write("\nregInUseBitmap[9]: %d", regInUseBitMap[9]);
+	$write("\nregInUseBitmap[10]: %d", regInUseBitMap[10]);
+	$write("\nregInUseBitmap[11]: %d", regInUseBitMap[11]);
+	$write("\nregInUseBitmap[12]: %d", regInUseBitMap[12]);
+	$write("\nregInUseBitmap[13]: %d", regInUseBitMap[13]);
+	$write("\nregInUseBitmap[14]: %d", regInUseBitMap[14]);
+	$write("\nregInUseBitmap[15]: %d", regInUseBitMap[15]);
+   endfunction
+
    logic send_fetch_req;
    always_comb begin
       if (fetch_state != fetch_idle) begin
@@ -248,18 +267,24 @@ module Core (
 
    function bit toStallOrNotToStall(logic[0:3] src1, bit src1Valid, logic[0:3] src2, bit src2Valid, logic[0:3] dest, logic[0:3] destSpecial, bit destSpecialValid);
       /* That's the question! */
+
       if (src1Valid == 1 && regInUseBitMap[src1] == 1) begin
 	 return 1;
       end
+
       if (src2Valid == 1 && regInUseBitMap[src2] == 1) begin
 	 return 1;
       end
+
       if (destSpecialValid == 1 && regInUseBitMap[destSpecial] == 1) begin
 	 return 1;
       end
+
       if (regInUseBitMap[dest] == 1) begin
 	 return 1;
       end
+
+      return 0;
    endfunction
 
    logic [3:0]                 bytes_decoded_this_cycle;
@@ -449,6 +474,8 @@ module Core (
 	   canExecute <= 0;
         end
 
+	$write("\nbytes decoded this cycle: %d\n", bytes_decoded_this_cycle);
+
 	/* Latch the output values from each stage. */
 	
 	idrdExtendedOpcode <= idExtendedOpcodeOut;           
@@ -513,14 +540,12 @@ module Core (
         /* verilator lint_on WIDTH */
 
 	/* Mark the registers in-use and calculate stall */
-	if (regInUseBitMap[idSourceRegCode1Out] == 0 &&
-	    regInUseBitMap[idSourceRegCode2Out] == 0 &&
-	    regInUseBitMap[idDestRegOut] == 0) begin
-	end
-	
 	if (!toStallOrNotToStall(idSourceRegCode1Out, idSourceRegCode1ValidOut, 
 				 idSourceRegCode2Out, idSourceRegCode2ValidOut, 
 				 idDestRegOut, idDestRegSpecialOut, idDestRegSpecialValidOut)) begin
+
+	   $write("\n******************************************************************* Not to stall!!\n");
+
 	   if (idSourceRegCode1ValidOut) begin
 	      regInUseBitMap[idSourceRegCode1Out] <= 1;
 	   end
@@ -530,13 +555,23 @@ module Core (
 	   if (idDestRegSpecialValidOut) begin
 	      regInUseBitMap[idDestRegSpecialOut] <= 1;
 	   end
+
 	   regInUseBitMap[idDestRegOut] <= 1;
+		$write("\nDest reg reg in use value: %d, reg: %d\n", regInUseBitMap[idDestRegOut], idDestRegOut);
+
 	   idStallIn <= 0;
+
+	   $write("\nSetting: src1: %d, src1valid: %d, src2: %d, src2valid: %d, dest: %d\n", idSourceRegCode1Out, idSourceRegCode1ValidOut, idSourceRegCode2Out, idSourceRegCode2ValidOut, idDestRegOut);
+	
+           print_stall_bitmap();
+
 	end else begin
 	   idStallIn <= 1;
+
+	   $write("\n******************************************************************* To stall!!\n");
+           print_stall_bitmap();
 	end
-	
-	
+
 	/* TODO - Temporary write back stage! */
 	regFile[exDestRegOut] <= exAluResultOut;
 	if (exDestRegSpecialValidOut) begin
@@ -556,6 +591,10 @@ module Core (
 	end
 
 	regInUseBitMap[exDestRegOut] <= 0;
+
+	$write("\nResetting: src1: %d, src1valid: %d, src2: %d, src2valid: %d, dest: %d\n", exSourceRegCode1Out, exSourceRegCode1ValidOut, exSourceRegCode2Out, exSourceRegCode2ValidOut, exDestRegOut);
+
+        print_stall_bitmap();
      end
 
    // cse502 : Use the following as a guide to print the Register File contents.
