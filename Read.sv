@@ -30,12 +30,11 @@ module Read (
 	     
 	     output [63:0] operandVal1Out,
 	     output [63:0] operandVal2Out,
-	     output 	   operandVal1Valid,
-	     output 	   operandVal2Valid,
+	     output 	   operandVal1ValidOut,
+	     output 	   operandVal2ValidOut,
 
 	     /* Just get connection from the input */
 	     output [0:31] currentRipOut,
-	     output 	   stallOut,
 	     output [0:2]  extendedOpcodeOut,
 	     output [0:31] hasExtendedOpcodeOut,
 	     output [0:31] opcodeLengthOut,
@@ -53,13 +52,11 @@ module Read (
 	     output [0:63] disp64Out,
 	     output [0:3]  destRegOut,
              output [0:3]  destRegisterSpecialOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
-             output 	   destRegisterSpecialValidOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
+             output 	   destRegisterSpecialValidOut // TODO: Treat IMUL as special case with dest as RDX:RAX
 	     );
 
    always_comb begin
-      if (!stallIn && canReadIn) begin
-	 int i = 0;
-
+      if (canReadIn && !stallIn) begin
 	 if (sourceReg1ValidIn) begin
 	    operandVal1Out = registerFileIn[sourceReg1In];
 	    operandVal1ValidOut = 1;
@@ -67,11 +64,10 @@ module Read (
 
 	 if (sourceReg2ValidIn) begin
 	    operandVal2Out = registerFileIn[sourceReg2In];
-	    operandVal2ValidOut = 2;
+	    operandVal2ValidOut = 1;
 	 end
 
 	 currentRipOut = currentRipIn;
-	 stallOut = stallIn; 
 
 	 extendedOpcodeOut = extendedOpcodeIn;
 	 hasExtendedOpcodeOut = hasExtendedOpcodeIn;

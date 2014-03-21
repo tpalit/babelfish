@@ -2,7 +2,6 @@
 
 module Execute (
 		input [0:31]  currentRipIn,
-		input 	      stallIn,
 		input 	      canExecuteIn,
 		input [0:2]   extendedOpcodeIn,
 		input [0:31]  hasExtendedOpcodeIn,
@@ -11,8 +10,8 @@ module Execute (
 		input [0:7]   opcodeIn,
 		input [0:63]  operand1ValIn,
 		input [0:63]  operand2ValIn,
-		input [0:63]  operand1ValValidIn,
-		input [0:63]  operand2ValValidIn,
+		input 	      operand1ValValidIn,
+		input 	      operand2ValValidIn,
 		input [0:31]  immLenIn,
 		input [0:31]  dispLenIn,
 		input [0:7]   imm8In,
@@ -28,10 +27,9 @@ module Execute (
 		input 	      destRegSpecialValidIn,
 
 		output [0:63] aluResultOut,
-		output [0:63] aluResultSpecialOut
+		output [0:63] aluResultSpecialOut,
 
 		output [0:31] currentRipOut,
-		output 	      stallOut,
 		output [0:2]  extendedOpcodeOut,
 		output [0:31] hasExtendedOpcodeOut,
 		output [0:31] opcodeLengthOut,
@@ -39,8 +37,8 @@ module Execute (
 		output [0:7]  opcodeOut,
 		output [0:63] operand1ValOut,
 		output [0:63] operand2ValOut,
-		output [0:63]  operand1ValValidOut,
-		output [0:63]  operand2ValValidOut,
+		output 	      operand1ValValidOut,
+		output 	      operand2ValValidOut,
 		output [0:31] immLenOut,
 		output [0:31] dispLenOut,
 		output [0:7]  imm8Out,
@@ -303,7 +301,6 @@ module Execute (
 			end
 		   
   		        currentRipOut = currentRipIn;
-			stallOut = stallIn;
 		        extendedOpcodeOut = extendedOpcodeIn;
 		        hasExtendedOpcodeOut = hasExtendedOpcodeIn;
 		        opcodeLengthOut = opcodeLengthIn;
@@ -324,8 +321,8 @@ module Execute (
 		        destRegOut = destRegIn;
 		        destRegSpecialOut = destRegSpecialIn;
 		        destRegSpecialValidOut = destRegSpecialValidIn;
-		   
 		end // if ((opcodeValidIn == 1) && (canExecuteIn == 1))
-	   
+	        operand1ValValidOut = operand1ValValidIn;
+	        operand2ValValidOut = operand2ValValidIn;
 	end
 endmodule

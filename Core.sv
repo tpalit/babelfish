@@ -30,16 +30,13 @@ module Core (
    logic [31:0] 	idrdCurrentRip;
    logic [31:0] 	rdexCurrentRip;
 
-   logic		idrdStall;
-   logic		rdexStall;
-
    logic [0:2] 		idrdExtendedOpcode = 0;
    logic [0:31] 	idrdHasExtendedOpcode = 0;
    logic [0:31] 	idrdOpcodeLength = 0;
    logic [0:0] 		idrdOpcodeValid = 0; 
    logic [0:7] 		idrdOpcode = 0;
-   logic [0:63] 	idrdSourceRegCode1 = 0;
-   logic [0:63] 	idrdSourceRegCode2 = 0;
+   logic [0:3] 		idrdSourceRegCode1 = 0;
+   logic [0:3] 		idrdSourceRegCode2 = 0;
    bit 			idrdSourceRegCode1Valid = 0;
    bit 			idrdSourceRegCode2Valid = 0;
    logic [0:31] 	idrdImmLen = 0;
@@ -63,8 +60,8 @@ module Core (
    logic [0:7] 		rdexOpcode = 0;
    logic [0:63] 	rdexOperandVal1 = 0;
    logic [0:63] 	rdexOperandVal2 = 0;
-   bit 			rdexOperand1Valid = 0;
-   bit 			rdexOperand2Valid = 0;   
+   bit 			rdexOperandVal1Valid = 0;
+   bit 			rdexOperandVal2Valid = 0;   
    logic [0:31] 	rdexImmLen = 0;
    logic [0:31] 	rdexDispLen = 0;
    logic [0:7] 		rdexImm8 = 0;
@@ -84,20 +81,20 @@ module Core (
    /* TODO: Change this to 64 bits */
    logic [31:0]         idCurrentRipOut; 
    logic [31:0]         rdCurrentRipOut;
+   /* verilator lint_off UNUSED */
    logic [31:0]         exCurrentRipOut;
-
-   logic		rdStallOut;
-   logic		exStallOut;
+   /* verilator lint_on UNUSED */
 
    logic [0:2] 		idExtendedOpcodeOut = 0;
+   logic 		idStallIn;
    logic [0:31] 	idHasExtendedOpcodeOut = 0;
    logic [0:31] 	idOpcodeLengthOut = 0;
    logic [0:0] 		idOpcodeValidOut = 0; 
    logic [0:7] 		idOpcodeOut = 0;
-   logic [0:63] 	idSourceRegCode1Out = 0;
-   logic [0:63] 	idSourceRegCode2Out = 0;
-   bit 			idSourceRegCode1Valid = 0;
-   bit 			idSourceRegCode2Valid = 0;   
+   logic [0:3] 		idSourceRegCode1Out = 0;
+   logic [0:3] 		idSourceRegCode2Out = 0;
+   bit 			idSourceRegCode1ValidOut = 0;
+   bit 			idSourceRegCode2ValidOut = 0;   
    logic [0:31] 	idImmLenOut = 0;
    logic [0:31] 	idDispLenOut = 0;
    logic [0:7] 		idImm8Out = 0;
@@ -134,7 +131,8 @@ module Core (
    logic [0:3]		rdDestRegOut = 0;
    logic [0:3]		rdDestRegSpecialOut = 0;
    bit	 		rdDestRegSpecialValidOut = 0;
-   
+
+   /* verilator lint_off UNUSED */
    logic [0:2] 		exExtendedOpcodeOut = 0;
    logic [0:31] 	exHasExtendedOpcodeOut = 0;
    logic [0:31] 	exOpcodeLengthOut = 0;
@@ -159,6 +157,7 @@ module Core (
    bit	 		exDestRegSpecialValidOut = 0;
    logic [0:63]		exAluResultOut = 0;
    logic [0:63]		exAluResultSpecialOut = 0;
+   /* verilator lint_on UNUSED */
 
    
    initial begin
@@ -235,44 +234,22 @@ module Core (
 
    logic [3:0]                 bytes_decoded_this_cycle;
 
-   /* verilator lint_off UNUSED */
-   logic [0:2] latch_extended_opcode = 0;
-   int latch_has_extended_opcode = 0;
-   int latch_opcode_length = 0;
-   bit latch_opcode_valid = 0;
-   logic [0:7] latch_opcode = 0;
-   logic [0:63] latch_operand1_val = 0;
-   logic [0:63] latch_operand2_val = 0;
-   int latch_imm_len = 0;
-   int latch_disp_len = 0;
-   logic [0:7] latch_imm8 = 0;
-   logic [0:15] latch_imm16 = 0;
-   logic [0:31] latch_imm32 = 0;
-   logic [0:63] latch_imm64 = 0;
-   logic [0:7] latch_disp8 = 0;
-   logic [0:15] latch_disp16 = 0;
-   logic [0:31] latch_disp32 = 0;
-   logic [0:63] latch_disp64 = 0;
-   logic [0:3] latch_dest_reg = 0;
-   logic [0:3] latch_dest_reg_special = 0;
-   logic [0:63] latch_alu_result = 0;
-   logic [0:63] latch_alu_result_special = 0;
-   bit latch_dest_reg_special_valid = 0;
-   /* verilator lint_on UNUSED */
-
    /* Initialize the Decode module */
    Decode decode(	       
 		decode_bytes,
+		idStallIn,	       
 		ifidCurrentRip,
 		can_decode,
-
+		idCurrentRipOut,
 		idExtendedOpcodeOut,
 		idHasExtendedOpcodeOut,
 		idOpcodeLengthOut,
 		idOpcodeValidOut, 
 		idOpcodeOut,
-		idOperandVal1Out,
-		idOperandVal2Out,
+		idSourceRegCode1Out,
+		idSourceRegCode2Out,
+		idSourceRegCode1ValidOut,
+		idSourceRegCode2ValidOut,
 		idImmLenOut,
 		idDispLenOut,
 		idImm8Out,
@@ -290,7 +267,7 @@ module Core (
 
    Read read(
 		canRead,
-		idrdStall,
+		idStallIn, /* Use the idStallIn to drive Decode and Read stage. */
 		idrdSourceRegCode1,
 		idrdSourceRegCode2,
 		idrdSourceRegCode1Valid,
@@ -313,7 +290,7 @@ module Core (
 		idrdDisp32,
 		idrdDisp64,
 		idrdDestReg,                
-		idrdDestRegSpecial,                                                      |
+		idrdDestRegSpecial,
 		idrdDestRegSpecialValid,
 
 		rdOperandVal1Out,
@@ -321,7 +298,6 @@ module Core (
 		rdOperandVal1ValidOut,
 		rdOperandVal2ValidOut,
 		rdCurrentRipOut,
-		rdStallOut,
 		rdExtendedOpcodeOut,
 		rdHasExtendedOpcodeOut,
 		rdOpcodeLengthOut,
@@ -339,14 +315,13 @@ module Core (
 		rdDisp64Out,
 		rdDestRegOut,
 		rdDestRegSpecialOut,
-		rdDestRegSpecialValidOut,
+		rdDestRegSpecialValidOut
 		);
    
    /* Initialize the Execute module */
    /* TODO: Add output ports: target (pc+1+offset: jmps/jcc), ALU result, valB (val of regB), dest reg, eq? */
    Execute execute(	       
 		rdexCurrentRip,
-		rdexStall,
 		canExecute,
 		rdexExtendedOpcode,
 		rdexHasExtendedOpcode,
@@ -355,8 +330,8 @@ module Core (
 		rdexOpcode,
 		rdexOperandVal1,
 		rdexOperandVal2,
-		rdexOperand1Valid,
-		rdexOperand2Valid,   
+		rdexOperandVal1Valid,
+		rdexOperandVal2Valid,   
 		rdexImmLen,
 		rdexDispLen,
 		rdexImm8,
@@ -374,7 +349,6 @@ module Core (
 		exAluResultOut,
 		exAluResultSpecialOut,
 		exCurrentRipOut,
-		exStallOut,
 		exExtendedOpcodeOut,
 		exHasExtendedOpcodeOut,
 		exOpcodeLengthOut,
@@ -396,87 +370,16 @@ module Core (
 		exDisp64Out,
 		exDestRegOut,
 		exDestRegSpecialOut,
-		exDestRegSpecialValidOut,
+		exDestRegSpecialValidOut
 		);
    
-   // IDEX: Save state for opcode, immediates, operands 
-   always @ (posedge bus.clk)
-     if (bus.reset) begin
-        latch_opcode_valid <= 0;
-        latch_extended_opcode <= 0;
-        latch_has_extended_opcode <= 0;
-        latch_opcode_length <= 0;
-        latch_opcode <= 0;
-        latch_operand1_val <= 0;
-        latch_operand2_val <= 0;
-        latch_imm_len <= 0;
-        latch_disp_len <= 0;
-        latch_imm8 <= 0;
-        latch_imm16 <= 0;
-        latch_imm32 <= 0;
-        latch_imm64 <= 0;
-        latch_disp8 <= 0;
-        latch_disp16 <= 0;
-        latch_disp32 <= 0;
-        latch_disp64 <= 0;
-	latch_dest_reg <= 0;
-	latch_dest_reg_special <= 0;
-	latch_alu_result <= 0;
-	latch_alu_result_special <= 0;
-	latch_dest_reg_special_valid <= 0;
-     end else begin // !bus.reset
-        latch_opcode_valid <= comb_opcode_valid;
-        latch_extended_opcode <= comb_extended_opcode;
-        latch_has_extended_opcode <= comb_has_extended_opcode;
-        latch_opcode_length <= comb_opcode_length;
-        latch_opcode <= comb_opcode;
-        latch_operand1_val <= comb_operand1_val;
-        latch_operand2_val <= comb_operand2_val;
-        latch_imm_len <= comb_imm_len;
-        latch_disp_len <= comb_disp_len;
-        latch_imm8 <= comb_imm8;
-        latch_imm16 <= comb_imm16;
-        latch_imm32 <= comb_imm32;
-        latch_imm64 <= comb_imm64;
-        latch_disp8 <= comb_disp8;
-        latch_disp16 <= comb_disp16;
-        latch_disp32 <= comb_disp32;
-        latch_disp64 <= comb_disp64;
-	latch_dest_reg <= comb_dest_reg;
-	latch_dest_reg_special <= comb_dest_reg_special;
-	latch_alu_result <= comb_alu_result;
-	latch_alu_result_special <= comb_alu_result_special;
-	latch_dest_reg_special_valid <= comb_dest_reg_special_valid;
-     end
-
    always @ (posedge bus.clk)
      if (bus.reset) begin
 
         decode_offset <= 0;
         decode_buffer <= 0;
 
-     end else begin // !bus.reset
-
-        decode_offset <= decode_offset + { 3'b0, bytes_decoded_this_cycle };
-        if (bytes_decoded_this_cycle > 0) begin
-           canExecute <= 1;
-        end else begin
-           canExecute <= 0;
-        end
-
-        /* verilator lint_off WIDTH */
-        if (current_rip == 0) begin
-           current_rip <= fetch_rip;
-        end else begin
-           current_rip <= current_rip + bytes_decoded_this_cycle;
-        end
-        /* verilator lint_on WIDTH */
-     end
-
-   always @ (posedge bus.clk)
-     if (bus.reset) begin
-
-        regFile[0] <= 0;
+	regFile[0] <= 0;
         regFile[1] <= 0;
         regFile[2] <= 0;
         regFile[3] <= 0;
@@ -493,46 +396,101 @@ module Core (
         regFile[14] <= 0;
         regFile[15] <= 0;
 
-        latch_rflags <= 0;
-
-	latch_dest_reg <= 0;
-	latch_dest_reg_special <= 0;
-	latch_alu_result <= 0;
-	latch_alu_result_special <= 0;
-	latch_dest_reg_special_valid <= 0;
      end else begin // !bus.reset
 
-/*
-        regFile[dest_reg] <= alu_result;
-*/
-        latch_rflags <= rflags;
+        decode_offset <= decode_offset + { 3'b0, bytes_decoded_this_cycle };
+        if (bytes_decoded_this_cycle > 0) begin
+           canRead <= 1;
+	   canExecute <= 1; /* TODO - Fix this. canExecute should be true only if first read stage done! */
+        end else begin
+           canRead <= 0;
+	   canExecute <= 0;
+        end
 
-	latch_dest_reg <= comb_dest_reg;
-	latch_dest_reg_special <= comb_dest_reg_special;
-	latch_alu_result <= comb_alu_result;
-	latch_alu_result_special <= comb_alu_result_special;
-	latch_dest_reg_special_valid <= comb_dest_reg_special_valid;
+	/* Latch the output values from each stage. */
+	
+	idrdExtendedOpcode <= idExtendedOpcodeOut;           
+	idrdHasExtendedOpcode <= idHasExtendedOpcodeOut;   
+	idrdOpcodeLength <= idOpcodeLengthOut;        
+	idrdOpcodeValid <= idOpcodeValidOut;
+	idrdOpcode <= idOpcodeOut;
+	idrdSourceRegCode1 <= idSourceRegCode1Out;
+	idrdSourceRegCode2 <= idSourceRegCode2Out;
+	idrdSourceRegCode1Valid <= idSourceRegCode1ValidOut;
+	idrdSourceRegCode2Valid <= idSourceRegCode2ValidOut;
+	idrdImmLen <= idImmLenOut;
+	idrdDispLen <= idDispLenOut;
+	idrdImm8 <=  idImm8Out ;
+	idrdImm16 <= idImm16Out;
+	idrdImm32 <= idImm32Out;
+	idrdImm64 <= idImm64Out;
+	idrdDisp8 <= idDisp8Out;
+	idrdDisp16 <= idDisp16Out;
+	idrdDisp32 <= idDisp32Out;
+	idrdDisp64 <= idDisp64Out;
+	idrdDestReg <= idDestRegOut;
+	idrdDestRegSpecial <= idDestRegSpecialOut;
+	idrdDestRegSpecialValid <=  idDestRegSpecialValidOut;
 
-	$write("\n********************************* FINAL LATCH OF RESULTS\n");
+	rdexExtendedOpcode <= rdExtendedOpcodeOut;           
+	rdexHasExtendedOpcode <= rdHasExtendedOpcodeOut;   
+	rdexOpcodeLength <= rdOpcodeLengthOut;        
+	rdexOpcodeValid <= rdOpcodeValidOut;
+	rdexOpcode <= rdOpcodeOut;
+	rdexOperandVal1 <= rdOperandVal1Out;
+	rdexOperandVal2 <= rdOperandVal2Out;
+	rdexOperandVal1Valid <= rdOperandVal1ValidOut;
+	rdexOperandVal2Valid <= rdOperandVal2ValidOut;
+	rdexImmLen <= rdImmLenOut;
+	rdexDispLen <= rdDispLenOut;
+	rdexImm8 <=  rdImm8Out ;
+	rdexImm16 <= rdImm16Out;
+	rdexImm32 <= rdImm32Out;
+	rdexImm64 <= rdImm64Out;
+	rdexDisp8 <= rdDisp8Out;
+	rdexDisp16 <= rdDisp16Out;
+	rdexDisp32 <= rdDisp32Out;
+	rdexDisp64 <= rdDisp64Out;
+	rdexDestReg <= rdDestRegOut;
+	rdexDestRegSpecial <= rdDestRegSpecialOut;
+	rdexDestRegSpecialValid <=  rdDestRegSpecialValidOut;
+
+	idrdCurrentRip <= idCurrentRipOut;
+	rdexCurrentRip <= rdCurrentRipOut;
+
+	idStallIn <= 0;
+        /* verilator lint_off WIDTH */
+        if (ifidCurrentRip == 0) begin
+           ifidCurrentRip <= fetch_rip;
+        end else begin
+           ifidCurrentRip <= ifidCurrentRip + bytes_decoded_this_cycle;
+        end
+        /* verilator lint_on WIDTH */
+
+	/* TODO - Temporary write back stage! */
+	regFile[exDestRegOut] <= exAluResultOut;
+	if (exDestRegSpecialValidOut) begin
+	   regFile[exDestRegSpecialOut] <= exAluResultSpecialOut;
+	end
      end
 
-        // cse502 : Use the following as a guide to print the Register File contents.
-        final begin
-                $display("RAX = %x", regFile[0]);
-                $display("RBX = %x", regFile[3]);
-                $display("RCX = %x", regFile[1]);
-                $display("RDX = %x", regFile[2]);
-                $display("RSI = %x", regFile[6]);
-                $display("RDI = %x", regFile[7]);
-                $display("RBP = %x", regFile[5]);
-                $display("RSP = %x", regFile[4]);
-                $display("R8  = %x", regFile[8]);
-                $display("R9  = %x", regFile[9]);
-                $display("R10 = %x", regFile[10]);
-                $display("R11 = %x", regFile[11]);
-                $display("R12 = %x", regFile[12]);
-                $display("R13 = %x", regFile[13]);
-                $display("R14 = %x", regFile[14]);
-                $display("R15 = %x", regFile[15]);
-        end
+   // cse502 : Use the following as a guide to print the Register File contents.
+   final begin
+      $display("RAX = %x", regFile[0]);
+      $display("RBX = %x", regFile[3]);
+      $display("RCX = %x", regFile[1]);
+      $display("RDX = %x", regFile[2]);
+      $display("RSI = %x", regFile[6]);
+      $display("RDI = %x", regFile[7]);
+      $display("RBP = %x", regFile[5]);
+      $display("RSP = %x", regFile[4]);
+      $display("R8  = %x", regFile[8]);
+      $display("R9  = %x", regFile[9]);
+      $display("R10 = %x", regFile[10]);
+      $display("R11 = %x", regFile[11]);
+      $display("R12 = %x", regFile[12]);
+      $display("R13 = %x", regFile[13]);
+      $display("R14 = %x", regFile[14]);
+      $display("R15 = %x", regFile[15]);
+   end
 endmodule

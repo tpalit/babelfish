@@ -2,17 +2,19 @@
 
 module Decode (
 	       input [0:15*8-1] decode_bytes,
+	       input 		stallIn,
 	       input [0:31] 	currentRipIn,
 	       input 		canDecodeIn,
+	       output [0:31] 	currentRipOut,
 	       output [0:2] 	extendedOpcodeOut,
 	       output [0:31] 	hasExtendedOpcodeOut,
 	       output [0:31] 	opcodeLengthOut,
 	       output [0:0] 	opcodeValidOut, 
 	       output [0:7] 	opcodeOut,
-	       output [0:63] 	sourceRegCode1Out,
-	       output [0:63] 	sourceRegCode2Out,
-	       output		sourceRegCode1ValidOut,
-	       output		sourceRegCode2ValidOut,
+	       output [0:3] 	sourceRegCode1Out,
+	       output [0:3] 	sourceRegCode2Out,
+	       output 		sourceRegCode1ValidOut,
+	       output 		sourceRegCode2ValidOut,
 	       output [0:31] 	immLenOut,
 	       output [0:31] 	dispLenOut,
 	       output [0:7] 	imm8Out,
@@ -23,9 +25,9 @@ module Decode (
 	       output [0:15] 	disp16Out,
 	       output [0:31] 	disp32Out,
 	       output [0:63] 	disp64Out,
-               output [0:3]	destRegOut,	// TODO: Treat IMUL as special case with dest as RDX:RAX
-               output [0:3]	destRegSpecialOut,	// TODO: Treat IMUL as special case with dest as RDX:RAX
-               output 		destRegSpecialValidOut,	// TODO: Treat IMUL as special case with dest as RDX:RAX
+               output [0:3] 	destRegOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
+               output [0:3] 	destRegSpecialOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
+               output 		destRegSpecialValidOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
 	       output [0:3] 	bytesDecodedThisCycleOut 	
 	       );
    
@@ -1057,7 +1059,7 @@ module Decode (
    endfunction
 
    always_comb begin
-      if (canDecodeIn) begin : decode_block
+      if (canDecodeIn && !stallIn) begin : decode_block
          int instr_count = 0;
          int opcode_start_index = 0; // the index of the first byte of the opcode
          int opcode_end_index = 0; // the index of the last byte of the opcode.
@@ -1642,7 +1644,7 @@ module Decode (
                decode_I(imm32, 1);
 
                /* Extra processing for EXECUTE */
-               sourceRegCode1Out = 4'b0000]; // read and write operand %RAX
+               sourceRegCode1Out = 4'b0000; // read and write operand %RAX
                sourceRegCode2Out = 0;
 	       sourceRegCode1ValidOut = 1;
 	       sourceRegCode2ValidOut = 0;	       
@@ -2495,6 +2497,7 @@ module Decode (
          //if (decode_bytes == 0 && fetch_state == fetch_idle) $finish;
       end else begin
          bytesDecodedThisCycleOut = 0;
-      end
+      end // else: !if(canDecodeIn)
+      currentRipOut = currentRipIn;
    end   
 endmodule
