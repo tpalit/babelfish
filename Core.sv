@@ -62,6 +62,10 @@ module Core (
    logic [0:63] 	rdexOperandVal2 = 0;
    bit 			rdexOperandVal1Valid = 0;
    bit 			rdexOperandVal2Valid = 0;   
+   logic [0:3] 		rdexSourceRegCode1 = 0;
+   logic [0:3] 		rdexSourceRegCode2 = 0;
+   bit 			rdexSourceRegCode1Valid = 0;
+   bit 			rdexSourceRegCode2Valid = 0;
    logic [0:31] 	rdexImmLen = 0;
    logic [0:31] 	rdexDispLen = 0;
    logic [0:7] 		rdexImm8 = 0;
@@ -118,6 +122,10 @@ module Core (
    logic [0:63] 	rdOperandVal2Out = 0;
    bit 			rdOperandVal1ValidOut = 0;
    bit 			rdOperandVal2ValidOut = 0;   
+   logic [0:3] 		rdSourceRegCode1Out = 0;
+   logic [0:3] 		rdSourceRegCode2Out = 0;
+   bit 			rdSourceRegCode1ValidOut = 0;
+   bit 			rdSourceRegCode2ValidOut = 0;   
    logic [0:31] 	rdImmLenOut = 0;
    logic [0:31] 	rdDispLenOut = 0;
    logic [0:7] 		rdImm8Out = 0;
@@ -142,6 +150,10 @@ module Core (
    logic [0:63] 	exOperandVal2Out = 0;
    bit 			exOperandVal1ValidOut = 0;
    bit 			exOperandVal2ValidOut = 0;   
+   logic [0:3] 		exSourceRegCode1Out = 0;
+   logic [0:3] 		exSourceRegCode2Out = 0;
+   bit 			exSourceRegCode1ValidOut = 0;
+   bit 			exSourceRegCode2ValidOut = 0;   
    logic [0:31] 	exImmLenOut = 0;
    logic [0:31] 	exDispLenOut = 0;
    logic [0:7] 		exImm8Out = 0;
@@ -234,6 +246,21 @@ module Core (
       opcode_inside = (value >= low && value <= high);
    endfunction
 
+   function bit toStallOrNotToStall(logic[0:3] src1, bit src1Valid, logic[0:3] src2, bit src2Valid, logic[0:3] dest, logic[0:3] destSpecial, bit destSpecialValid);
+      /* That's the question! */
+      if (src1Valid == 1 && regInUseBitMap[src1] == 1) begin
+	 return 1;
+      end
+      if (src2Valid == 1 && regInUseBitMap[src2] == 1) begin
+	 return 1;
+      end
+      if (destSpecialValid == 1 && regInUseBitMap[destSpecial] == 1) begin
+	 return 1;
+      end
+      if (regInUseBitMap[dest] == 1) begin
+	 return 1;
+      end
+   endfunction
 
    logic [3:0]                 bytes_decoded_this_cycle;
 
@@ -300,6 +327,10 @@ module Core (
 		rdOperandVal2Out,
 		rdOperandVal1ValidOut,
 		rdOperandVal2ValidOut,
+		rdSourceRegCode1Out,
+		rdSourceRegCode2Out,
+		rdSourceRegCode1ValidOut,
+		rdSourceRegCode2ValidOut,
 		rdCurrentRipOut,
 		rdExtendedOpcodeOut,
 		rdHasExtendedOpcodeOut,
@@ -331,6 +362,10 @@ module Core (
 		rdexOpcodeLength,
 		rdexOpcodeValid, 
 		rdexOpcode,
+		rdexSourceRegCode1,
+		rdexSourceRegCode2,
+		rdexSourceRegCode1Valid,
+		rdexSourceRegCode2Valid,
 		rdexOperandVal1,
 		rdexOperandVal2,
 		rdexOperandVal1Valid,
@@ -360,7 +395,11 @@ module Core (
 		exOperandVal1Out,
 		exOperandVal2Out,
 		exOperandVal1ValidOut,
-		exOperandVal2ValidOut,   
+		exOperandVal2ValidOut,
+		exSourceRegCode1Out,
+		exSourceRegCode2Out,
+		exSourceRegCode1ValidOut,
+		exSourceRegCode2ValidOut,
 		exImmLenOut,
 		exDispLenOut,
 		exImm8Out,
@@ -457,11 +496,14 @@ module Core (
 	rdexDestReg <= rdDestRegOut;
 	rdexDestRegSpecial <= rdDestRegSpecialOut;
 	rdexDestRegSpecialValid <=  rdDestRegSpecialValidOut;
+	rdexSourceRegCode1 <= rdSourceRegCode1Out;
+	rdexSourceRegCode2 <= rdSourceRegCode2Out;
+	rdexSourceRegCode1Valid <= rdSourceRegCode1ValidOut;
+	rdexSourceRegCode2Valid <= rdSourceRegCode2ValidOut;
 
 	idrdCurrentRip <= idCurrentRipOut;
 	rdexCurrentRip <= rdCurrentRipOut;
 
-	idStallIn <= 0;
         /* verilator lint_off WIDTH */
         if (ifidCurrentRip == 0) begin
            ifidCurrentRip <= fetch_rip;
@@ -490,9 +532,9 @@ module Core (
 	   end
 	   regInUseBitMap[idDestRegOut] <= 1;
 	   idStallIn <= 0;
-	end else begin // if (!toStallOrNotToStall(idSourceRegCode1Out, idSourceRegCode1ValidOut,...
+	end else begin
 	   idStallIn <= 1;
-	end // else: !if(!toStallOrNotToStall(idSourceRegCode1Out, idSourceRegCode1ValidOut,...
+	end
 	
 	
 	/* TODO - Temporary write back stage! */
@@ -500,23 +542,21 @@ module Core (
 	if (exDestRegSpecialValidOut) begin
 	   regFile[exDestRegSpecialOut] <= exAluResultSpecialOut;
 	end
-     end
 
-   function bit toStallOrNotToStall(logic[0:3] src1, bit src1Valid, logic[0:3] src2, bit src2Valid, logic[0:3] dest, logic[0:3] destSpecial, bit destSpecialValid);
-      /* That's the question! */
-      if (src1Valid == 1 && regInUseBitMap[src1] == 1) begin
-	 return 1;
-      end
-      if (src2Valid == 1 && regInUseBitMap[src2] == 1) begin
-	 return 1;
-      end
-      if (destSpecialValid == 1 && regInUseBitMap[destSpecial] == 1) begin
-	 return 1;
-      end
-      if (regInUseBitMap[dest] == 1) begin
-	 return 1;
-      end
-   endfunction
+	if(exSourceRegCode1ValidOut == 1) begin
+		regInUseBitMap[exSourceRegCode1Out] <= 0;
+	end
+
+	if(exSourceRegCode2ValidOut == 1) begin
+		regInUseBitMap[exSourceRegCode2Out] <= 0;
+	end
+
+	if(exDestRegSpecialValidOut == 1) begin
+		regInUseBitMap[exDestRegSpecialOut] <= 0;
+	end
+
+	regInUseBitMap[exDestRegOut] <= 0;
+     end
 
    // cse502 : Use the following as a guide to print the Register File contents.
    final begin
