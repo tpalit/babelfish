@@ -159,13 +159,16 @@ module Core (
    logic [0:63]		exAluResultSpecialOut = 0;
    /* verilator lint_on UNUSED */
 
+   bit 			regInUseBitMap[16];
    
    initial begin
       ifidCurrentRip = 0;
       idrdCurrentRip = 0;
       rdexCurrentRip = 0;
+      idStallIn = 0;
       for(int k=0; k<16; k=k+1) begin
          regFile[k] = 0;
+	 regInUseBitMap[k] = 0;
       end
       rflags = 64'h00200200;
    end
@@ -467,12 +470,53 @@ module Core (
         end
         /* verilator lint_on WIDTH */
 
+	/* Mark the registers in-use and calculate stall */
+	if (regInUseBitMap[idSourceRegCode1Out] == 0 &&
+	    regInUseBitMap[idSourceRegCode2Out] == 0 &&
+	    regInUseBitMap[idDestRegOut] == 0) begin
+	end
+	
+	if (!toStallOrNotToStall(idSourceRegCode1Out, idSourceRegCode1ValidOut, 
+				 idSourceRegCode2Out, idSourceRegCode2ValidOut, 
+				 idDestRegOut, idDestRegSpecialOut, idDestRegSpecialValidOut)) begin
+	   if (idSourceRegCode1ValidOut) begin
+	      regInUseBitMap[idSourceRegCode1Out] <= 1;
+	   end
+	   if (idSourceRegCode2ValidOut) begin
+	      regInUseBitMap[idSourceRegCode2Out] <= 1;
+	   end
+	   if (idDestRegSpecialValidOut) begin
+	      regInUseBitMap[idDestRegSpecialOut] <= 1;
+	   end
+	   regInUseBitMap[idDestRegOut] <= 1;
+	   idStallIn <= 0;
+	end else begin // if (!toStallOrNotToStall(idSourceRegCode1Out, idSourceRegCode1ValidOut,...
+	   idStallIn <= 1;
+	end // else: !if(!toStallOrNotToStall(idSourceRegCode1Out, idSourceRegCode1ValidOut,...
+	
+	
 	/* TODO - Temporary write back stage! */
 	regFile[exDestRegOut] <= exAluResultOut;
 	if (exDestRegSpecialValidOut) begin
 	   regFile[exDestRegSpecialOut] <= exAluResultSpecialOut;
 	end
      end
+
+   function bit toStallOrNotToStall(logic[0:3] src1, bit src1Valid, logic[0:3] src2, bit src2Valid, logic[0:3] dest, logic[0:3] destSpecial, bit destSpecialValid);
+      /* That's the question! */
+      if (src1Valid == 1 && regInUseBitMap[src1] == 1) begin
+	 return 1;
+      end
+      if (src2Valid == 1 && regInUseBitMap[src2] == 1) begin
+	 return 1;
+      end
+      if (destSpecialValid == 1 && regInUseBitMap[destSpecial] == 1) begin
+	 return 1;
+      end
+      if (regInUseBitMap[dest] == 1) begin
+	 return 1;
+      end
+   endfunction
 
    // cse502 : Use the following as a guide to print the Register File contents.
    final begin

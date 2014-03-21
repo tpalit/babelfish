@@ -32,7 +32,10 @@ module Read (
 	     output [63:0] operandVal2Out,
 	     output 	   operandVal1ValidOut,
 	     output 	   operandVal2ValidOut,
-
+	     output [0:3]  sourceRegCode1Out,
+	     output [0:3]  sourceRegCode2Out,
+	     output 	   sourceRegCode1ValidOut,
+	     output 	   sourceRegCode2ValidOut,
 	     /* Just get connection from the input */
 	     output [0:31] currentRipOut,
 	     output [0:2]  extendedOpcodeOut,
@@ -87,7 +90,11 @@ module Read (
 	 destRegOut = destRegIn;
 	 destRegisterSpecialOut = destRegisterSpecialIn;
 	 destRegisterSpecialValidOut = destRegisterSpecialValidIn;
-	 
+
+	 sourceRegCode1Out = sourceReg1In;
+	 sourceRegCode2Out = sourceReg2In;
+	 sourceRegCode1ValidOut = sourceReg1ValidIn;
+	 sourceRegCode2ValidOut = sourceReg2ValidIn;
       end
    end	   
 endmodule

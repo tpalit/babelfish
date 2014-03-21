@@ -8,6 +8,10 @@ module Execute (
 		input [0:31]  opcodeLengthIn,
 		input [0:0]   opcodeValidIn,
 		input [0:7]   opcodeIn,
+		input [0:3]   sourceReg1In,
+		input [0:3]   sourceReg2In,
+		input 	      sourceReg1ValidIn,
+		input 	      sourceReg2ValidIn,
 		input [0:63]  operand1ValIn,
 		input [0:63]  operand2ValIn,
 		input 	      operand1ValValidIn,
@@ -39,6 +43,10 @@ module Execute (
 		output [0:63] operand2ValOut,
 		output 	      operand1ValValidOut,
 		output 	      operand2ValValidOut,
+		output [0:3]  sourceRegCode1Out,
+		output [0:3]  sourceRegCode2Out,
+		output 	      sourceRegCode1ValidOut,
+		output 	      sourceRegCode2ValidOut,
 		output [0:31] immLenOut,
 		output [0:31] dispLenOut,
 		output [0:7]  imm8Out,
@@ -321,6 +329,11 @@ module Execute (
 		        destRegOut = destRegIn;
 		        destRegSpecialOut = destRegSpecialIn;
 		        destRegSpecialValidOut = destRegSpecialValidIn;
+		        sourceRegCode1Out = sourceReg1In;
+		        sourceRegCode2Out = sourceReg2In;
+		        sourceRegCode1ValidOut = sourceReg1ValidIn;
+		        sourceRegCode2ValidOut = sourceReg2ValidIn;
+
 		end // if ((opcodeValidIn == 1) && (canExecuteIn == 1))
 	        operand1ValValidOut = operand1ValValidIn;
 	        operand2ValValidOut = operand2ValValidIn;
