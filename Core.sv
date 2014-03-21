@@ -47,6 +47,7 @@ module Core (
    bit 			    comb_dest_reg_special_valid = 0;
 
    /* TODO: Change this to 64 bits */
+   /******** Latches ********/
    logic [31:0] 	ifidCurrentRip;
    logic [31:0] 	idrdCurrentRip;
    logic [31:0] 	rdexCurrentRip;
@@ -56,8 +57,10 @@ module Core (
    logic [0:31] 	idrdOpcodeLength = 0;
    logic [0:0] 		idrdOpcodeValid = 0; 
    logic [0:7] 		idrdOpcode = 0;
-   logic [0:63] 	idrdOperandVal1 = 0;
-   logic [0:63] 	idrdOperand2Val = 0;
+   logic [0:63] 	idrdSourceRegCode1 = 0;
+   logic [0:63] 	idrdSourceRegCode2 = 0;
+   bit 			idrdSourceRegCode1Valid = 0;
+   bit 			idrdSourceRegCode2Valid = 0;
    logic [0:31] 	idrdImmLen = 0;
    logic [0:31] 	idrdDispLen = 0;
    logic [0:7] 		idrdImm8 = 0;
@@ -71,14 +74,16 @@ module Core (
    logic [0:3]		idrdDestReg = 0;
    logic [0:3]		idrdDestRegSpecial = 0;
    bit	 		idrdDestRegSpecialValid = 0;
-
+   
    logic [0:2] 		rdexExtendedOpcode = 0;
    logic [0:31] 	rdexHasExtendedOpcode = 0;
    logic [0:31] 	rdexOpcodeLength = 0;
    logic [0:0] 		rdexOpcodeValid = 0; 
    logic [0:7] 		rdexOpcode = 0;
    logic [0:63] 	rdexOperandVal1 = 0;
-   logic [0:63] 	rdexOperand2Val = 0;
+   logic [0:63] 	rdexOperandVal2 = 0;
+   bit 			rdexOperand1Valid = 0;
+   bit 			rdexOperand2Valid = 0;   
    logic [0:31] 	rdexImmLen = 0;
    logic [0:31] 	rdexDispLen = 0;
    logic [0:7] 		rdexImm8 = 0;
@@ -93,17 +98,62 @@ module Core (
    logic [0:3]		rdexDestRegSpecial = 0;
    bit	 		rdexDestRegSpecialValid = 0;
 
+   /******** Wires ********/
+
+   logic [0:2] 		idExtendedOpcodeOut = 0;
+   logic [0:31] 	idHasExtendedOpcodeOut = 0;
+   logic [0:31] 	idOpcodeLengthOut = 0;
+   logic [0:0] 		idOpcodeValidOut = 0; 
+   logic [0:7] 		idOpcodeOut = 0;
+   logic [0:63] 	idSourceRegCode1Out = 0;
+   logic [0:63] 	idSourceRegCode2Out = 0;
+   bit 			idSourceRegCode1Valid = 0;
+   bit 			idSourceRegCode2Valid = 0;   
+   logic [0:31] 	idImmLenOut = 0;
+   logic [0:31] 	idDispLenOut = 0;
+   logic [0:7] 		idImm8Out = 0;
+   logic [0:15] 	idImm16Out = 0;
+   logic [0:31] 	idImm32Out = 0;
+   logic [0:63] 	idImm64Out = 0;
+   logic [0:7] 		idDisp8Out = 0;
+   logic [0:15] 	idDisp16Out = 0;
+   logic [0:31] 	idDisp32Out = 0;
+   logic [0:63] 	idDisp64Out = 0;
+   logic [0:3]		idDestRegOut = 0;
+   logic [0:3]		idDestRegSpecialOut = 0;
+   bit	 		idDestRegSpecialValidOut = 0;
+
+   logic [0:2] 		rdExtendedOpcodeOut = 0;
+   logic [0:31] 	rdHasExtendedOpcodeOut = 0;
+   logic [0:31] 	rdOpcodeLengthOut = 0;
+   logic [0:0] 		rdOpcodeValidOut = 0; 
+   logic [0:7] 		rdOpcodeOut = 0;
+   logic [0:63] 	rdOperandVal1Out = 0;
+   logic [0:63] 	rdOperandVal2Out = 0;
+   bit 			rdOperandVal1Valid = 0;
+   bit 			rdOperandVal2Valid = 0;   
+   logic [0:31] 	rdImmLenOut = 0;
+   logic [0:31] 	rdDispLenOut = 0;
+   logic [0:7] 		rdImm8Out = 0;
+   logic [0:15] 	rdImm16Out = 0;
+   logic [0:31] 	rdImm32Out = 0;
+   logic [0:63] 	rdImm64Out = 0;
+   logic [0:7] 		rdDisp8Out = 0;
+   logic [0:15] 	rdDisp16Out = 0;
+   logic [0:31] 	rdDisp32Out = 0;
+   logic [0:63] 	rdDisp64Out = 0;
+   logic [0:3]		rdDestRegOut = 0;
+   logic [0:3]		rdDestRegSpecialOut = 0;
+   bit	 		rdDestRegSpecialValidOut = 0;
+   
    initial begin
       ifidCurrentRip = 0;
       idrdCurrentRip = 0;
       rdexCurrentRip = 0;
-
       for(int k=0; k<16; k=k+1) begin
          regfile[k] = 0;
       end
-
       rflags = 64'h00200200;
-
    end
 
    function logic mtrr_is_mmio(logic[63:0] physaddr);
@@ -200,29 +250,59 @@ module Core (
 			       decode_bytes,
 			       current_rip,
 			       can_decode,
-			       regfile,
-			       comb_extended_opcode,
-			       comb_has_extended_opcode,
-			       comb_opcode_length,
-			       comb_opcode_valid, 
-			       comb_opcode,
-			       comb_operand1_val,
-			       comb_operand2_val,
-			       comb_imm_len,
-			       comb_disp_len,
-			       comb_imm8,
-			       comb_imm16,
-			       comb_imm32,
-			       comb_imm64,
-			       comb_disp8,
-			       comb_disp16,
-			       comb_disp32,
-			       comb_disp64,
-			       comb_dest_reg,
-			       comb_dest_reg_special,
-			       comb_dest_reg_special_valid,
+			       idExtendedOpcodeOut,
+			       idHasExtendedOpcodeOut,
+			       idOpcodeLengthOut,
+			       idOpcodeValidOut, 
+			       idOpcodeOut,
+			       idOperandVal1Out,
+			       idOperandVal2Out,
+			       idImmLenOut,
+			       idDispLenOut,
+			       idImm8Out,
+			       idImm16Out,
+			       idImm32Out,
+			       idImm64Out,
+			       idDisp8Out,
+			       idDisp16Out,
+			       idDisp32Out,
+			       idDisp64Out,
+			       idDestRegOut,
+			       idDestRegSpecialOut,
+			       idDestRegSpecialValidOut,
 			       bytes_decoded_this_cycle);
 
+   Read read(
+	     );
+   
+   /* Initialize the Execute module */
+   /* TODO: Add output ports: target (pc+1+offset: jmps/jcc), ALU result, valB (val of regB), dest reg, eq? */
+   Execute execute(	       
+			current_rip,
+			canExecute,
+			latch_extended_opcode,
+			latch_has_extended_opcode,
+			latch_opcode_length,
+			latch_opcode_valid, 
+			latch_opcode,
+			latch_operand1_val,
+			latch_operand2_val,
+			latch_imm_len,
+			latch_disp_len,
+			latch_imm8,
+			latch_imm16,
+			latch_imm32,
+			latch_imm64,
+			latch_disp8,
+			latch_disp16,
+			latch_disp32,
+			latch_disp64,
+			latch_dest_reg,
+			latch_dest_reg_special,
+			latch_dest_reg_special_valid,
+			comb_alu_result,
+			comb_alu_result_special);
+   
    // IDEX: Save state for opcode, immediates, operands 
    always @ (posedge bus.clk)
      if (bus.reset) begin
@@ -297,33 +377,6 @@ module Core (
         /* verilator lint_on WIDTH */
      end
 
-   /* Initialize the Execute module */
-   /* TODO: Add output ports: target (pc+1+offset: jmps/jcc), ALU result, valB (val of regB), dest reg, eq? */
-   Execute execute(	       
-			current_rip,
-			canExecute,
-			latch_extended_opcode,
-			latch_has_extended_opcode,
-			latch_opcode_length,
-			latch_opcode_valid, 
-			latch_opcode,
-			latch_operand1_val,
-			latch_operand2_val,
-			latch_imm_len,
-			latch_disp_len,
-			latch_imm8,
-			latch_imm16,
-			latch_imm32,
-			latch_imm64,
-			latch_disp8,
-			latch_disp16,
-			latch_disp32,
-			latch_disp64,
-			latch_dest_reg,
-			latch_dest_reg_special,
-			latch_dest_reg_special_valid,
-			comb_alu_result,
-			comb_alu_result_special);
 
    always_comb begin
 	if ((latch_opcode_valid == 1) && (canExecute == 1)) begin

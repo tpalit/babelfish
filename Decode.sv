@@ -1495,8 +1495,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read and write operand
-                  operand2ValOut = 0;
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read and write operand
+                  sourceRegCode2Out = 0;
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 0;
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   imm64Out = sign_extend_8_to_64(imm8);
                   immLenOut = 8;
@@ -1510,8 +1512,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read and write operand
-                  operand2ValOut = 0;
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read and write operand
+                  sourceRegCode2Out = 0;
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 0;		  
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   imm64Out = sign_extend_32_to_64(imm32);
                   immLenOut = 8;
@@ -1525,8 +1529,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read and write operand
-                  operand2ValOut = { rex_field[5], reg_field }; // read operand
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read and write operand
+                  sourceRegCode2Out = { rex_field[5], reg_field }; // read operand
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 1;
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   immLenOut = 0;
                   dispLenOut = 0;
@@ -1539,8 +1545,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[5], reg_field }; // read and write operand
-                  operand2ValOut = { rex_field[7], rm_field }; // read operand
+                  sourceRegCode1Out = { rex_field[5], reg_field }; // read and write operand
+                  sourceRegCode2Out = { rex_field[7], rm_field }; // read operand
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 1;		  
 		  destRegOut = { rex_field[5], reg_field }; // write operand
                   immLenOut = 0;
                   dispLenOut = 0;
@@ -1552,8 +1560,10 @@ module Decode (
                decode_I(imm32, 1);
 
                /* Extra processing for EXECUTE */
-               operandVal1Out = 4'b0000]; // read and write operand %RAX
-               operand2ValOut = 0;
+               sourceRegCode1Out = 4'b0000; // read and write operand %RAX
+               sourceRegCode2Out = 0;
+	       sourceRegCode1ValidOut = 1;
+	       sourceRegCode2ValidOut = 0;
 	       destRegOut = 4'b0000; // write operand
                imm64Out = sign_extend_32_to_64(imm32);
                immLenOut = 8;
@@ -1567,8 +1577,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read and write operand
-                  operand2ValOut = 0;
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read and write operand
+                  sourceRegCode2Out = 0;
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 0;
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   imm64Out = sign_extend_8_to_64(imm8);
                   immLenOut = 8;
@@ -1582,8 +1594,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read and write operand
-                  operand2ValOut = 0;
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read and write operand
+                  sourceRegCode2Out = 0;
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 0;		  
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   imm64Out = sign_extend_32_to_64(imm32);
                   immLenOut = 8;
@@ -1597,24 +1611,26 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read and write operand
-                  operand2ValOut = { rex_field[5], reg_field }; // read operand
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read and write operand
+                  sourceRegCode2Out = { rex_field[5], reg_field }; // read operand
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 1;
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   immLenOut = 0;
                   dispLenOut = 0;
                   extendedOpcodeOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
-
-		  $write("\nDecode::: ADD::: operand1: %d, operand2: %d", operandVal1Out, operand2ValOut);
                end
             end else if (opcode == 8'h03) begin
                decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[5], reg_field }; // read and write operand
-                  operand2ValOut = { rex_field[7], rm_field }; // read operand
+                  sourceRegCode1Out = { rex_field[5], reg_field }; // read and write operand
+                  sourceRegCode2Out = { rex_field[7], rm_field }; // read operand
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 1;
 		  destRegOut = { rex_field[5], reg_field }; // write operand
                   immLenOut = 0;
                   dispLenOut = 0;
@@ -1626,8 +1642,10 @@ module Decode (
                decode_I(imm32, 1);
 
                /* Extra processing for EXECUTE */
-               operandVal1Out = 4'b0000]; // read and write operand %RAX
-               operand2ValOut = 0;
+               sourceRegCode1Out = 4'b0000]; // read and write operand %RAX
+               sourceRegCode2Out = 0;
+	       sourceRegCode1ValidOut = 1;
+	       sourceRegCode2ValidOut = 0;	       
 	       destRegOut = 4'b0000; // write operand
                imm64Out = sign_extend_32_to_64(imm32);
                immLenOut = 8;
@@ -1641,8 +1659,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read and write operand
-                  operand2ValOut = 0;
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read and write operand
+                  sourceRegCode2Out = 0;
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 0;	       
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   imm64Out = sign_extend_8_to_64(imm8);
                   immLenOut = 8;
@@ -1656,8 +1676,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read and write operand
-                  operand2ValOut = 0;
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read and write operand
+                  sourceRegCode2Out = 0;
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 0;	       
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   imm64Out = sign_extend_32_to_64(imm32);
                   immLenOut = 8;
@@ -1671,8 +1693,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read and write operand
-                  operand2ValOut = { rex_field[5], reg_field }; // read operand
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read and write operand
+                  sourceRegCode2Out = { rex_field[5], reg_field }; // read operand
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 1;	       
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   immLenOut = 0;
                   dispLenOut = 0;
@@ -1685,8 +1709,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[5], reg_field }; // read and write operand
-                  operand2ValOut = { rex_field[7], rm_field }; // read operand
+                  sourceRegCode1Out = { rex_field[5], reg_field }; // read and write operand
+                  sourceRegCode2Out = { rex_field[7], rm_field }; // read operand
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 1;	       
 		  destRegOut = { rex_field[5], reg_field }; // write operand
                   immLenOut = 0;
                   dispLenOut = 0;
@@ -1698,8 +1724,10 @@ module Decode (
                decode_I(imm32, 1);    
 
                /* Extra processing for EXECUTE */
-               operandVal1Out = 4'b0000]; // read and write operand %RAX
-               operand2ValOut = 0;
+               sourceRegCode1Out = 4'b0000; // read and write operand %RAX
+               sourceRegCode2Out = 0;
+	       sourceRegCode1ValidOut = 1;
+	       sourceRegCode2ValidOut = 0;	       
 	       destRegOut = 4'b0000; // write operand
                imm64Out = sign_extend_32_to_64(imm32);
                immLenOut = 8;
@@ -1713,8 +1741,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read and write operand
-                  operand2ValOut = 0;
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read and write operand
+                  sourceRegCode2Out = 0;
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 0;	       
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   imm64Out = sign_extend_8_to_64(imm8);
                   immLenOut = 8;
@@ -1728,8 +1758,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read and write operand
-                  operand2ValOut = 0;
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read and write operand
+                  sourceRegCode2Out = 0;
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 0;	       
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   imm64Out = sign_extend_32_to_64(imm32);
                   immLenOut = 8;
@@ -1743,8 +1775,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read and write operand
-                  operand2ValOut = { rex_field[5], reg_field }; // read operand
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read and write operand
+                  sourceRegCode2Out = { rex_field[5], reg_field }; // read operand
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 1;	       
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   immLenOut = 0;
                   dispLenOut = 0;
@@ -1757,8 +1791,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[5], reg_field }; // read and write operand
-                  operand2ValOut = { rex_field[7], rm_field }; // read operand
+                  sourceRegCode1Out = { rex_field[5], reg_field }; // read and write operand
+                  sourceRegCode2Out = { rex_field[7], rm_field }; // read operand
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 1;	       
 		  destRegOut = { rex_field[5], reg_field }; // write operand
                   immLenOut = 0;
                   dispLenOut = 0;
@@ -1770,8 +1806,10 @@ module Decode (
                decode_I(imm32, 1);
 
                /* Extra processing for EXECUTE */
-               operandVal1Out = 4'b0000]; // read and write operand %RAX
-               operand2ValOut = 0;
+               sourceRegCode1Out = 4'b0000; // read and write operand %RAX
+               sourceRegCode2Out = 0;
+	       sourceRegCode1ValidOut = 1;
+	       sourceRegCode2ValidOut = 0;	       
 	       destRegOut = 4'b0000; // write operand
                imm64Out = sign_extend_32_to_64(imm32);
                immLenOut = 8;
@@ -1785,8 +1823,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read and write operand
-                  operand2ValOut = 0;
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read and write operand
+                  sourceRegCode2Out = 0;
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 0;	       
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   imm64Out = sign_extend_8_to_64(imm8);
                   immLenOut = 8;
@@ -1800,8 +1840,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read and write operand
-                  operand2ValOut = 0;
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read and write operand
+                  sourceRegCode2Out = 0;
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 0;	       
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   imm64Out = sign_extend_32_to_64(imm32);
                   immLenOut = 8;
@@ -1815,8 +1857,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read and write operand
-                  operand2ValOut = { rex_field[5], reg_field }; // read operand
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read and write operand
+                  sourceRegCode2Out = { rex_field[5], reg_field }; // read operand
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 1;	       
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   immLenOut = 0;
                   dispLenOut = 0;
@@ -1829,8 +1873,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[5], reg_field }; // read and write operand
-                  operand2ValOut = { rex_field[7], rm_field }; // read operand
+                  sourceRegCode1Out = { rex_field[5], reg_field }; // read and write operand
+                  sourceRegCode2Out = { rex_field[7], rm_field }; // read operand
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 1;	       
 		  destRegOut = { rex_field[5], reg_field }; // write operand
                   immLenOut = 0;
                   dispLenOut = 0;
@@ -1842,8 +1888,10 @@ module Decode (
                decode_I(imm32, 1);    
 
                /* Extra processing for EXECUTE */
-               operandVal1Out = 4'b0000]; // read and write operand %RAX
-               operand2ValOut = 0;
+               sourceRegCode1Out = 4'b0000; // read and write operand %RAX
+               sourceRegCode2Out = 0;
+	       sourceRegCode1ValidOut = 1;
+	       sourceRegCode2ValidOut = 0;	       
 	       destRegOut = 4'b0000; // write operand
                imm64Out = sign_extend_32_to_64(imm32);
                immLenOut = 8;
@@ -1857,8 +1905,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read and write operand
-                  operand2ValOut = 0;
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read and write operand
+                  sourceRegCode2Out = 0;
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 0;	       		  
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   imm64Out = sign_extend_8_to_64(imm8);
                   immLenOut = 8;
@@ -1872,8 +1922,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read and write operand
-                  operand2ValOut = 0;
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read and write operand
+                  sourceRegCode2Out = 0;
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 0;	       
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   imm64Out = sign_extend_32_to_64(imm32);
                   immLenOut = 8;
@@ -1887,8 +1939,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read and write operand
-                  operand2ValOut = { rex_field[5], reg_field }; // read operand
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read and write operand
+                  sourceRegCode2Out = { rex_field[5], reg_field }; // read operand
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 1;	       		  
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   immLenOut = 0;
                   dispLenOut = 0;
@@ -1901,8 +1955,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[5], reg_field }; // read and write operand
-                  operand2ValOut = { rex_field[7], rm_field }; // read operand
+                  sourceRegCode1Out = { rex_field[5], reg_field }; // read and write operand
+                  sourceRegCode2Out = { rex_field[7], rm_field }; // read operand
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 1;	       
 		  destRegOut = { rex_field[5], reg_field }; // write operand
                   immLenOut = 0;
                   dispLenOut = 0;
@@ -1914,8 +1970,10 @@ module Decode (
                decode_I(imm32, 1);    
 
                /* Extra processing for EXECUTE */
-               operandVal1Out = 4'b0000]; // read and write operand %RAX
-               operand2ValOut = 0;
+               sourceRegCode1Out = 4'b0000; // read and write operand %RAX
+               sourceRegCode2Out = 0;
+	       sourceRegCode1ValidOut = 1;
+	       sourceRegCode2ValidOut = 0;	       
 	       destRegOut = 4'b0000; // write operand
                imm64Out = sign_extend_32_to_64(imm32);
                immLenOut = 8;
@@ -1930,8 +1988,10 @@ module Decode (
                /* TODO: Find out whether sign extension is required or not! */
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read and write operand
-                  operand2ValOut = 0;
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read and write operand
+                  sourceRegCode2Out = 0;
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 0;	       
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   imm64Out = sign_extend_8_to_64(imm8);
                   immLenOut = 8;
@@ -1945,8 +2005,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read and write operand
-                  operand2ValOut = 0;
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read and write operand
+                  sourceRegCode2Out = 0;
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 0;	       
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   imm64Out = sign_extend_32_to_64(imm32);
                   immLenOut = 8;
@@ -1960,8 +2022,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read and write operand
-                  operand2ValOut = { rex_field[5], reg_field }; // read operand
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read and write operand
+                  sourceRegCode2Out = { rex_field[5], reg_field }; // read operand
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 1;	       
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   immLenOut = 0;
                   dispLenOut = 0;
@@ -1974,8 +2038,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[5], reg_field }; // read and write operand
-                  operand2ValOut = { rex_field[7], rm_field }; // read operand
+                  sourceRegCode1Out = { rex_field[5], reg_field }; // read and write operand
+                  sourceRegCode2Out = { rex_field[7], rm_field }; // read operand
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 1;	       		  
 		  destRegOut = { rex_field[5], reg_field }; // write operand
                   immLenOut = 0;
                   dispLenOut = 0;
@@ -1987,8 +2053,10 @@ module Decode (
                decode_I(imm32, 1);
 
                /* Extra processing for EXECUTE */
-               operandVal1Out = 4'b0000]; // read and write operand %RAX
-               operand2ValOut = 0;
+               sourceRegCode1Out = 4'b0000; // read and write operand %RAX
+               sourceRegCode2Out = 0;
+	       sourceRegCode1ValidOut = 1;
+	       sourceRegCode2ValidOut = 0;	       	       
 	       destRegOut = 4'b0000; // write operand
                imm64Out = sign_extend_32_to_64(imm32);
                immLenOut = 8;
@@ -2076,8 +2144,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read operand
-                  operand2ValOut = 4'b0000]; // read RAX, write RDX:RAX
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read operand
+                  sourceRegCode2Out = 4'b0000; // read RAX, write RDX:RAX
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 1;	       
 		  destRegOut = 4'b0000; // write operand RDX:RAX (TODO: special case)
 		  destRegSpecialOut = 4'b0010; // write operand RDX:RAX (TODO: special case)
 		  destRegSpecialValidOut = 1;
@@ -2093,8 +2163,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read operand
-                  operand2ValOut = 4'b0000]; // read RAX, write RDX:RAX
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read operand
+                  sourceRegCode2Out = 4'b0000; // read RAX, write RDX:RAX
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 1;	       		  
 		  destRegOut = 4'b0000; // write operand RDX:RAX (TODO: special case)
 		  destRegSpecialOut = 4'b0010; // write operand RDX:RAX (TODO: special case)
 		  destRegSpecialValidOut = 1;
@@ -2110,8 +2182,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read operand
-                  operand2ValOut = 4'b0000]; // read RAX, write RDX:RAX
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read operand
+                  sourceRegCode2Out = 4'b0000; // read RAX, write RDX:RAX
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 1;	       
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   immLenOut = 0;
                   dispLenOut = 0;
@@ -2125,8 +2199,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read operand
-                  operand2ValOut = 4'b0000]; // read RAX, write RDX:RAX
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read operand
+                  sourceRegCode2Out = 4'b0000; // read RAX, write RDX:RAX
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 1;	       		  
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   immLenOut = 0;
                   dispLenOut = 0;
@@ -2143,8 +2219,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = 0;
-                  operand2ValOut = { rex_field[7], rm_field }; // read operand
+                  sourceRegCode1Out = 0;
+                  sourceRegCode2Out = { rex_field[7], rm_field }; // read operand
+		  sourceRegCode1ValidOut = 0;
+		  sourceRegCode2ValidOut = 1;	       		  
 		  destRegOut = { rex_field[5], reg_field }; // write operand
                   imm64Out = sign_extend_32_to_64(imm32);
                   immLenOut = 8;
@@ -2158,8 +2236,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = 0;
-                  operand2ValOut = { rex_field[7], rm_field }; // read operand
+                  sourceRegCode1Out = 0;
+                  sourceRegCode2Out = { rex_field[7], rm_field }; // read operand
+		  sourceRegCode1ValidOut = 0;
+		  sourceRegCode2ValidOut = 1;	       		  
 		  destRegOut = { rex_field[5], reg_field };  // write operand
                   imm64Out = sign_extend_8_to_64(imm8);
                   immLenOut = 8;
@@ -2207,7 +2287,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read operand
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read operand
+		  sourceRegCode2Out = 0;
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 0;	       
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   immLenOut = 0;
                   dispLenOut = 0;
@@ -2221,7 +2304,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read operand
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read operand
+		  sourceRegCode2Out = 0;		  
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 0;	       		  
 		  destRegOut = { rex_field[7], rm_field }; // write operand
                   immLenOut = 0;
                   dispLenOut = 0;
@@ -2322,8 +2408,10 @@ module Decode (
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
-                  operandVal1Out = { rex_field[7], rm_field }; // read operand
-                  operand2ValOut = { rex_field[5], reg_field }; // write operand
+                  sourceRegCode1Out = { rex_field[7], rm_field }; // read operand
+                  sourceRegCode2Out = { rex_field[5], reg_field }; // write operand
+		  sourceRegCode1ValidOut = 1;
+		  sourceRegCode2ValidOut = 1;	       		  
 		  destRegOut = { rex_field[5], reg_field }; // write operand
                   immLenOut = 0;
                   dispLenOut = 0;
