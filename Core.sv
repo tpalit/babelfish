@@ -13,7 +13,7 @@ module Core (
    wire canExecute;
    wire canRead;
 
-   logic [63:0] regfile[16];
+   logic [63:0] regFile[16];
 
    /* verilator lint_off UNUSED */
    /* verilator lint_off UNDRIVEN */
@@ -166,7 +166,7 @@ module Core (
       idrdCurrentRip = 0;
       rdexCurrentRip = 0;
       for(int k=0; k<16; k=k+1) begin
-         regfile[k] = 0;
+         regFile[k] = 0;
       end
       rflags = 64'h00200200;
    end
@@ -476,22 +476,22 @@ module Core (
    always @ (posedge bus.clk)
      if (bus.reset) begin
 
-        regfile[0] <= 0;
-        regfile[1] <= 0;
-        regfile[2] <= 0;
-        regfile[3] <= 0;
-        regfile[4] <= 0;
-        regfile[5] <= 0;
-        regfile[6] <= 0;
-        regfile[7] <= 0;
-        regfile[8] <= 0;
-        regfile[9] <= 0;
-        regfile[10] <= 0;
-        regfile[11] <= 0;
-        regfile[12] <= 0;
-        regfile[13] <= 0;
-        regfile[14] <= 0;
-        regfile[15] <= 0;
+        regFile[0] <= 0;
+        regFile[1] <= 0;
+        regFile[2] <= 0;
+        regFile[3] <= 0;
+        regFile[4] <= 0;
+        regFile[5] <= 0;
+        regFile[6] <= 0;
+        regFile[7] <= 0;
+        regFile[8] <= 0;
+        regFile[9] <= 0;
+        regFile[10] <= 0;
+        regFile[11] <= 0;
+        regFile[12] <= 0;
+        regFile[13] <= 0;
+        regFile[14] <= 0;
+        regFile[15] <= 0;
 
         latch_rflags <= 0;
 
@@ -503,7 +503,7 @@ module Core (
      end else begin // !bus.reset
 
 /*
-        regfile[dest_reg] <= alu_result;
+        regFile[dest_reg] <= alu_result;
 */
         latch_rflags <= rflags;
 
@@ -518,21 +518,21 @@ module Core (
 
         // cse502 : Use the following as a guide to print the Register File contents.
         final begin
-                $display("RAX = %x", regfile[0]);
-                $display("RBX = %x", regfile[3]);
-                $display("RCX = %x", regfile[1]);
-                $display("RDX = %x", regfile[2]);
-                $display("RSI = %x", regfile[6]);
-                $display("RDI = %x", regfile[7]);
-                $display("RBP = %x", regfile[5]);
-                $display("RSP = %x", regfile[4]);
-                $display("R8  = %x", regfile[8]);
-                $display("R9  = %x", regfile[9]);
-                $display("R10 = %x", regfile[10]);
-                $display("R11 = %x", regfile[11]);
-                $display("R12 = %x", regfile[12]);
-                $display("R13 = %x", regfile[13]);
-                $display("R14 = %x", regfile[14]);
-                $display("R15 = %x", regfile[15]);
+                $display("RAX = %x", regFile[0]);
+                $display("RBX = %x", regFile[3]);
+                $display("RCX = %x", regFile[1]);
+                $display("RDX = %x", regFile[2]);
+                $display("RSI = %x", regFile[6]);
+                $display("RDI = %x", regFile[7]);
+                $display("RBP = %x", regFile[5]);
+                $display("RSP = %x", regFile[4]);
+                $display("R8  = %x", regFile[8]);
+                $display("R9  = %x", regFile[9]);
+                $display("R10 = %x", regFile[10]);
+                $display("R11 = %x", regFile[11]);
+                $display("R12 = %x", regFile[12]);
+                $display("R13 = %x", regFile[13]);
+                $display("R14 = %x", regFile[14]);
+                $display("R15 = %x", regFile[15]);
         end
 endmodule
