@@ -71,7 +71,8 @@ module Read (
 	 end
 
 	 currentRipOut = currentRipIn;
-	 
+	 stallOut = stallIn; 
+
 	 extendedOpcodeOut = extendedOpcodeIn;
 	 hasExtendedOpcodeOut = hasExtendedOpcodeIn;
 	 opcodeLengthOut = opcodeLengthIn;

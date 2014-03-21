@@ -11,13 +11,14 @@ module Execute (
 		input [0:7]   opcodeIn,
 		input [0:63]  operand1ValIn,
 		input [0:63]  operand2ValIn,
+		input [0:63]  operand1ValValidIn,
+		input [0:63]  operand2ValValidIn,
 		input [0:31]  immLenIn,
 		input [0:31]  dispLenIn,
 		input [0:7]   imm8In,
 		input [0:15]  imm16In,
 		input [0:31]  imm32In,
 		input [0:63]  imm64In,
-
 		input [0:7]   disp8In,
 		input [0:15]  disp16In,
 		input [0:31]  disp32In,
@@ -30,6 +31,7 @@ module Execute (
 		output [0:63] aluResultSpecialOut
 
 		output [0:31] currentRipOut,
+		output 	      stallOut,
 		output [0:2]  extendedOpcodeOut,
 		output [0:31] hasExtendedOpcodeOut,
 		output [0:31] opcodeLengthOut,
@@ -37,13 +39,14 @@ module Execute (
 		output [0:7]  opcodeOut,
 		output [0:63] operand1ValOut,
 		output [0:63] operand2ValOut,
+		output [0:63]  operand1ValValidOut,
+		output [0:63]  operand2ValValidOut,
 		output [0:31] immLenOut,
 		output [0:31] dispLenOut,
 		output [0:7]  imm8Out,
 		output [0:15] imm16Out,
 		output [0:31] imm32Out,
 		output [0:63] imm64Out,
-
 		output [0:7]  disp8Out,
 		output [0:15] disp16Out,
 		output [0:31] disp32Out,
@@ -300,6 +303,7 @@ module Execute (
 			end
 		   
   		        currentRipOut = currentRipIn;
+			stallOut = stallIn;
 		        extendedOpcodeOut = extendedOpcodeIn;
 		        hasExtendedOpcodeOut = hasExtendedOpcodeIn;
 		        opcodeLengthOut = opcodeLengthIn;
