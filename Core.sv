@@ -12,9 +12,7 @@ module Core (
 
    wire canExecute;
    wire canRead;
-   /* verilator lint_off UNDRIVEN */
    wire canWriteBack;
-   /* verilator lint_on UNDRIVEN */
 
    logic [63:0] regFile[16];
 
@@ -317,28 +315,6 @@ module Core (
       opcode_inside = (value >= low && value <= high);
    endfunction
 
-//   function bit toStallOrNotToStall(logic[0:3] src1, bit src1Valid, logic[0:3] src2, bit src2Valid, logic[0:3] dest, logic[0:3] destSpecial, bit destSpecialValid);
-//      /* That's the question! */
-//
-//      if (src1Valid == 1 && regInUseBitMap[src1] == 1) begin
-//	 return 1;
-//      end
-//
-//      if (src2Valid == 1 && regInUseBitMap[src2] == 1) begin
-//	 return 1;
-//      end
-//
-//      if (destSpecialValid == 1 && regInUseBitMap[destSpecial] == 1) begin
-//	 return 1;
-//      end
-//
-//      if (regInUseBitMap[dest] == 1) begin
-//	 return 1;
-//      end
-//
-//      return 0;
-//   endfunction
-
    logic [3:0]                 bytes_decoded_this_cycle;
 
    /* Initialize the Decode module */
@@ -434,7 +410,6 @@ module Core (
 		readSuccessfulOut
 		);
    
-   /* Initialize the Execute module */
    /* TODO: Add output ports: target (pc+1+offset: jmps/jcc), ALU result, valB (val of regB), dest reg, eq? */
    Execute execute(	       
 		rdexCurrentRip,
@@ -496,12 +471,12 @@ module Core (
 		exDestRegSpecialOut,
 		exDestRegSpecialValidOut,
 		executeSuccessfulOut,
-          killOut
+          	killOut
 		);
 
    WriteBack writeback(	       
 		canWriteBack,
-          killLatch,
+          	killLatch,
 		regInUseBitMap,
 		regFile,
 		exwbCurrentRip,
@@ -561,8 +536,6 @@ module Core (
         end
 	canExecute <= readSuccessfulOut;
 	canWriteBack <= executeSuccessfulOut;
-
-	$write("\nbytes decoded this cycle: %d\n", bytes_decoded_this_cycle);
 
 	/* Latch the output values from each stage. */
 	
@@ -657,39 +630,6 @@ module Core (
         end
         /* verilator lint_on WIDTH */
 
-	/* Mark the registers in-use and calculate stall */
-//	if (!toStallOrNotToStall(idSourceRegCode1Out, idSourceRegCode1ValidOut, 
-//				 idSourceRegCode2Out, idSourceRegCode2ValidOut, 
-//				 idDestRegOut, idDestRegSpecialOut, idDestRegSpecialValidOut)) begin
-
-//	   $write("\n******************************************************************* Not to stall!!\n");
-
-//	   if (idSourceRegCode1ValidOut) begin
-//	      regInUseBitMap[idSourceRegCode1Out] <= 1;
-//	   end
-//	   if (idSourceRegCode2ValidOut) begin
-//	      regInUseBitMap[idSourceRegCode2Out] <= 1;
-//	   end
-//	   if (idDestRegSpecialValidOut) begin
-//	      regInUseBitMap[idDestRegSpecialOut] <= 1;
-//	   end
-
-//	   regInUseBitMap[idDestRegOut] <= 1;
-//		$write("\nDest reg reg in use value: %d, reg: %d\n", regInUseBitMap[idDestRegOut], idDestRegOut);
-
-//	   idStallIn <= 0;
-
-//	   $write("\nSetting: src1: %d, src1valid: %d, src2: %d, src2valid: %d, dest: %d\n", idSourceRegCode1Out, idSourceRegCode1ValidOut, idSourceRegCode2Out, idSourceRegCode2ValidOut, idDestRegOut);
-	
-//           print_stall_bitmap();
-
-//	end else begin
-//	   idStallIn <= 1;
-
-//	   $write("\n******************************************************************* To stall!!\n");
-//           print_stall_bitmap();
-//	end
-
 	idStallIn <= idStallOut;
 
 	regFile[wbDestRegOut] <= regFileOut[wbDestRegOut];
@@ -699,42 +639,12 @@ module Core (
 	regInUseBitMap[wbDestRegSpecialOut] <= regInUseBitMapOut[wbDestRegSpecialOut];
 	regInUseBitMap[wbSourceRegCode1Out] <= regInUseBitMapOut[wbSourceRegCode1Out];
 	regInUseBitMap[wbSourceRegCode2Out] <= regInUseBitMapOut[wbSourceRegCode2Out];
-     killLatch <= killOut;
+     	killLatch <= killOut;
         
-	$write("\nWriteback state bitmap values: dest %d, destreg: %d, spdest %d, spdestreg: %d, src1 %d, src1reg: %d, src2 %d, src2reg: %d\n", regInUseBitMapOut[wbDestRegOut], wbDestRegOut, regInUseBitMapOut[wbDestRegSpecialOut], wbDestRegSpecialOut, regInUseBitMapOut[wbSourceRegCode1Out], wbSourceRegCode1Out, regInUseBitMapOut[wbSourceRegCode2Out], wbSourceRegCode2Out);
-
 	regInUseBitMap[idDestRegOut] <= regInUseBitMapOut[idDestRegOut];
 	regInUseBitMap[idDestRegSpecialOut] <= regInUseBitMapOut[idDestRegSpecialOut];
 	regInUseBitMap[idSourceRegCode1Out] <= regInUseBitMapOut[idSourceRegCode1Out];
 	regInUseBitMap[idSourceRegCode2Out] <= regInUseBitMapOut[idSourceRegCode2Out];
-
-	$write("\nDecode state bitmap values: dest %d, destreg: %d, spdest %d, spdestreg: %d, src1 %d, src1reg: %d, src2 %d, src2reg: %d\n", regInUseBitMapOut[idDestRegOut], idDestRegOut, regInUseBitMapOut[idDestRegSpecialOut], idDestRegSpecialOut, regInUseBitMapOut[idSourceRegCode1Out], idSourceRegCode1Out, regInUseBitMapOut[idSourceRegCode2Out], idSourceRegCode2Out);
-
-	print_stall_bitmap();
-
-//	/* TODO - Temporary write back stage! */
-//	regFile[exDestRegOut] <= exAluResultOut;
-//	if (exDestRegSpecialValidOut) begin
-//	   regFile[exDestRegSpecialOut] <= exAluResultSpecialOut;
-//	end
-//
-//	if(exSourceRegCode1ValidOut == 1) begin
-//		regInUseBitMap[exSourceRegCode1Out] <= 0;
-//	end
-//
-//	if(exSourceRegCode2ValidOut == 1) begin
-//		regInUseBitMap[exSourceRegCode2Out] <= 0;
-//	end
-//
-//	if(exDestRegSpecialValidOut == 1) begin
-//		regInUseBitMap[exDestRegSpecialOut] <= 0;
-//	end
-//
-//	regInUseBitMap[exDestRegOut] <= 0;
-//
-//	$write("\nResetting: src1: %d, src1valid: %d, src2: %d, src2valid: %d, dest: %d\n", exSourceRegCode1Out, exSourceRegCode1ValidOut, exSourceRegCode2Out, exSourceRegCode2ValidOut, exDestRegOut);
-//
-//        print_stall_bitmap();
      end
 
    // cse502 : Use the following as a guide to print the Register File contents.

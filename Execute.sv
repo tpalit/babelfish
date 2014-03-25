@@ -69,8 +69,7 @@ module Execute (
 
                logic [0:63] temp_var = 0;
 			logic [0:127] mul_temp_var = 0;
-               killOut = 0;
-			$write("\n******************************** CAN EXECUTE ***********************\n");
+			killOut = 0;
 
 			if ((opcodeLengthIn == 1) && (opcodeIn == 8'hC7) &&
 				(hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b000)) begin
@@ -83,8 +82,6 @@ module Execute (
 
 				aluResultOut = operand2ValIn;
 				isExecuteSuccessfulOut = 1;
-
-				$write("\nMOV::: operand1: %h, operand2: %h, aluResultOut: %h\n", operand1ValIn, operand2ValIn, aluResultOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hB8 ||
 				opcodeIn == 8'hB9 ||
 				opcodeIn == 8'hBA ||
@@ -97,8 +94,6 @@ module Execute (
 
 				aluResultOut = imm64In;
 				isExecuteSuccessfulOut = 1;
-
-				$write("\nMOV()::: operand1: %h, operand2: %h, imm: %h, aluResultOut: %h\n", operand1ValIn, operand2ValIn, imm64In, aluResultOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h83 || opcodeIn == 8'h81)
 				&& (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b001)) begin
 				/* OR operand 1 with immediate and write into operand 1 */
@@ -107,8 +102,6 @@ module Execute (
 
 				aluResultOut = temp_var;
 				isExecuteSuccessfulOut = 1;
-
-				$write("\nEXECUTE:::OR: opcode: %h, operandVal1In: %h, imm64In: %h, temp_var: %h, aluResult: %h\n", opcodeIn, operand1ValIn, imm64In, temp_var, aluResultOut);
 			end else if ((opcodeLengthIn == 1) && ((opcodeIn == 8'h09) || (opcodeIn == 8'h0B))) begin
 				/* OR operand 1 with operand 2 and write into operand 1 */
 
@@ -116,8 +109,6 @@ module Execute (
 
 				aluResultOut = temp_var;
 				isExecuteSuccessfulOut = 1;
-
-				$write("\nEXECUTE:::OR: opcode: %h, operandVal1In: %h, operandVal2In: %h, temp_var: %h, aluResult: %h\n", opcodeIn, operand1ValIn, operand2ValIn, temp_var, aluResultOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h0D)) begin
 				/* OR operand 1 (RAX) with immediate and write into operand 1 (RAX) */
 
@@ -126,7 +117,6 @@ module Execute (
 				aluResultOut = temp_var;
 
 				isExecuteSuccessfulOut = 1;
-				$write("\nEXECUTE:::OR: opcode: %h, operandVal1In: %h, imm64In: %h, temp_var: %h, aluResult: %h\n", opcodeIn, operand1ValIn, imm64In, temp_var, aluResultOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h83 || opcodeIn == 8'h81)
 				&& (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b000)) begin
 				/* ADD operand 1 with immediate and write into operand 1 */
@@ -143,7 +133,6 @@ module Execute (
 				aluResultOut = temp_var;
 
 				isExecuteSuccessfulOut = 1;
-				$write("\nADD::: Operand1val: %d, operand2val: %d, aluResultOut: %d\n", operand1ValIn, operand2ValIn, aluResultOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h05)) begin
 				/* ADD operand 1 (RAX) with immediate and write into operand 1 (RAX) */
 
@@ -386,8 +375,6 @@ module Execute (
 
 		end else begin// if ((opcodeValidIn == 1) && (canExecuteIn == 1))
 			isExecuteSuccessfulOut = 0;
-
-			$write("\n******************************** CANNNOT EXECUTE *******************\n");
 		end
 	        operand1ValValidOut = operand1ValValidIn;
 	        operand2ValValidOut = operand2ValValidIn;

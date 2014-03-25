@@ -40,375 +40,15 @@ module Decode (
    int 				imm_array[0:255];
    bit 				op_len2_modrm_array[0:255];
    int 				op_len2_imm_array[0:255];
-   /* verilator lint_off UNUSED */
-   logic [2047:0][7:0][7:0] 	extended_op_instr_array;
-   /* verilator lint_on UNUSED */
-   logic [255:0][7:0][7:0] op_instr_array;
 
    
    initial begin
       for(int i=0; i<256;i=i+1) begin
-         op_instr_array[i] = "        ";
          modrm_array[i] = 0;
          imm_array[i] = 0;
          op_len2_modrm_array[i] = 0;
          op_len2_imm_array[i] = 0;
       end
-
-      for(int j=0; j<2048; j=j+1) begin
-         extended_op_instr_array[j] = "        ";
-      end
-
-      op_instr_array[8'h37] = "aaa     ";
-      op_instr_array[8'h00] = "add     ";
-      op_instr_array[8'h01] = "add     ";
-      op_instr_array[8'h02] = "add     ";
-      op_instr_array[8'h03] = "add     ";
-      op_instr_array[8'h04] = "add     ";
-      op_instr_array[8'h05] = "add     ";
-      extended_op_instr_array[{8'h80, 3'b000}] = "add     ";
-      extended_op_instr_array[{8'h81, 3'b000}] = "add     ";
-      extended_op_instr_array[{8'h83, 3'b000}] = "add     ";
-
-      op_instr_array[8'h10] = "adc     ";
-      op_instr_array[8'h11] = "adc     ";
-      op_instr_array[8'h12] = "adc     ";
-      op_instr_array[8'h13] = "adc     ";
-      op_instr_array[8'h14] = "adc     ";
-      op_instr_array[8'h15] = "adc     ";
-      extended_op_instr_array[{8'h80, 3'b010}] = "adc     ";
-      extended_op_instr_array[{8'h81, 3'b010}] = "adc     ";
-      extended_op_instr_array[{8'h83, 3'b010}] = "adc     ";
-
-      op_instr_array[8'h20] = "and     ";
-      op_instr_array[8'h21] = "and     ";
-      op_instr_array[8'h22] = "and     ";
-      op_instr_array[8'h23] = "and     ";
-      op_instr_array[8'h24] = "and     ";
-      op_instr_array[8'h25] = "and     ";
-      extended_op_instr_array[{8'h80, 3'b100}] = "and     ";
-      extended_op_instr_array[{8'h81, 3'b100}] = "and     ";
-      extended_op_instr_array[{8'h83, 3'b100}] = "and     ";
-
-      op_instr_array[8'h30] = "xor     ";
-      op_instr_array[8'h31] = "xor     ";
-      op_instr_array[8'h32] = "xor     ";
-      op_instr_array[8'h33] = "xor     ";
-      op_instr_array[8'h34] = "xor     ";
-      op_instr_array[8'h35] = "xor     ";
-      extended_op_instr_array[{8'h80, 3'b110}] = "xor     ";
-      extended_op_instr_array[{8'h81, 3'b110}] = "xor     ";
-      extended_op_instr_array[{8'h83, 3'b110}] = "xor     ";
-
-      op_instr_array[8'h08] = "or      ";
-      op_instr_array[8'h09] = "or      ";
-      op_instr_array[8'h0A] = "or      ";
-      op_instr_array[8'h0B] = "or      ";
-      op_instr_array[8'h0C] = "or      ";
-      op_instr_array[8'h0D] = "or      ";
-      extended_op_instr_array[{8'h80, 3'b001}] = "or      ";
-      extended_op_instr_array[{8'h81, 3'b001}] = "or      ";
-      extended_op_instr_array[{8'h83, 3'b001}] = "or      ";
-
-      op_instr_array[8'h18] = "sbb     ";
-      op_instr_array[8'h19] = "sbb     ";
-      op_instr_array[8'h1A] = "sbb     ";
-      op_instr_array[8'h1B] = "sbb     ";
-      op_instr_array[8'h1C] = "sbb     ";
-      op_instr_array[8'h1D] = "sbb     ";
-      extended_op_instr_array[{8'h80, 3'b011}] = "sbb     ";
-      extended_op_instr_array[{8'h81, 3'b011}] = "sbb     ";
-      extended_op_instr_array[{8'h83, 3'b011}] = "sbb     ";
-
-      op_instr_array[8'h28] = "sub     ";
-      op_instr_array[8'h29] = "sub     ";
-      op_instr_array[8'h2A] = "sub     ";
-      op_instr_array[8'h2B] = "sub     ";
-      op_instr_array[8'h2C] = "sub     ";
-      op_instr_array[8'h2D] = "sub     ";
-      extended_op_instr_array[{8'h80, 3'b101}] = "sub     ";
-      extended_op_instr_array[{8'h81, 3'b101}] = "sub     ";
-      extended_op_instr_array[{8'h83, 3'b101}] = "sub     ";
-
-      op_instr_array[8'h38] = "cmp     ";
-      op_instr_array[8'h39] = "cmp     ";
-      op_instr_array[8'h3A] = "cmp     ";
-      op_instr_array[8'h3B] = "cmp     ";
-      op_instr_array[8'h3C] = "cmp     ";
-      op_instr_array[8'h3D] = "cmp     ";
-      extended_op_instr_array[{8'h80, 3'b111}] = "cmp     ";
-      extended_op_instr_array[{8'h81, 3'b111}] = "cmp     ";
-      extended_op_instr_array[{8'h83, 3'b111}] = "cmp     ";
-
-      extended_op_instr_array[{8'hC6, 3'b000}] = "mov     ";
-      extended_op_instr_array[{8'hC7, 3'b000}] = "mov     ";
-      op_instr_array[8'h88] = "mov     ";
-      op_instr_array[8'h89] = "mov     ";
-      op_instr_array[8'h8A] = "mov     ";
-      op_instr_array[8'h8B] = "mov     ";
-      op_instr_array[8'h8C] = "mov     ";
-      op_instr_array[8'h8E] = "mov     ";
-      op_instr_array[8'hB0] = "mov     ";
-      op_instr_array[8'hB1] = "mov     ";
-      op_instr_array[8'hB2] = "mov     ";
-      op_instr_array[8'hB3] = "mov     ";
-      op_instr_array[8'hB4] = "mov     ";
-      op_instr_array[8'hB5] = "mov     ";
-      op_instr_array[8'hB6] = "mov     ";
-      op_instr_array[8'hB7] = "mov     ";
-      op_instr_array[8'hB8] = "mov     ";
-      op_instr_array[8'hB9] = "mov     ";
-      op_instr_array[8'hBA] = "mov     ";
-      op_instr_array[8'hBB] = "mov     ";
-      op_instr_array[8'hBC] = "mov     ";
-      op_instr_array[8'hBD] = "mov     ";
-      op_instr_array[8'hBE] = "mov     ";
-      op_instr_array[8'hBF] = "mov     ";
-      op_instr_array[8'hA0] = "mov     ";
-      op_instr_array[8'hA1] = "mov     ";
-      op_instr_array[8'hA2] = "mov     ";
-      op_instr_array[8'hA3] = "mov     ";
-      op_instr_array[8'hA4] = "movs    ";  //TODO: Also takes names movsB/movsW/movsD/movsQ
-      op_instr_array[8'hA5] = "movs    ";  //TODO: Also takes names movsB/movsW/movsD/movsQ
-
-      op_instr_array[8'hE8] = "callq   ";
-      op_instr_array[8'h9A] = "callf   ";
-      extended_op_instr_array[{8'hFF, 3'b010}] = "callq   ";
-      extended_op_instr_array[{8'hFF, 3'b011}] = "callq   ";
-      extended_op_instr_array[{8'hFF, 3'b100}] = "jmp     ";
-      
-      // TODO: CBW/CWDE/CDQE - opcode same 98, but depends on default operand size and REX prefix.
-      // TODO: CWD/CDQ/CQO - opcode same 99, but depends on default operand size and REX prefix.
-
-      op_instr_array[8'hF8] = "clc     ";
-      op_instr_array[8'hFC] = "cld     ";
-      op_instr_array[8'hFA] = "cli     ";
-      op_instr_array[8'hF5] = "cmc     ";
-
-      // TODO: Can have names CMPSB, CMPSW, CMPSD, or CMPSQ based on size. Take as special case?
-      op_instr_array[8'hA6] = "cmps    ";
-      op_instr_array[8'hA7] = "cmps    ";
-
-      extended_op_instr_array[{8'hFF, 3'b001}] = "dec     ";
-      extended_op_instr_array[{8'hFE, 3'b001}] = "dec     ";
-      extended_op_instr_array[{8'hFF, 3'b000}] = "inc     ";
-      extended_op_instr_array[{8'hFE, 3'b000}] = "inc     ";
-
-      op_instr_array[8'hA8] = "test    ";
-      op_instr_array[8'hA9] = "test    ";
-      op_instr_array[8'h84] = "test    ";
-      op_instr_array[8'h85] = "test    ";
-      extended_op_instr_array[{8'hF6, 3'b000}] = "test    ";
-      extended_op_instr_array[{8'hF7, 3'b000}] = "test    ";
-      extended_op_instr_array[{8'hF6, 3'b010}] = "not     ";
-      extended_op_instr_array[{8'hF7, 3'b010}] = "not     ";
-      extended_op_instr_array[{8'hF6, 3'b011}] = "neg     ";
-      extended_op_instr_array[{8'hF7, 3'b011}] = "neg     ";
-      extended_op_instr_array[{8'hF6, 3'b110}] = "div     ";
-      extended_op_instr_array[{8'hF7, 3'b110}] = "div     ";
-      extended_op_instr_array[{8'hF6, 3'b111}] = "idiv    ";
-      extended_op_instr_array[{8'hF7, 3'b111}] = "idiv    ";
-      extended_op_instr_array[{8'hF6, 3'b100}] = "mul     ";
-      extended_op_instr_array[{8'hF7, 3'b100}] = "mul     ";
-      extended_op_instr_array[{8'hF6, 3'b101}] = "imul    ";  // TODO: Need to add for 2 length opcode
-      extended_op_instr_array[{8'hF7, 3'b101}] = "imul    ";
-      op_instr_array[8'h6B] = "imul    ";
-      op_instr_array[8'h69] = "imul    ";
-
-      op_instr_array[8'hC8] = "enter   ";
-
-      op_instr_array[8'hF4] = "hlt     ";
-
-      op_instr_array[8'hE4] = "in      ";
-      op_instr_array[8'hE5] = "in      ";
-      op_instr_array[8'hEC] = "in      ";
-      op_instr_array[8'hED] = "in      ";
-
-      // TODO: Can have names INS/INSB/INSW/INSD based on size. Take as special case?
-      op_instr_array[8'h6C] = "ins     ";
-      op_instr_array[8'h6D] = "ins     ";
-
-      op_instr_array[8'hCC] = "int     ";
-      op_instr_array[8'hCD] = "int     ";
-      op_instr_array[8'hCE] = "into    ";
-
-      // TODO: Can have names IRET/IRETD/IRETQ based on operand size. Take as special case?
-      op_instr_array[8'hCF] = "iretq   ";
-
-      // Jcc
-      op_instr_array[8'h77] = "ja      ";
-      op_instr_array[8'h73] = "jae     ";
-      op_instr_array[8'h72] = "jb      ";
-      op_instr_array[8'h76] = "jbe     ";
-      op_instr_array[8'hE3] = "jecxz   ";
-      op_instr_array[8'h74] = "je      ";
-      op_instr_array[8'h7F] = "jg      ";
-      op_instr_array[8'h7D] = "jge     ";
-      op_instr_array[8'h7C] = "jl      ";
-      op_instr_array[8'h7E] = "jle     ";
-      op_instr_array[8'h75] = "jne     ";
-      op_instr_array[8'h71] = "jno     ";
-      op_instr_array[8'h7B] = "jnp     ";
-      op_instr_array[8'h79] = "jns     ";
-      op_instr_array[8'h70] = "jo      ";
-      op_instr_array[8'h7A] = "jp      ";
-      op_instr_array[8'h78] = "js      ";
-
-      extended_op_instr_array[8'h87] = "ja      ";
-      extended_op_instr_array[8'h83] = "jae     ";
-      extended_op_instr_array[8'h82] = "jb      ";
-      extended_op_instr_array[8'h86] = "jbe     ";
-      extended_op_instr_array[8'h84] = "je      ";
-      extended_op_instr_array[8'h8F] = "jg      ";
-      extended_op_instr_array[8'h8D] = "jge     ";
-      extended_op_instr_array[8'h8C] = "jl      ";
-      extended_op_instr_array[8'h8E] = "jle     ";
-      extended_op_instr_array[8'h85] = "jne     ";
-      extended_op_instr_array[8'h81] = "jno     ";
-      extended_op_instr_array[8'h8B] = "jnp     ";
-      extended_op_instr_array[8'h89] = "jns     ";
-      extended_op_instr_array[8'h80] = "jo      ";
-      extended_op_instr_array[8'h8A] = "jp      ";
-      extended_op_instr_array[8'h88] = "js      ";
-
-      op_instr_array[8'hEB] = "jmp     ";
-      op_instr_array[8'hE9] = "jmpq    ";
-      op_instr_array[8'hEA] = "jmp     ";
-      extended_op_instr_array[{8'hFF, 3'b100}] = "jmp     ";
-      extended_op_instr_array[{8'hFF, 3'b101}] = "jmp     ";
-
-      op_instr_array[8'h8D] = "lea     ";
-
-      op_instr_array[8'hC9] = "leave   ";
-
-      // TODO: Can have names LODS/LODSB/LODSW/LODSD/LODSQ based on size. Take as special case?
-      op_instr_array[8'hAC] = "lods    ";
-      op_instr_array[8'hAD] = "lods    ";
-
-      op_instr_array[8'hE0] = "loopne  ";
-      op_instr_array[8'hE1] = "loope   ";
-      op_instr_array[8'hE2] = "loop    ";
-
-      // TODO: Add for opcode len > 1
-      op_instr_array[8'h90] = "nop     ";
-
-      op_instr_array[8'hE6] = "out     ";
-      op_instr_array[8'hE7] = "out     ";
-      op_instr_array[8'hEE] = "out     ";
-      op_instr_array[8'hEF] = "out     ";
-
-      // TODO: Can have names outS/outSB/outSW/outSD based on size. Take as special case?
-      op_instr_array[8'h6E] = "outs    ";
-      op_instr_array[8'h6F] = "outs    ";
-
-      //  TODO: Add for opcode len > 1
-      extended_op_instr_array[{8'h8F, 3'b000}] = "pop     ";
-      op_instr_array[8'h58] = "pop     ";
-      op_instr_array[8'h59] = "pop     ";
-      op_instr_array[8'h5A] = "pop     ";
-      op_instr_array[8'h5B] = "pop     ";
-      op_instr_array[8'h5C] = "pop     ";
-      op_instr_array[8'h5D] = "pop     ";
-      op_instr_array[8'h5E] = "pop     ";
-      op_instr_array[8'h5F] = "pop     ";
-
-      // TODO: Can have names POPF/POPFD/POPFQ based on size. Take as special case?
-      op_instr_array[8'h9D] = "popf    ";
-
-      //  TODO: Add for opcode len > 1
-      op_instr_array[8'h50] = "push    ";
-      op_instr_array[8'h51] = "push    ";
-      op_instr_array[8'h52] = "push    ";
-      op_instr_array[8'h53] = "push    ";
-      op_instr_array[8'h54] = "push    ";
-      op_instr_array[8'h55] = "push    ";
-      op_instr_array[8'h56] = "push    ";
-      op_instr_array[8'h57] = "push    ";
-      op_instr_array[8'h6A] = "push    ";
-      op_instr_array[8'h68] = "push    ";
-      extended_op_instr_array[{8'hFF, 3'b110}] = "push    ";
-
-      extended_op_instr_array[{8'hD0, 3'b010}] = "rcl     ";
-      extended_op_instr_array[{8'hD2, 3'b010}] = "rcl     ";
-      extended_op_instr_array[{8'hC0, 3'b010}] = "rcl     ";
-      extended_op_instr_array[{8'hD1, 3'b010}] = "rcl     ";
-      extended_op_instr_array[{8'hD3, 3'b010}] = "rcl     ";
-      extended_op_instr_array[{8'hC1, 3'b010}] = "rcl     ";
-      extended_op_instr_array[{8'hD0, 3'b011}] = "rcr     ";
-      extended_op_instr_array[{8'hD2, 3'b011}] = "rcr     ";
-      extended_op_instr_array[{8'hC0, 3'b011}] = "rcr     ";
-      extended_op_instr_array[{8'hD1, 3'b011}] = "rcr     ";
-      extended_op_instr_array[{8'hD3, 3'b011}] = "rcr     ";
-      extended_op_instr_array[{8'hC1, 3'b011}] = "rcr     ";
-      extended_op_instr_array[{8'hD0, 3'b000}] = "rol     ";
-      extended_op_instr_array[{8'hD2, 3'b000}] = "rol     ";
-      extended_op_instr_array[{8'hC0, 3'b000}] = "rol     ";
-      extended_op_instr_array[{8'hD1, 3'b000}] = "rol     ";
-      extended_op_instr_array[{8'hD3, 3'b000}] = "rol     ";
-      extended_op_instr_array[{8'hC1, 3'b000}] = "rol     ";
-      extended_op_instr_array[{8'hD0, 3'b001}] = "ror     ";
-      extended_op_instr_array[{8'hD2, 3'b001}] = "ror     ";
-      extended_op_instr_array[{8'hC0, 3'b001}] = "ror     ";
-      extended_op_instr_array[{8'hD1, 3'b001}] = "ror     ";
-      extended_op_instr_array[{8'hD3, 3'b001}] = "ror     ";
-      extended_op_instr_array[{8'hC1, 3'b001}] = "ror     ";
-      extended_op_instr_array[{8'hD0, 3'b100}] = "shl     ";
-      extended_op_instr_array[{8'hD2, 3'b100}] = "shl     ";
-      extended_op_instr_array[{8'hC0, 3'b100}] = "shl     ";
-      extended_op_instr_array[{8'hD1, 3'b100}] = "shl     ";
-      extended_op_instr_array[{8'hD3, 3'b100}] = "shl     ";
-      extended_op_instr_array[{8'hC1, 3'b100}] = "shl     ";
-      extended_op_instr_array[{8'hD0, 3'b111}] = "sar     ";
-      extended_op_instr_array[{8'hD2, 3'b111}] = "sar     ";
-      extended_op_instr_array[{8'hC0, 3'b111}] = "sar     ";
-      extended_op_instr_array[{8'hD1, 3'b111}] = "sar     ";
-      extended_op_instr_array[{8'hD3, 3'b111}] = "sar     ";
-      extended_op_instr_array[{8'hC1, 3'b111}] = "sar     ";
-      extended_op_instr_array[{8'hD0, 3'b101}] = "shr     ";
-      extended_op_instr_array[{8'hD2, 3'b101}] = "shr     ";
-      extended_op_instr_array[{8'hC0, 3'b101}] = "shr     ";
-      extended_op_instr_array[{8'hD1, 3'b101}] = "shr     ";
-      extended_op_instr_array[{8'hD3, 3'b101}] = "shr     ";
-      extended_op_instr_array[{8'hC1, 3'b101}] = "shr     ";
-
-      // TODO: Can have names PUSHF/PUSHFD/PUSHFQ based on size. Take as special case?
-      op_instr_array[8'h9C] = "pushf   ";
-
-      op_instr_array[8'hC2] = "retq    ";
-      op_instr_array[8'hC3] = "retq    ";
-      op_instr_array[8'hCA] = "retq    ";
-      op_instr_array[8'hCB] = "retq    ";
-
-      // TODO: Can have names SCAS/SCASB/SCASW/SCASD/SCASQ based on size. Take as special case?
-      op_instr_array[8'hAE] = "scas    ";
-      op_instr_array[8'hAF] = "scas    ";
-
-      op_instr_array[8'hF9] = "stc     ";
-      op_instr_array[8'hFD] = "std     ";
-      op_instr_array[8'hF9] = "sti     ";
-
-      // TODO: Can have names STOS/STOSB/STOSW/STOSD/STOSQ based on size. Take as special case?
-      op_instr_array[8'hAA] = "stos    ";
-      op_instr_array[8'hAB] = "stos    ";
-
-      op_instr_array[8'h9B] = "wait    ";  // TODO: Can also be named FWAIT
-
-      op_instr_array[8'h91] = "xchg    ";
-      op_instr_array[8'h92] = "xchg    ";
-      op_instr_array[8'h93] = "xchg    ";
-      op_instr_array[8'h94] = "xchg    ";
-      op_instr_array[8'h95] = "xchg    ";
-      op_instr_array[8'h96] = "xchg    ";
-      op_instr_array[8'h97] = "xchg    ";
-      op_instr_array[8'h86] = "xchg    ";
-      op_instr_array[8'h87] = "xchg    ";
-
-      op_instr_array[8'hD7] = "xlat    ";  // TODO: Can also be named XLATB
-
-      // Prefixes
-      op_instr_array[8'hF0] = "lock    ";
-      op_instr_array[8'hF3] = "rep     ";   // TODO: Can also be REPE
-      op_instr_array[8'hF2] = "repne   ";
 
       // For MOV
       // RM and MR
@@ -1189,11 +829,7 @@ module Decode (
 
                 assert(modrm_array[decode_bytes[opcode_start_index*8 +: 8]] == 1) 
                    else $error("Mod R/M expected for opcode: %x", decode_bytes[opcode_start_index*8 +: 8]);
-/*               $write("%s ",
-                        extended_op_instr_array[{decode_bytes[opcode_start_index*8 +: 8],
-                                                decode_bytes[(opcode_start_index+1)*8+2 +:3]}]);*/
             end else begin 
-/*                $write("%s ", op_instr_array[decode_bytes[opcode_start_index*8 +: 8]]);*/
 
                 imm_len = get_imm(decode_bytes[opcode_start_index*8 +: 8]);
                 if((modrm_array[decode_bytes[opcode_start_index*8 +: 8]] == 0) && (imm_len == 0)) begin
@@ -1352,13 +988,7 @@ module Decode (
                 opcode == 8'hF7 ||
                 opcode == 8'hFE ||
                 opcode == 8'hFF) begin
-               //$write("%s ",
-               //         extended_op_instr_array[{decode_bytes[opcode_start_index*8 +: 8],
-               //                                 decode_bytes[(opcode_start_index+1)*8+2 +:3]}]);
             end else begin
-               if (op_instr_array[decode_bytes[opcode_start_index*8 +: 8]] != "        ") begin
-                  //$write("%s ", op_instr_array[decode_bytes[opcode_start_index*8 +: 8]]);  
-               end
             end
 
          // Decode each opcode
@@ -1438,8 +1068,6 @@ module Decode (
                extendedOpcodeOut = 0;
                hasExtendedOpcodeOut = 0;
                opcodeValidOut = 1;
-
-	       $write("\nDECODE::MOV opcode: %h, sourceReg1: %d, sourceReg1Val: %d, sourceReg2: %d, sourceReg2Val: %d, destReg: %d\n", opcode, sourceRegCode1Out, sourceRegCode1ValidOut, sourceRegCode2Out, sourceRegCode2ValidOut, destRegOut);
             end else if (opcode == 8'h83 && reg_field == 3'b110) begin
                /****************** For XOR *************/
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b10);
@@ -1785,8 +1413,6 @@ module Decode (
                   extendedOpcodeOut = 3'b001;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
-
-		  $write("\nDECODE:::OR OPCODE: %h, sourceReg1: %d, sourceReg1Val: %d, sourceReg2: %d, sourceReg2Val: %d Destreg: %d\n", opcode, sourceRegCode1Out, sourceRegCode1ValidOut, sourceRegCode2Out, sourceRegCode2ValidOut, destRegOut);
                end
             end else if (opcode == 8'h81 && reg_field == 3'b001) begin
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count, 2'b11);
@@ -1804,8 +1430,6 @@ module Decode (
                   extendedOpcodeOut = 3'b001;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
-
-		  $write("\nDECODE:::OR OPCODE: %h, sourceReg1: %d, sourceReg1Val: %d, sourceReg2: %d, sourceReg2Val: %d  Destreg: %d\n", opcode, sourceRegCode1Out, sourceRegCode1ValidOut, sourceRegCode2Out, sourceRegCode2ValidOut, destRegOut);
                end
             end else if (opcode == 8'h09) begin
                decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
@@ -1822,8 +1446,6 @@ module Decode (
                   extendedOpcodeOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
-
-		  $write("\nDECODE:::OR OPCODE: %h, sourceReg1: %d, sourceReg1Val: %d, sourceReg2: %d, sourceReg2Val: %d Destreg: %d\n", opcode, sourceRegCode1Out, sourceRegCode1ValidOut, sourceRegCode2Out, sourceRegCode2ValidOut, destRegOut);
                end
             end else if (opcode == 8'h0B) begin
                decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
@@ -1840,8 +1462,6 @@ module Decode (
                   extendedOpcodeOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
-
-		  $write("\nDECODE:::OR OPCODE: %h, sourceReg1: %d, sourceReg1Val: %d, sourceReg2: %d, sourceReg2Val: %d Destreg: %d\n", opcode, sourceRegCode1Out, sourceRegCode1ValidOut, sourceRegCode2Out, sourceRegCode2ValidOut, destRegOut);
                end
             end else if (opcode == 8'h0D) begin
                decode_I(imm32, 1);
@@ -1858,8 +1478,6 @@ module Decode (
                extendedOpcodeOut = 0;
                hasExtendedOpcodeOut = 0;
                opcodeValidOut = 1;
-
-               $write("\nDECODE:::OR OPCODE: %h, sourceReg1: %d, sourceReg1Val: %d, sourceReg2: %d, sourceReg2Val: %d Destreg: %d\n", opcode, sourceRegCode1Out, sourceRegCode1ValidOut, sourceRegCode2Out, sourceRegCode2ValidOut, destRegOut);
             end else if (opcode == 8'h83 && reg_field == 3'b011) begin
                /****************** For SBB *************/
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b10);
@@ -2529,7 +2147,6 @@ module Decode (
                //$write("Couldn't decode this!!\n");
             end
          end
-         $write("\n"); 
 
          if((opcode_start_index == opcode_end_index) && (opcodeOut == 8'hC3 || opcodeOut == 8'hCB || opcodeOut == 8'hCF)) begin
             opcodeValidOut = 1;
@@ -2558,12 +2175,9 @@ module Decode (
             regInUseBitMapOut[destRegOut] = 1;
          
             stallOut = 0;
-
-	    $write("\n*************************************** NOT STALLING ***********************\n");
          end else begin
             stallOut = 1;
             bytesDecodedThisCycleOut = 0;
-	    $write("\n*************************************** STALLING ***************************\n");
          end
 
          //if (decode_bytes == 0 && fetch_state == fetch_idle) $finish;

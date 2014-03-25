@@ -61,8 +61,6 @@ module Read (
 
    always_comb begin
       if (canReadIn && !stallIn) begin
-	 $write("\n************************************ CAN READ ***********************************\n");
-
 	 if (sourceReg1ValidIn) begin
 	    operandVal1Out = registerFileIn[sourceReg1In];
 	    operandVal1ValidOut = 1;
@@ -102,7 +100,6 @@ module Read (
 	 isReadSuccessfulOut = 1;
       end else begin
 	 isReadSuccessfulOut = 0;
-	 $write("\n************************************ CANNOT READ **********************************\n");
       end
    end	   
 endmodule
