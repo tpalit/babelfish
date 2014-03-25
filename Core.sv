@@ -225,6 +225,9 @@ module Core (
 
    bit 			regInUseBitMapOut[16];
    logic [63:0] 	regFileOut[16];
+
+   bit              killOut;
+   bit              killLatch;
    
    initial begin
       ifidCurrentRip = 0;
@@ -276,18 +279,14 @@ module Core (
 
    always @ (posedge bus.clk)
      if (bus.reset) begin
-
         fetch_state <= fetch_idle;
         fetch_rip <= entry & ~63;
         fetch_skip <= entry[5:0];
         fetch_offset <= 0;
-
      end else begin // !bus.reset
-
         bus.reqcyc <= send_fetch_req;
         bus.req <= fetch_rip & ~63;
         bus.reqtag <= { bus.READ, bus.MEMORY, 8'b0 };
-
         if (bus.respcyc) begin
            assert(!send_fetch_req) else $fatal;
            fetch_state <= fetch_active;
@@ -496,11 +495,13 @@ module Core (
 		exDestRegOut,
 		exDestRegSpecialOut,
 		exDestRegSpecialValidOut,
-		executeSuccessfulOut
+		executeSuccessfulOut,
+          killOut
 		);
 
    WriteBack writeback(	       
 		canWriteBack,
+          killLatch,
 		regInUseBitMap,
 		regFile,
 		exwbCurrentRip,
@@ -555,18 +556,13 @@ module Core (
         decode_offset <= decode_offset + { 3'b0, bytes_decoded_this_cycle };
         if (bytes_decoded_this_cycle > 0) begin
            canRead <= 1;
-//	   canExecute <= 1; /* TODO - Fix this. canExecute should be true only if first read stage done! */
-//	   canWriteBack <= 1;
         end else begin
            canRead <= 0;
-//	   canExecute <= 0;
-//	   canWriteBack <= 0;
         end
-
 	canExecute <= readSuccessfulOut;
 	canWriteBack <= executeSuccessfulOut;
 
-//	$write("\nbytes decoded this cycle: %d\n", bytes_decoded_this_cycle);
+	$write("\nbytes decoded this cycle: %d\n", bytes_decoded_this_cycle);
 
 	/* Latch the output values from each stage. */
 	
@@ -703,7 +699,8 @@ module Core (
 	regInUseBitMap[wbDestRegSpecialOut] <= regInUseBitMapOut[wbDestRegSpecialOut];
 	regInUseBitMap[wbSourceRegCode1Out] <= regInUseBitMapOut[wbSourceRegCode1Out];
 	regInUseBitMap[wbSourceRegCode2Out] <= regInUseBitMapOut[wbSourceRegCode2Out];
-
+     killLatch <= killOut;
+        
 	$write("\nWriteback state bitmap values: dest %d, destreg: %d, spdest %d, spdestreg: %d, src1 %d, src1reg: %d, src2 %d, src2reg: %d\n", regInUseBitMapOut[wbDestRegOut], wbDestRegOut, regInUseBitMapOut[wbDestRegSpecialOut], wbDestRegSpecialOut, regInUseBitMapOut[wbSourceRegCode1Out], wbSourceRegCode1Out, regInUseBitMapOut[wbSourceRegCode2Out], wbSourceRegCode2Out);
 
 	regInUseBitMap[idDestRegOut] <= regInUseBitMapOut[idDestRegOut];

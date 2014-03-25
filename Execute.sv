@@ -2,7 +2,7 @@
 
 module Execute (
 		input [0:31]  currentRipIn,
-		input 	      canExecuteIn,
+		input         canExecuteIn,
 		input [0:2]   extendedOpcodeIn,
 		input [0:31]  hasExtendedOpcodeIn,
 		input [0:31]  opcodeLengthIn,
@@ -10,12 +10,12 @@ module Execute (
 		input [0:7]   opcodeIn,
 		input [0:3]   sourceReg1In,
 		input [0:3]   sourceReg2In,
-		input 	      sourceReg1ValidIn,
-		input 	      sourceReg2ValidIn,
+		input         sourceReg1ValidIn,
+		input         sourceReg2ValidIn,
 		input [0:63]  operand1ValIn,
 		input [0:63]  operand2ValIn,
-		input 	      operand1ValValidIn,
-		input 	      operand2ValValidIn,
+		input         operand1ValValidIn,
+		input         operand2ValValidIn,
 		input [0:31]  immLenIn,
 		input [0:31]  dispLenIn,
 		input [0:7]   imm8In,
@@ -28,7 +28,7 @@ module Execute (
 		input [0:63]  disp64In,
 		input [0:3]   destRegIn,
 		input [0:3]   destRegSpecialIn,
-		input 	      destRegSpecialValidIn,
+		input         destRegSpecialValidIn,
 
 		output [0:63] aluResultOut,
 		output [0:63] aluResultSpecialOut,
@@ -41,12 +41,12 @@ module Execute (
 		output [0:7]  opcodeOut,
 		output [0:63] operand1ValOut,
 		output [0:63] operand2ValOut,
-		output 	      operand1ValValidOut,
-		output 	      operand2ValValidOut,
+		output        operand1ValValidOut,
+		output        operand2ValValidOut,
 		output [0:3]  sourceRegCode1Out,
 		output [0:3]  sourceRegCode2Out,
-		output 	      sourceRegCode1ValidOut,
-		output 	      sourceRegCode2ValidOut,
+		output        sourceRegCode1ValidOut,
+		output        sourceRegCode2ValidOut,
 		output [0:31] immLenOut,
 		output [0:31] dispLenOut,
 		output [0:7]  imm8Out,
@@ -59,15 +59,17 @@ module Execute (
 		output [0:63] disp64Out,
 		output [0:3]  destRegOut,
 		output [0:3]  destRegSpecialOut,
-		output 	      destRegSpecialValidOut,
-		output	      isExecuteSuccessfulOut
+		output        destRegSpecialValidOut,
+		output        isExecuteSuccessfulOut,
+          output        killOut
 		);
 
 	always_comb begin
 		if ((opcodeValidIn == 1) && (canExecuteIn == 1)) begin
-		        logic [0:63] temp_var = 0;
-			logic [0:127] mul_temp_var = 0;
 
+               logic [0:63] temp_var = 0;
+			logic [0:127] mul_temp_var = 0;
+               killOut = 0;
 			$write("\n******************************** CAN EXECUTE ***********************\n");
 
 			if ((opcodeLengthIn == 1) && (opcodeIn == 8'hC7) &&
@@ -349,7 +351,8 @@ module Execute (
 				aluResultOut = temp_var;
 				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn ==  8'hC3 || opcodeIn == 8'hCB || opcodeIn == 8'hCF)) begin
-				$finish;
+//				$finish;
+                    killOut = 1;
 				isExecuteSuccessfulOut = 1;
 			end else begin
 				isExecuteSuccessfulOut = 0;
