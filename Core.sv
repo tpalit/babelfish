@@ -704,14 +704,14 @@ module Core (
 	regInUseBitMap[wbSourceRegCode1Out] <= regInUseBitMapOut[wbSourceRegCode1Out];
 	regInUseBitMap[wbSourceRegCode2Out] <= regInUseBitMapOut[wbSourceRegCode2Out];
 
-	$write("\nWriteback state bitmap values: dest %d, spdest %d, src1 %d, src2 %d\n", regInUseBitMapOut[wbDestRegOut], regInUseBitMapOut[wbDestRegSpecialOut], regInUseBitMapOut[wbSourceRegCode1Out], regInUseBitMapOut[wbSourceRegCode2Out]);
+	$write("\nWriteback state bitmap values: dest %d, destreg: %d, spdest %d, spdestreg: %d, src1 %d, src1reg: %d, src2 %d, src2reg: %d\n", regInUseBitMapOut[wbDestRegOut], wbDestRegOut, regInUseBitMapOut[wbDestRegSpecialOut], wbDestRegSpecialOut, regInUseBitMapOut[wbSourceRegCode1Out], wbSourceRegCode1Out, regInUseBitMapOut[wbSourceRegCode2Out], wbSourceRegCode2Out);
 
 	regInUseBitMap[idDestRegOut] <= regInUseBitMapOut[idDestRegOut];
 	regInUseBitMap[idDestRegSpecialOut] <= regInUseBitMapOut[idDestRegSpecialOut];
 	regInUseBitMap[idSourceRegCode1Out] <= regInUseBitMapOut[idSourceRegCode1Out];
 	regInUseBitMap[idSourceRegCode2Out] <= regInUseBitMapOut[idSourceRegCode2Out];
 
-	$write("\nWriteback state bitmap values: dest %d, spdest %d, src1 %d, src2 %d\n", regInUseBitMapOut[idDestRegOut], regInUseBitMapOut[idDestRegSpecialOut], regInUseBitMapOut[idSourceRegCode1Out], regInUseBitMapOut[idSourceRegCode2Out]);
+	$write("\nDecode state bitmap values: dest %d, destreg: %d, spdest %d, spdestreg: %d, src1 %d, src1reg: %d, src2 %d, src2reg: %d\n", regInUseBitMapOut[idDestRegOut], idDestRegOut, regInUseBitMapOut[idDestRegSpecialOut], idDestRegSpecialOut, regInUseBitMapOut[idSourceRegCode1Out], idSourceRegCode1Out, regInUseBitMapOut[idSourceRegCode2Out], idSourceRegCode2Out);
 
 	print_stall_bitmap();
 

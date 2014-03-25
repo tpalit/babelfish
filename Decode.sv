@@ -1388,7 +1388,8 @@ module Decode (
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
                   sourceRegCode1Out = 0; // write operand
-                  sourceRegCode2Out = { rex_field[7], rm_field }; // read operand
+                  //sourceRegCode2Out = { rex_field[7], rm_field }; // read operand
+                  sourceRegCode2Out = { rex_field[5], reg_field }; // read operand
 		  sourceRegCode1ValidOut = 0;
 		  sourceRegCode2ValidOut = 1;
 		  destRegOut = { rex_field[7], rm_field }; // write operand
