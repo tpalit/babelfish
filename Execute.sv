@@ -59,7 +59,8 @@ module Execute (
 		output [0:63] disp64Out,
 		output [0:3]  destRegOut,
 		output [0:3]  destRegSpecialOut,
-		output 	      destRegSpecialValidOut
+		output 	      destRegSpecialValidOut,
+		output	      isExecuteSuccessfulOut
 		);
 
 	always_comb begin
@@ -67,15 +68,19 @@ module Execute (
 		        logic [0:63] temp_var = 0;
 			logic [0:127] mul_temp_var = 0;
 
+			$write("\n******************************** CAN EXECUTE ***********************\n");
+
 			if ((opcodeLengthIn == 1) && (opcodeIn == 8'hC7) &&
 				(hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b000)) begin
 				/* MOV immediate into operand 1 */
 
 				aluResultOut = imm64In;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && ((opcodeIn == 8'h89) || (opcodeIn == 8'h8B))) begin
 				/* MOV operand 2 into operand 1 */
 
 				aluResultOut = operand2ValIn;
+				isExecuteSuccessfulOut = 1;
 
 				$write("\nMOV::: operand1: %h, operand2: %h, aluResultOut: %h\n", operand1ValIn, operand2ValIn, aluResultOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hB8 ||
@@ -89,6 +94,7 @@ module Execute (
 				/* MOV immediate into operand 1 */
 
 				aluResultOut = imm64In;
+				isExecuteSuccessfulOut = 1;
 
 				$write("\nMOV()::: operand1: %h, operand2: %h, imm: %h, aluResultOut: %h\n", operand1ValIn, operand2ValIn, imm64In, aluResultOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h83 || opcodeIn == 8'h81)
@@ -98,6 +104,7 @@ module Execute (
 				temp_var = operand1ValIn | imm64In;
 
 				aluResultOut = temp_var;
+				isExecuteSuccessfulOut = 1;
 
 				$write("\nEXECUTE:::OR: opcode: %h, operandVal1In: %h, imm64In: %h, temp_var: %h, aluResult: %h\n", opcodeIn, operand1ValIn, imm64In, temp_var, aluResultOut);
 			end else if ((opcodeLengthIn == 1) && ((opcodeIn == 8'h09) || (opcodeIn == 8'h0B))) begin
@@ -106,6 +113,7 @@ module Execute (
 				temp_var = operand1ValIn | operand2ValIn;
 
 				aluResultOut = temp_var;
+				isExecuteSuccessfulOut = 1;
 
 				$write("\nEXECUTE:::OR: opcode: %h, operandVal1In: %h, operandVal2In: %h, temp_var: %h, aluResult: %h\n", opcodeIn, operand1ValIn, operand2ValIn, temp_var, aluResultOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h0D)) begin
@@ -115,6 +123,7 @@ module Execute (
 
 				aluResultOut = temp_var;
 
+				isExecuteSuccessfulOut = 1;
 				$write("\nEXECUTE:::OR: opcode: %h, operandVal1In: %h, imm64In: %h, temp_var: %h, aluResult: %h\n", opcodeIn, operand1ValIn, imm64In, temp_var, aluResultOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h83 || opcodeIn == 8'h81)
 				&& (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b000)) begin
@@ -123,6 +132,7 @@ module Execute (
 				temp_var = operand1ValIn + imm64In;
 
 				aluResultOut = temp_var;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && ((opcodeIn == 8'h01) || (opcodeIn == 8'h03))) begin
 				/* ADD operand 1 with operand 2 and write into operand 1 */
 
@@ -130,6 +140,7 @@ module Execute (
 
 				aluResultOut = temp_var;
 
+				isExecuteSuccessfulOut = 1;
 				$write("\nADD::: Operand1val: %d, operand2val: %d, aluResultOut: %d\n", operand1ValIn, operand2ValIn, aluResultOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h05)) begin
 				/* ADD operand 1 (RAX) with immediate and write into operand 1 (RAX) */
@@ -137,12 +148,14 @@ module Execute (
 				temp_var = operand1ValIn + imm64In;
 
 				aluResultOut = temp_var;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hF7) && (hasExtendedOpcodeIn == 1)
 				&& (extendedOpcodeIn == 3'b011)) begin
 				/* NEG operand 1 store in operand 1 */
 
 				temp_var = 0 - operand1ValIn;
 
+				isExecuteSuccessfulOut = 1;
 				aluResultOut = temp_var;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hF7) && (hasExtendedOpcodeIn == 1)
 				&& (extendedOpcodeIn == 3'b010)) begin
@@ -151,6 +164,7 @@ module Execute (
 				temp_var = ~operand1ValIn;
 
 				aluResultOut = temp_var;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hF7) && (hasExtendedOpcodeIn == 1)
 				&& (extendedOpcodeIn == 3'b100)) begin
 				/* MUL operand 1 with operand 2 (RAX) and write into operand 2 (RAX) and RDX the overflow? */
@@ -159,6 +173,7 @@ module Execute (
 
 				aluResultOut = mul_temp_var[64:127];
 				aluResultSpecialOut = mul_temp_var[0:63];
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hF7) && (hasExtendedOpcodeIn == 1)
 				&& (extendedOpcodeIn == 3'b101)) begin
 				/* IMUL operand 1 with operand 2 (RAX) and write into operand 2 (RAX) and RDX the overflow? */
@@ -167,18 +182,21 @@ module Execute (
 
 				aluResultOut = mul_temp_var[64:127];
 				aluResultSpecialOut = mul_temp_var[0:63];
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h6B || opcodeIn == 8'h69)) begin
 				/* IMUL RDX:operand 2 = operand 1 * imm8In sign-extended. TODO: Upper half lost, flags need to be set. */
 
 				mul_temp_var = operand2ValIn * imm64In;
 
 				aluResultOut = mul_temp_var[64:127];
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 2) && (opcodeIn == 8'hAF)) begin
 				/* IMUL RDX:operand 2 = operand 1 * operand 2 TODO: Upper half lost, flags need to be set. */
 
 				mul_temp_var = operand1ValIn * operand2ValIn;
 
 				aluResultOut = mul_temp_var[64:127];
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h83 || opcodeIn == 8'h81)
 				&& (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b110)) begin
 				/* XOR operand 1 with immediate and write into operand 1 */
@@ -186,18 +204,21 @@ module Execute (
 				temp_var = operand1ValIn ^ imm64In;
 
 				aluResultOut = temp_var;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && ((opcodeIn == 8'h31) || (opcodeIn == 8'h33))) begin
 				/* XOR operand 1 with operand 2 and write into operand 1 */
 
 				temp_var = operand1ValIn ^ operand2ValIn;
 
 				aluResultOut = temp_var;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h35)) begin
 				/* XOR operand 1 (RAX) with immediate and write into operand 1 (RAX) */
 
 				temp_var = operand1ValIn ^ imm64In;
 
 				aluResultOut = temp_var;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h83 || opcodeIn == 8'h81)
 				&& (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b100)) begin
 				/* AND operand 1 with immediate and write into operand 1 */
@@ -205,18 +226,21 @@ module Execute (
 				temp_var = operand1ValIn & imm64In;
 
 				aluResultOut = temp_var;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && ((opcodeIn == 8'h21) || (opcodeIn == 8'h23))) begin
 				/* AND operand 1 with operand 2 and write into operand 1 */
 	
 				temp_var = operand1ValIn & operand2ValIn;
 	
 				aluResultOut = temp_var;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h25)) begin
 				/* AND operand 1 (RAX) with immediate and write into operand 1 (RAX) */
 	
 				temp_var = operand1ValIn & imm64In;
 	
 				aluResultOut = temp_var;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h83 || opcodeIn == 8'h81)
 				&& (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b010)) begin
 				/* ADC operand 1 with immediate and write into operand 1 */
@@ -224,18 +248,21 @@ module Execute (
 				temp_var = operand1ValIn + imm64In; //TODO: Add CF flag
 	
 				aluResultOut = temp_var;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && ((opcodeIn == 8'h11) || (opcodeIn == 8'h13))) begin
 				/* ADC operand 1 with operand 2 and write into operand 1 */
 	
 				temp_var = operand1ValIn + operand2ValIn; //TODO: Add CF flag
 	
 				aluResultOut = temp_var;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h15)) begin
 				/* ADC operand 1 (RAX) with immediate and write into operand 1 (RAX) */
 	
 				temp_var = operand1ValIn + imm64In; //TODO: Add CF flag
 	
 				aluResultOut = temp_var;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h83 || opcodeIn == 8'h81)
 				&& (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b011)) begin
 				/* SBB operand 1 with immediate and write into operand 1 */
@@ -243,24 +270,28 @@ module Execute (
 				temp_var = operand1ValIn - imm64In; //TODO: Add CF flag
 	
 				aluResultOut = temp_var;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && ((opcodeIn == 8'h19) || (opcodeIn == 8'h1B))) begin
 				/* SBB operand 1 with operand 2 and write into operand 1 */
 	
 				temp_var = operand1ValIn - operand2ValIn; //TODO: Add CF flag
 	
 				aluResultOut = temp_var;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h1D)) begin
 				/* SBB operand 1 (RAX) with immediate and write into operand 1 (RAX) */
 	
 				temp_var = operand1ValIn - imm64In; //TODO: Add CF flag
 	
 				aluResultOut = temp_var;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h83 || opcodeIn == 8'h81)
 				&& (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b101)) begin
 				/* SUB operand 1 with immediate and write into operand 1 */
 	
 				temp_var = operand1ValIn - imm64In;
 	
+				isExecuteSuccessfulOut = 1;
 				aluResultOut = temp_var;
 			end else if ((opcodeLengthIn == 1) && ((opcodeIn == 8'h29) || (opcodeIn == 8'h2B))) begin
 				/* SUB operand 1 with operand 2 and write into operand 1 */
@@ -268,12 +299,14 @@ module Execute (
 				temp_var = operand1ValIn - operand2ValIn;
 	
 				aluResultOut = temp_var;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h2D)) begin
 				/* SUB operand 1 (RAX) with immediate and write into operand 1 (RAX) */
 	
 				temp_var = operand1ValIn - imm64In;
 	
 				aluResultOut = temp_var;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h83 || opcodeIn == 8'h81)
 				&& (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b111)) begin
 				/* CMP operand 1 with immediate and write into operand 1 */
@@ -282,6 +315,7 @@ module Execute (
 				temp_var = operand1ValIn - imm64In;
 	
 				aluResultOut = temp_var;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && ((opcodeIn == 8'h39) || (opcodeIn == 8'h3B))) begin
 				/* CMP operand 1 with operand 2 and write into operand 1 */
 				/* TODO: SET APPROPRIATE FLAGS AS DONE IN SUB */
@@ -289,6 +323,7 @@ module Execute (
 				temp_var = operand1ValIn - operand2ValIn;
 	
 				aluResultOut = temp_var;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h3D)) begin
 				/* CMP operand 1 (RAX) with immediate and write into operand 1 (RAX) */
 				/* TODO: SET APPROPRIATE FLAGS AS DONE IN SUB */
@@ -296,12 +331,14 @@ module Execute (
 				temp_var = operand1ValIn - imm64In;
 	
 				aluResultOut = temp_var;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hFF) && (hasExtendedOpcodeIn == 1)
 				&& (extendedOpcodeIn == 3'b001)) begin
 				/* DEC operand 1 by 1 */
 	
 				temp_var = operand1ValIn - 1;
 	
+				isExecuteSuccessfulOut = 1;
 				aluResultOut = temp_var;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hFF) && (hasExtendedOpcodeIn == 1)
 				&& (extendedOpcodeIn == 3'b000)) begin
@@ -310,8 +347,12 @@ module Execute (
 				temp_var = operand1ValIn + 1;
 	
 				aluResultOut = temp_var;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn ==  8'hC3 || opcodeIn == 8'hCB || opcodeIn == 8'hCF)) begin
 				$finish;
+				isExecuteSuccessfulOut = 1;
+			end else begin
+				isExecuteSuccessfulOut = 0;
 			end
 		   
   		        currentRipOut = currentRipIn;
@@ -340,7 +381,11 @@ module Execute (
 		        sourceRegCode1ValidOut = sourceReg1ValidIn;
 		        sourceRegCode2ValidOut = sourceReg2ValidIn;
 
-		end // if ((opcodeValidIn == 1) && (canExecuteIn == 1))
+		end else begin// if ((opcodeValidIn == 1) && (canExecuteIn == 1))
+			isExecuteSuccessfulOut = 0;
+
+			$write("\n******************************** CANNNOT EXECUTE *******************\n");
+		end
 	        operand1ValValidOut = operand1ValValidIn;
 	        operand2ValValidOut = operand2ValValidIn;
 	end

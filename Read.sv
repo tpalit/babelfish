@@ -55,11 +55,14 @@ module Read (
 	     output [0:63] disp64Out,
 	     output [0:3]  destRegOut,
              output [0:3]  destRegisterSpecialOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
-             output 	   destRegisterSpecialValidOut // TODO: Treat IMUL as special case with dest as RDX:RAX
+             output 	   destRegisterSpecialValidOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
+	     output	   isReadSuccessfulOut
 	     );
 
    always_comb begin
       if (canReadIn && !stallIn) begin
+	 $write("\n************************************ CAN READ ***********************************\n");
+
 	 if (sourceReg1ValidIn) begin
 	    operandVal1Out = registerFileIn[sourceReg1In];
 	    operandVal1ValidOut = 1;
@@ -95,6 +98,11 @@ module Read (
 	 sourceRegCode2Out = sourceReg2In;
 	 sourceRegCode1ValidOut = sourceReg1ValidIn;
 	 sourceRegCode2ValidOut = sourceReg2ValidIn;
+
+	 isReadSuccessfulOut = 1;
+      end else begin
+	 isReadSuccessfulOut = 0;
+	 $write("\n************************************ CANNOT READ **********************************\n");
       end
    end	   
 endmodule

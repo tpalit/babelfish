@@ -33,15 +33,18 @@ module WriteBack (
 
 	always_comb begin
 		if (canWriteBackIn == 1) begin
+			$write("\n************************** CaN WRITEBACK ***************************\n");
 			/* Check regInUseBitMapIn, and set all sources and dest as unused. */
 			if (sourceReg1ValidIn == 1) begin
 				regInUseBitMapOut[sourceReg1In] = 0;
+				$write("\n************************** SRC1 = 0 ***************************\n");
 			end else begin
 				regInUseBitMapOut[sourceReg1In] = regInUseBitMapIn[sourceReg1In];
 			end
 
 			if (sourceReg2ValidIn == 1) begin
 				regInUseBitMapOut[sourceReg2In] = 0;
+				$write("\n************************** SRC2 = 0 ***************************\n");
 			end else begin
 				regInUseBitMapOut[sourceReg2In] = regInUseBitMapIn[sourceReg2In];
 			end
@@ -49,13 +52,15 @@ module WriteBack (
 			if (destRegSpecialValidIn == 1) begin
 				regInUseBitMapOut[destRegSpecialIn] = 0;
 				regFileOut[destRegSpecialIn] = aluResultSpecialIn;
+				$write("\n************************** DESTSP = 0 ***************************\n");
 			end else begin
 				regInUseBitMapOut[destRegSpecialIn] = regInUseBitMapIn[destRegSpecialIn];
 				regFileOut[destRegSpecialIn] = regFileIn[destRegSpecialIn];
 			end
 
-			regInUseBitMapOut[destRegIn] = regInUseBitMapIn[destRegIn];
+			regInUseBitMapOut[destRegIn] = 0;
 			regFileOut[destRegIn] = aluResultIn;
+			$write("\n************************** DEST = 0 ***************************\n");
 
   		        currentRipOut = currentRipIn;
 		        sourceRegCode1Out = sourceReg1In;
@@ -67,6 +72,9 @@ module WriteBack (
 		        destRegSpecialValidOut = destRegSpecialValidIn;
 			aluResultOut = aluResultIn;
 			aluResultSpecialOut = aluResultSpecialIn;
+		end else begin
+
+			$write("\n************************** CaNNOT WRITEBACK ************************\n");
 		end
 	end
 endmodule

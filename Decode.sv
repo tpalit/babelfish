@@ -2,9 +2,14 @@
 
 module Decode (
 	       input [0:15*8-1] decode_bytes,
+		/* verilator lint_off UNUSED */
 	       input 		stallIn,
+		/* verilator lint_on UNUSED */
+	       input		regInUseBitMapIn[16],
 	       input [0:31] 	currentRipIn,
 	       input 		canDecodeIn,
+	       output 		stallOut,
+	       output		regInUseBitMapOut[16],
 	       output [0:31] 	currentRipOut,
 	       output [0:2] 	extendedOpcodeOut,
 	       output [0:31] 	hasExtendedOpcodeOut,
@@ -1051,15 +1056,38 @@ module Decode (
       end
    endfunction
 
-      function logic is_prefix(logic[0:7] instr_byte);
+   function logic is_prefix(logic[0:7] instr_byte);
       casez(instr_byte)
         8'hF0, 8'hF2, 8'hF3, 8'h2e, 8'h36, 8'h3e, 8'h26, 8'h64, 8'h65, 8'h66, 8'h67, 8'b0100????: return 1;
         default: return 0;
       endcase
    endfunction
 
+   function bit toStallOrNotToStall(logic[0:3] src1, bit src1Valid, logic[0:3] src2, bit src2Valid, logic[0:3] dest, logic[0:3] destSpecial, bit destSpecialValid, bit regInUseBM[16]);
+      /* That's the question! */
+
+      if (src1Valid == 1 && regInUseBM[src1] == 1) begin
+	 return 1;
+      end
+
+      if (src2Valid == 1 && regInUseBM[src2] == 1) begin
+	 return 1;
+      end
+
+      if (destSpecialValid == 1 && regInUseBM[destSpecial] == 1) begin
+	 return 1;
+      end
+
+      if (regInUseBM[dest] == 1) begin
+	 return 1;
+      end
+
+      return 0;
+   endfunction
+
    always_comb begin
-      if (canDecodeIn && !stallIn) begin : decode_block
+      //if (canDecodeIn && !stallIn) begin : decode_block
+      if (canDecodeIn) begin : decode_block
          int instr_count = 0;
          int opcode_start_index = 0; // the index of the first byte of the opcode
          int opcode_end_index = 0; // the index of the last byte of the opcode.
@@ -2506,10 +2534,43 @@ module Decode (
             opcodeValidOut = 1;
          end
 
+         if (!toStallOrNotToStall(sourceRegCode1Out, sourceRegCode1ValidOut, sourceRegCode2Out, sourceRegCode2ValidOut, destRegOut, destRegSpecialOut, destRegSpecialValidOut, regInUseBitMapIn)) begin
+
+            if (sourceRegCode1ValidOut) begin
+               regInUseBitMapOut[sourceRegCode1Out] = 1;
+            end else begin
+               regInUseBitMapOut[sourceRegCode1Out] = regInUseBitMapIn[sourceRegCode1Out];
+	    end
+
+            if (sourceRegCode2ValidOut) begin
+               regInUseBitMapOut[sourceRegCode2Out] = 1;
+            end else begin
+	       regInUseBitMapOut[sourceRegCode2Out] = regInUseBitMapIn[sourceRegCode2Out];
+	    end
+
+            if (destRegSpecialValidOut) begin
+               regInUseBitMapOut[destRegSpecialOut] = 1;
+            end else begin
+	       regInUseBitMapOut[destRegSpecialOut] = regInUseBitMapIn[destRegSpecialOut];
+	    end
+         
+            regInUseBitMapOut[destRegOut] = 1;
+         
+            stallOut = 0;
+
+	    $write("\n*************************************** NOT STALLING ***********************\n");
+         end else begin
+            stallOut = 1;
+            bytesDecodedThisCycleOut = 0;
+	    $write("\n*************************************** STALLING ***************************\n");
+         end
+
          //if (decode_bytes == 0 && fetch_state == fetch_idle) $finish;
       end else begin
          bytesDecodedThisCycleOut = 0;
       end // else: !if(canDecodeIn)
+
       currentRipOut = currentRipIn;
-   end   
+
+   end
 endmodule

@@ -218,6 +218,9 @@ module Core (
    bit	 		wbDestRegSpecialValidOut = 0;
    logic [0:63]		wbAluResultOut = 0;
    logic [0:63]		wbAluResultSpecialOut = 0;
+
+   bit			readSuccessfulOut = 0;
+   bit			executeSuccessfulOut = 0;
    /* verilator lint_on UNUSED */
 
    bit 			regInUseBitMapOut[16];
@@ -315,36 +318,39 @@ module Core (
       opcode_inside = (value >= low && value <= high);
    endfunction
 
-   function bit toStallOrNotToStall(logic[0:3] src1, bit src1Valid, logic[0:3] src2, bit src2Valid, logic[0:3] dest, logic[0:3] destSpecial, bit destSpecialValid);
-      /* That's the question! */
-
-      if (src1Valid == 1 && regInUseBitMap[src1] == 1) begin
-	 return 1;
-      end
-
-      if (src2Valid == 1 && regInUseBitMap[src2] == 1) begin
-	 return 1;
-      end
-
-      if (destSpecialValid == 1 && regInUseBitMap[destSpecial] == 1) begin
-	 return 1;
-      end
-
-      if (regInUseBitMap[dest] == 1) begin
-	 return 1;
-      end
-
-      return 0;
-   endfunction
+//   function bit toStallOrNotToStall(logic[0:3] src1, bit src1Valid, logic[0:3] src2, bit src2Valid, logic[0:3] dest, logic[0:3] destSpecial, bit destSpecialValid);
+//      /* That's the question! */
+//
+//      if (src1Valid == 1 && regInUseBitMap[src1] == 1) begin
+//	 return 1;
+//      end
+//
+//      if (src2Valid == 1 && regInUseBitMap[src2] == 1) begin
+//	 return 1;
+//      end
+//
+//      if (destSpecialValid == 1 && regInUseBitMap[destSpecial] == 1) begin
+//	 return 1;
+//      end
+//
+//      if (regInUseBitMap[dest] == 1) begin
+//	 return 1;
+//      end
+//
+//      return 0;
+//   endfunction
 
    logic [3:0]                 bytes_decoded_this_cycle;
 
    /* Initialize the Decode module */
    Decode decode(	       
 		decode_bytes,
-		idStallIn,	       
+		idStallIn,
+		regInUseBitMap,     
 		ifidCurrentRip,
 		can_decode,
+		idStallOut,
+		regInUseBitMapOut,
 		idCurrentRipOut,
 		idExtendedOpcodeOut,
 		idHasExtendedOpcodeOut,
@@ -368,7 +374,8 @@ module Core (
 		idDestRegOut,
 		idDestRegSpecialOut,
 		idDestRegSpecialValidOut,
-		bytes_decoded_this_cycle);
+		bytes_decoded_this_cycle
+		);
 
    Read read(
 		canRead,
@@ -424,7 +431,8 @@ module Core (
 		rdDisp64Out,
 		rdDestRegOut,
 		rdDestRegSpecialOut,
-		rdDestRegSpecialValidOut
+		rdDestRegSpecialValidOut,
+		readSuccessfulOut
 		);
    
    /* Initialize the Execute module */
@@ -487,7 +495,8 @@ module Core (
 		exDisp64Out,
 		exDestRegOut,
 		exDestRegSpecialOut,
-		exDestRegSpecialValidOut
+		exDestRegSpecialValidOut,
+		executeSuccessfulOut
 		);
 
    WriteBack writeback(	       
@@ -546,13 +555,16 @@ module Core (
         decode_offset <= decode_offset + { 3'b0, bytes_decoded_this_cycle };
         if (bytes_decoded_this_cycle > 0) begin
            canRead <= 1;
-	   canExecute <= 1; /* TODO - Fix this. canExecute should be true only if first read stage done! */
-	   canWriteBack <= 1;
+//	   canExecute <= 1; /* TODO - Fix this. canExecute should be true only if first read stage done! */
+//	   canWriteBack <= 1;
         end else begin
            canRead <= 0;
-	   canExecute <= 0;
-	   canWriteBack <= 0;
+//	   canExecute <= 0;
+//	   canWriteBack <= 0;
         end
+
+	canExecute <= readSuccessfulOut;
+	canWriteBack <= executeSuccessfulOut;
 
 //	$write("\nbytes decoded this cycle: %d\n", bytes_decoded_this_cycle);
 
@@ -682,7 +694,7 @@ module Core (
 //           print_stall_bitmap();
 //	end
 
-	idStallIn <= 0;
+	idStallIn <= idStallOut;
 
 	regFile[wbDestRegOut] <= regFileOut[wbDestRegOut];
 	regFile[wbDestRegSpecialOut] <= regFileOut[wbDestRegSpecialOut];
@@ -691,6 +703,17 @@ module Core (
 	regInUseBitMap[wbDestRegSpecialOut] <= regInUseBitMapOut[wbDestRegSpecialOut];
 	regInUseBitMap[wbSourceRegCode1Out] <= regInUseBitMapOut[wbSourceRegCode1Out];
 	regInUseBitMap[wbSourceRegCode2Out] <= regInUseBitMapOut[wbSourceRegCode2Out];
+
+	$write("\nWriteback state bitmap values: dest %d, spdest %d, src1 %d, src2 %d\n", regInUseBitMapOut[wbDestRegOut], regInUseBitMapOut[wbDestRegSpecialOut], regInUseBitMapOut[wbSourceRegCode1Out], regInUseBitMapOut[wbSourceRegCode2Out]);
+
+	regInUseBitMap[idDestRegOut] <= regInUseBitMapOut[idDestRegOut];
+	regInUseBitMap[idDestRegSpecialOut] <= regInUseBitMapOut[idDestRegSpecialOut];
+	regInUseBitMap[idSourceRegCode1Out] <= regInUseBitMapOut[idSourceRegCode1Out];
+	regInUseBitMap[idSourceRegCode2Out] <= regInUseBitMapOut[idSourceRegCode2Out];
+
+	$write("\nWriteback state bitmap values: dest %d, spdest %d, src1 %d, src2 %d\n", regInUseBitMapOut[idDestRegOut], regInUseBitMapOut[idDestRegSpecialOut], regInUseBitMapOut[idSourceRegCode1Out], regInUseBitMapOut[idSourceRegCode2Out]);
+
+	print_stall_bitmap();
 
 //	/* TODO - Temporary write back stage! */
 //	regFile[exDestRegOut] <= exAluResultOut;
