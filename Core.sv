@@ -12,6 +12,9 @@ module Core (
 
    wire canExecute;
    wire canRead;
+   /* verilator lint_off UNDRIVEN */
+   wire canWriteBack;
+   /* verilator lint_on UNDRIVEN */
 
    logic [63:0] regFile[16];
 
@@ -29,6 +32,7 @@ module Core (
    logic [31:0] 	ifidCurrentRip;
    logic [31:0] 	idrdCurrentRip;
    logic [31:0] 	rdexCurrentRip;
+   logic [31:0] 	exwbCurrentRip;
 
    logic [0:2] 		idrdExtendedOpcode = 0;
    logic [0:31] 	idrdHasExtendedOpcode = 0;
@@ -80,6 +84,40 @@ module Core (
    logic [0:3]		rdexDestRegSpecial = 0;
    bit	 		rdexDestRegSpecialValid = 0;
 
+   /* verilator lint_off UNUSED */
+   logic [0:2] 		exwbExtendedOpcode = 0;
+   logic [0:31] 	exwbHasExtendedOpcode = 0;
+   logic [0:31] 	exwbOpcodeLength = 0;
+   logic [0:0] 		exwbOpcodeValid = 0; 
+   logic [0:7] 		exwbOpcode = 0;
+   logic [0:63] 	exwbOperandVal1 = 0;
+   logic [0:63] 	exwbOperandVal2 = 0;
+   bit 			exwbOperandVal1Valid = 0;
+   bit 			exwbOperandVal2Valid = 0;   
+   logic [0:3] 		exwbSourceRegCode1 = 0;
+   logic [0:3] 		exwbSourceRegCode2 = 0;
+   bit 			exwbSourceRegCode1Valid = 0;
+   bit 			exwbSourceRegCode2Valid = 0;   
+   logic [0:31] 	exwbImmLen = 0;
+   logic [0:31] 	exwbDispLen = 0;
+   logic [0:7] 		exwbImm8 = 0;
+   logic [0:15] 	exwbImm16 = 0;
+   logic [0:31] 	exwbImm32 = 0;
+   logic [0:63] 	exwbImm64 = 0;
+   logic [0:7] 		exwbDisp8 = 0;
+   logic [0:15] 	exwbDisp16 = 0;
+   logic [0:31] 	exwbDisp32 = 0;
+   logic [0:63] 	exwbDisp64 = 0;
+   logic [0:3]		exwbDestReg = 0;
+   logic [0:3]		exwbDestRegSpecial = 0;
+   bit	 		exwbDestRegSpecialValid = 0;
+   logic [0:63]		exwbAluResult = 0;
+   logic [0:63]		exwbAluResultSpecial = 0;
+   /* verilator lint_on UNUSED */
+
+   bit 			regInUseBitMap[16];
+   logic 		idStallIn;
+
    /******** Wires ********/
 
    /* TODO: Change this to 64 bits */
@@ -87,10 +125,11 @@ module Core (
    logic [31:0]         rdCurrentRipOut;
    /* verilator lint_off UNUSED */
    logic [31:0]         exCurrentRipOut;
+   logic [31:0]         wbCurrentRipOut;
+   logic 		idStallOut;
    /* verilator lint_on UNUSED */
 
    logic [0:2] 		idExtendedOpcodeOut = 0;
-   logic 		idStallIn;
    logic [0:31] 	idHasExtendedOpcodeOut = 0;
    logic [0:31] 	idOpcodeLengthOut = 0;
    logic [0:0] 		idOpcodeValidOut = 0; 
@@ -169,9 +208,20 @@ module Core (
    bit	 		exDestRegSpecialValidOut = 0;
    logic [0:63]		exAluResultOut = 0;
    logic [0:63]		exAluResultSpecialOut = 0;
+
+   logic [0:3] 		wbSourceRegCode1Out = 0;
+   logic [0:3] 		wbSourceRegCode2Out = 0;
+   bit 			wbSourceRegCode1ValidOut = 0;
+   bit 			wbSourceRegCode2ValidOut = 0;   
+   logic [0:3]		wbDestRegOut = 0;
+   logic [0:3]		wbDestRegSpecialOut = 0;
+   bit	 		wbDestRegSpecialValidOut = 0;
+   logic [0:63]		wbAluResultOut = 0;
+   logic [0:63]		wbAluResultSpecialOut = 0;
    /* verilator lint_on UNUSED */
 
-   bit 			regInUseBitMap[16];
+   bit 			regInUseBitMapOut[16];
+   logic [63:0] 	regFileOut[16];
    
    initial begin
       ifidCurrentRip = 0;
@@ -439,7 +489,35 @@ module Core (
 		exDestRegSpecialOut,
 		exDestRegSpecialValidOut
 		);
-   
+
+   WriteBack writeback(	       
+		canWriteBack,
+		regInUseBitMap,
+		regFile,
+		exwbCurrentRip,
+		exwbSourceRegCode1,
+		exwbSourceRegCode2,
+		exwbSourceRegCode1Valid,
+		exwbSourceRegCode2Valid,
+		exwbDestReg,
+		exwbDestRegSpecial,
+		exwbDestRegSpecialValid,
+		exwbAluResult,
+		exwbAluResultSpecial,
+		wbCurrentRipOut,
+		wbSourceRegCode1Out,
+		wbSourceRegCode2Out,
+		wbSourceRegCode1ValidOut,
+		wbSourceRegCode2ValidOut,
+		wbDestRegOut,
+		wbDestRegSpecialOut,
+		wbDestRegSpecialValidOut,
+		wbAluResultOut,
+		wbAluResultSpecialOut,
+		regInUseBitMapOut,
+		regFileOut
+		);
+
    always @ (posedge bus.clk)
      if (bus.reset) begin
 
@@ -469,12 +547,14 @@ module Core (
         if (bytes_decoded_this_cycle > 0) begin
            canRead <= 1;
 	   canExecute <= 1; /* TODO - Fix this. canExecute should be true only if first read stage done! */
+	   canWriteBack <= 1;
         end else begin
            canRead <= 0;
 	   canExecute <= 0;
+	   canWriteBack <= 0;
         end
 
-	$write("\nbytes decoded this cycle: %d\n", bytes_decoded_this_cycle);
+//	$write("\nbytes decoded this cycle: %d\n", bytes_decoded_this_cycle);
 
 	/* Latch the output values from each stage. */
 	
@@ -528,8 +608,38 @@ module Core (
 	rdexSourceRegCode1Valid <= rdSourceRegCode1ValidOut;
 	rdexSourceRegCode2Valid <= rdSourceRegCode2ValidOut;
 
+	exwbExtendedOpcode <= exExtendedOpcodeOut;
+	exwbHasExtendedOpcode <= exHasExtendedOpcodeOut;
+	exwbOpcodeLength <= exOpcodeLengthOut;
+	exwbOpcodeValid <= exOpcodeValidOut; 
+	exwbOpcode <= exOpcodeOut;
+	exwbOperandVal1 <= exOperandVal1Out;
+	exwbOperandVal2 <= exOperandVal2Out;
+	exwbOperandVal1Valid <= exOperandVal1ValidOut;
+	exwbOperandVal2Valid <= exOperandVal2ValidOut;   
+	exwbSourceRegCode1 <= exSourceRegCode1Out;
+	exwbSourceRegCode2 <= exSourceRegCode2Out;
+	exwbSourceRegCode1Valid <= exSourceRegCode1ValidOut;
+	exwbSourceRegCode2Valid <= exSourceRegCode2ValidOut;   
+	exwbImmLen <= exImmLenOut;
+	exwbDispLen <= exDispLenOut;
+	exwbImm8 <= exImm8Out;
+	exwbImm16 <= exImm16Out;
+	exwbImm32 <= exImm32Out;
+	exwbImm64 <= exImm64Out;
+	exwbDisp8 <= exDisp8Out;
+	exwbDisp16 <= exDisp16Out;
+	exwbDisp32 <= exDisp32Out;
+	exwbDisp64 <= exDisp64Out;
+	exwbDestReg <= exDestRegOut;
+	exwbDestRegSpecial <= exDestRegSpecialOut;
+	exwbDestRegSpecialValid <= exDestRegSpecialValidOut;
+	exwbAluResult <= exAluResultOut;
+	exwbAluResultSpecial <= exAluResultSpecialOut;
+
 	idrdCurrentRip <= idCurrentRipOut;
 	rdexCurrentRip <= rdCurrentRipOut;
+	exwbCurrentRip <= exCurrentRipOut;
 
         /* verilator lint_off WIDTH */
         if (ifidCurrentRip == 0) begin
@@ -540,61 +650,71 @@ module Core (
         /* verilator lint_on WIDTH */
 
 	/* Mark the registers in-use and calculate stall */
-	if (!toStallOrNotToStall(idSourceRegCode1Out, idSourceRegCode1ValidOut, 
-				 idSourceRegCode2Out, idSourceRegCode2ValidOut, 
-				 idDestRegOut, idDestRegSpecialOut, idDestRegSpecialValidOut)) begin
+//	if (!toStallOrNotToStall(idSourceRegCode1Out, idSourceRegCode1ValidOut, 
+//				 idSourceRegCode2Out, idSourceRegCode2ValidOut, 
+//				 idDestRegOut, idDestRegSpecialOut, idDestRegSpecialValidOut)) begin
 
-	   $write("\n******************************************************************* Not to stall!!\n");
+//	   $write("\n******************************************************************* Not to stall!!\n");
 
-	   if (idSourceRegCode1ValidOut) begin
-	      regInUseBitMap[idSourceRegCode1Out] <= 1;
-	   end
-	   if (idSourceRegCode2ValidOut) begin
-	      regInUseBitMap[idSourceRegCode2Out] <= 1;
-	   end
-	   if (idDestRegSpecialValidOut) begin
-	      regInUseBitMap[idDestRegSpecialOut] <= 1;
-	   end
+//	   if (idSourceRegCode1ValidOut) begin
+//	      regInUseBitMap[idSourceRegCode1Out] <= 1;
+//	   end
+//	   if (idSourceRegCode2ValidOut) begin
+//	      regInUseBitMap[idSourceRegCode2Out] <= 1;
+//	   end
+//	   if (idDestRegSpecialValidOut) begin
+//	      regInUseBitMap[idDestRegSpecialOut] <= 1;
+//	   end
 
-	   regInUseBitMap[idDestRegOut] <= 1;
-		$write("\nDest reg reg in use value: %d, reg: %d\n", regInUseBitMap[idDestRegOut], idDestRegOut);
+//	   regInUseBitMap[idDestRegOut] <= 1;
+//		$write("\nDest reg reg in use value: %d, reg: %d\n", regInUseBitMap[idDestRegOut], idDestRegOut);
 
-	   idStallIn <= 0;
+//	   idStallIn <= 0;
 
-	   $write("\nSetting: src1: %d, src1valid: %d, src2: %d, src2valid: %d, dest: %d\n", idSourceRegCode1Out, idSourceRegCode1ValidOut, idSourceRegCode2Out, idSourceRegCode2ValidOut, idDestRegOut);
+//	   $write("\nSetting: src1: %d, src1valid: %d, src2: %d, src2valid: %d, dest: %d\n", idSourceRegCode1Out, idSourceRegCode1ValidOut, idSourceRegCode2Out, idSourceRegCode2ValidOut, idDestRegOut);
 	
-           print_stall_bitmap();
+//           print_stall_bitmap();
 
-	end else begin
-	   idStallIn <= 1;
+//	end else begin
+//	   idStallIn <= 1;
 
-	   $write("\n******************************************************************* To stall!!\n");
-           print_stall_bitmap();
-	end
+//	   $write("\n******************************************************************* To stall!!\n");
+//           print_stall_bitmap();
+//	end
 
-	/* TODO - Temporary write back stage! */
-	regFile[exDestRegOut] <= exAluResultOut;
-	if (exDestRegSpecialValidOut) begin
-	   regFile[exDestRegSpecialOut] <= exAluResultSpecialOut;
-	end
+	idStallIn <= 0;
 
-	if(exSourceRegCode1ValidOut == 1) begin
-		regInUseBitMap[exSourceRegCode1Out] <= 0;
-	end
+	regFile[wbDestRegOut] <= regFileOut[wbDestRegOut];
+	regFile[wbDestRegSpecialOut] <= regFileOut[wbDestRegSpecialOut];
 
-	if(exSourceRegCode2ValidOut == 1) begin
-		regInUseBitMap[exSourceRegCode2Out] <= 0;
-	end
+	regInUseBitMap[wbDestRegOut] <= regInUseBitMapOut[wbDestRegOut];
+	regInUseBitMap[wbDestRegSpecialOut] <= regInUseBitMapOut[wbDestRegSpecialOut];
+	regInUseBitMap[wbSourceRegCode1Out] <= regInUseBitMapOut[wbSourceRegCode1Out];
+	regInUseBitMap[wbSourceRegCode2Out] <= regInUseBitMapOut[wbSourceRegCode2Out];
 
-	if(exDestRegSpecialValidOut == 1) begin
-		regInUseBitMap[exDestRegSpecialOut] <= 0;
-	end
-
-	regInUseBitMap[exDestRegOut] <= 0;
-
-	$write("\nResetting: src1: %d, src1valid: %d, src2: %d, src2valid: %d, dest: %d\n", exSourceRegCode1Out, exSourceRegCode1ValidOut, exSourceRegCode2Out, exSourceRegCode2ValidOut, exDestRegOut);
-
-        print_stall_bitmap();
+//	/* TODO - Temporary write back stage! */
+//	regFile[exDestRegOut] <= exAluResultOut;
+//	if (exDestRegSpecialValidOut) begin
+//	   regFile[exDestRegSpecialOut] <= exAluResultSpecialOut;
+//	end
+//
+//	if(exSourceRegCode1ValidOut == 1) begin
+//		regInUseBitMap[exSourceRegCode1Out] <= 0;
+//	end
+//
+//	if(exSourceRegCode2ValidOut == 1) begin
+//		regInUseBitMap[exSourceRegCode2Out] <= 0;
+//	end
+//
+//	if(exDestRegSpecialValidOut == 1) begin
+//		regInUseBitMap[exDestRegSpecialOut] <= 0;
+//	end
+//
+//	regInUseBitMap[exDestRegOut] <= 0;
+//
+//	$write("\nResetting: src1: %d, src1valid: %d, src2: %d, src2valid: %d, dest: %d\n", exSourceRegCode1Out, exSourceRegCode1ValidOut, exSourceRegCode2Out, exSourceRegCode2ValidOut, exDestRegOut);
+//
+//        print_stall_bitmap();
      end
 
    // cse502 : Use the following as a guide to print the Register File contents.
