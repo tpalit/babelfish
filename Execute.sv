@@ -61,7 +61,7 @@ module Execute (
 		output [0:3]  destRegSpecialOut,
 		output        destRegSpecialValidOut,
 		output        isExecuteSuccessfulOut,
-          output        killOut
+		output        killOut
 		);
 
 	always_comb begin
@@ -341,7 +341,7 @@ module Execute (
 				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn ==  8'hC3 || opcodeIn == 8'hCB || opcodeIn == 8'hCF)) begin
 //				$finish;
-                    killOut = 1;
+				killOut = 1;
 				isExecuteSuccessfulOut = 1;
 			end else begin
 				isExecuteSuccessfulOut = 0;

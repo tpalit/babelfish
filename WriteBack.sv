@@ -2,7 +2,7 @@
 
 module WriteBack (
 		input         canWriteBackIn,
-          input         killIn,
+		input         killIn,
 		input         regInUseBitMapIn[16],
    		input [63:0]  regFileIn[16],
 
@@ -34,9 +34,9 @@ module WriteBack (
 
 	always_comb begin
 		if (canWriteBackIn == 1) begin
-             if (killIn) begin
-                $finish;
-             end
+             		if (killIn) begin
+               			$finish;
+             		end
              
 			/* Check regInUseBitMapIn, and set all sources and dest as unused. */
 			if (sourceReg1ValidIn == 1) begin
