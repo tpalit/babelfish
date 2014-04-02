@@ -6,11 +6,11 @@ module Decode (
 	       input 		stallIn,
 		/* verilator lint_on UNUSED */
 	       input		regInUseBitMapIn[16],
-	       input [0:31] 	currentRipIn,
+	       input [0:63] 	currentRipIn,
 	       input 		canDecodeIn,
 	       output 		stallOut,
 	       output		regInUseBitMapOut[16],
-	       output [0:31] 	currentRipOut,
+	       output [0:63] 	currentRipOut,
 	       output [0:2] 	extendedOpcodeOut,
 	       output [0:31] 	hasExtendedOpcodeOut,
 	       output [0:31] 	opcodeLengthOut,
@@ -543,7 +543,7 @@ module Decode (
    /* Do not use this directly, does not do check for REX.W */
    function void __decode_M(/* verilator lint_off UNUSED */ logic[0:7] rex_field, logic [0:31] disp32, logic[0:7] disp8,
                       logic [0:1] mod_field, logic[0:2] rm_field,
-                      logic [0:1] scale_field, logic [0:2] index_field, logic [0:2] base_field, logic[0:31] next_rip /* verilator lint_on UNUSED */);
+                      logic [0:1] scale_field, logic [0:2] index_field, logic [0:2] base_field, logic[0:63] next_rip /* verilator lint_on UNUSED */);
       if(mod_field == 2'b11) begin
          //$write("%s ", decode_64_reg({rex_field[7], rm_field}));
       end else if(mod_field == 2'b00) begin
@@ -590,7 +590,7 @@ module Decode (
 
    function void decode_M(logic[0:7] rex_field, logic [0:31] disp32, logic[0:7] disp8,
                       logic [0:1] mod_field, logic[0:2] rm_field,
-                      logic [0:1] scale_field, logic [0:2] index_field, logic [0:2] base_field, logic[0:31] next_rip);
+                      logic [0:1] scale_field, logic [0:2] index_field, logic [0:2] base_field, logic[0:63] next_rip);
       if ((rex_field & 8'b01001000) == 8'b01001000) begin
          __decode_M(rex_field, disp32, disp8, mod_field, rm_field,
                       scale_field, index_field, base_field, next_rip);
@@ -599,7 +599,7 @@ module Decode (
    
    function void decode_MR(/* verilator lint_off UNUSED */logic[0:7] rex_field, logic [0:31] disp32, logic[0:7] disp8, 
                       logic [0:1] mod_field, logic[0:2] rm_field, logic[0:2] reg_field,
-                      logic [0:1] scale_field, logic [0:2] index_field, logic [0:2] base_field, logic[0:31] next_rip/* verilator lint_on UNUSED */);
+                      logic [0:1] scale_field, logic [0:2] index_field, logic [0:2] base_field, logic[0:63] next_rip/* verilator lint_on UNUSED */);
       if ((rex_field & 8'b01001000) == 8'b01001000) begin
          //$write("%s ,", decode_64_reg({rex_field[5], reg_field}));
          __decode_M(rex_field, disp32, disp8, mod_field, rm_field,
@@ -609,7 +609,7 @@ module Decode (
 
    function void decode_RM(/* verilator lint_off UNUSED */logic[0:7] rex_field, logic [0:31] disp32, logic[0:7] disp8, 
                       logic [0:1] mod_field, logic[0:2] rm_field, logic[0:2] reg_field,
-                      logic [0:1] scale_field, logic [0:2] index_field, logic [0:2] base_field, logic[0:31] next_rip/* verilator lint_on UNUSED */);
+                      logic [0:1] scale_field, logic [0:2] index_field, logic [0:2] base_field, logic[0:63] next_rip/* verilator lint_on UNUSED */);
       if ((rex_field & 8'b01001000) == 8'b01001000) begin
          __decode_M(rex_field, disp32, disp8, mod_field, rm_field,
                       scale_field, index_field, base_field, next_rip);
@@ -620,7 +620,7 @@ module Decode (
    function void decode_RMI(/* verilator lint_off UNUSED */logic[0:7] rex_field, logic[0:31] imm32, logic[0:7] imm8,
                       logic [0:31] disp32, logic[0:7] disp8,
                       logic [0:1] mod_field, logic[0:2] rm_field, logic[0:2] reg_field,
-                      logic [0:1] scale_field, logic [0:2] index_field, logic [0:2] base_field, bit is_imm_32, logic[0:31] next_rip/* verilator lint_on UNUSED */);
+                      logic [0:1] scale_field, logic [0:2] index_field, logic [0:2] base_field, bit is_imm_32, logic[0:63] next_rip/* verilator lint_on UNUSED */);
       if ((rex_field & 8'b01001000) == 8'b01001000) begin
          if (is_imm_32) begin
             //$write("$0x%x ,", imm32);
@@ -635,7 +635,7 @@ module Decode (
 
    function void decode_MCL(logic[0:7] rex_field, logic [0:31] disp32, logic[0:7] disp8,
                       logic[0:1] mod_field, logic[0:2] rm_field, logic [0:1] scale_field,
-                      logic [0:2] index_field, logic [0:2] base_field, bit is_cl, logic[0:31] next_rip);
+                      logic [0:2] index_field, logic [0:2] base_field, bit is_cl, logic[0:63] next_rip);
       if ((rex_field & 8'b01001000) == 8'b01001000) begin
          if (is_cl) begin
             //$write("CL ,");
@@ -653,7 +653,7 @@ module Decode (
    // 11 - 32 to 64
    function void decode_MI(/* verilator lint_off UNUSED */logic[0:7] rex_field, logic[0:31] imm32, logic[0:7] imm8, 
                       logic [0:31] disp32, logic[0:7] disp8, logic[0:1] mod_field, logic[0:2] rm_field, 
-                      logic [0:1] scale_field, logic [0:2] index_field, logic [0:2] base_field, bit is_imm_32, logic[0:31] next_rip, logic [0:1] sign_ext/* verilator lint_on UNUSED */);
+                      logic [0:1] scale_field, logic [0:2] index_field, logic [0:2] base_field, bit is_imm_32, logic[0:63] next_rip, logic [0:1] sign_ext/* verilator lint_on UNUSED */);
       if ((rex_field & 8'b01001000) == 8'b01001000) begin
          if (is_imm_32 && sign_ext == 2'b00) begin
             //$write("$0x%x ,", imm32);
@@ -679,7 +679,7 @@ module Decode (
    endfunction // decode_O
 
    /* For Jcc, etc. */
-   function void decode_D(/* verilator lint_off UNUSED */logic[0:7] imm8, logic[0:31] imm32, bit is_imm_8, logic[31:0] next_rip/* verilator lint_on UNUSED */);
+   function void decode_D(/* verilator lint_off UNUSED */logic[0:7] imm8, logic[0:31] imm32, bit is_imm_8, logic[63:0] next_rip/* verilator lint_on UNUSED */);
       if (is_imm_8 == 1) begin
          /* verilator lint_off WIDTH */
          //$write("%x ", next_rip+imm8);
@@ -996,7 +996,7 @@ module Decode (
          if ((opcode_start_index == opcode_end_index) && (exit_after_print == 0)) begin //Length 1 opcodes
             /********* For MOV ************/
             if (opcode ==  8'hC7 && reg_field == 3'b000) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count, 2'b11);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count }, 2'b11);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1013,7 +1013,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h89) begin
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1030,7 +1030,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h8B) begin
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1070,7 +1070,7 @@ module Decode (
                opcodeValidOut = 1;
             end else if (opcode == 8'h83 && reg_field == 3'b110) begin
                /****************** For XOR *************/
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b10);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b10);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1087,7 +1087,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b110) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count, 2'b11);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count }, 2'b11);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1104,7 +1104,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h31) begin
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1120,7 +1120,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h33) begin
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1152,7 +1152,7 @@ module Decode (
                opcodeValidOut = 1;
             end else if (opcode == 8'h83 && reg_field == 3'b100) begin
                /****************** For AND *************/
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b10);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b10);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1169,7 +1169,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b100) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count, 2'b11);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count }, 2'b11);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1186,7 +1186,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h21) begin
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1202,7 +1202,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h23) begin
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1234,7 +1234,7 @@ module Decode (
                opcodeValidOut = 1;
             end else if (opcode == 8'h83 && reg_field == 3'b000) begin
                /****************** For ADD *************/
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b10);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b10);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1251,7 +1251,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b000) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count, 2'b11);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count }, 2'b11);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1268,7 +1268,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h01) begin
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1284,7 +1284,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h03) begin
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1316,7 +1316,7 @@ module Decode (
                opcodeValidOut = 1;
             end else if (opcode == 8'h83 && reg_field == 3'b010) begin
                /****************** For ADC *************/
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b10);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b10);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1333,7 +1333,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b010) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count, 2'b11);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count }, 2'b11);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1350,7 +1350,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h11) begin
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1366,7 +1366,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h13) begin
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1398,7 +1398,7 @@ module Decode (
                opcodeValidOut = 1;
             end else if (opcode == 8'h83 && reg_field == 3'b001) begin
                /****************** For OR *************/
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b10);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b10);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1415,7 +1415,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b001) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count, 2'b11);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count }, 2'b11);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1432,7 +1432,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h09) begin
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1448,7 +1448,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h0B) begin
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1480,7 +1480,7 @@ module Decode (
                opcodeValidOut = 1;
             end else if (opcode == 8'h83 && reg_field == 3'b011) begin
                /****************** For SBB *************/
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b10);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b10);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1497,7 +1497,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b011) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count, 2'b11);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count }, 2'b11);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1514,7 +1514,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h19) begin
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1530,7 +1530,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h1B) begin
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1562,7 +1562,7 @@ module Decode (
                opcodeValidOut = 1;
             end else if (opcode == 8'h83 && reg_field == 3'b101) begin
                /****************** For SUB *************/
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b10);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b10);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1579,7 +1579,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b101) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count, 2'b11);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count }, 2'b11);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1596,7 +1596,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h29) begin
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1612,7 +1612,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h2B) begin
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1644,7 +1644,7 @@ module Decode (
                opcodeValidOut = 1;
             end else if (opcode == 8'h83 && reg_field == 3'b111) begin
                /****************** For CMP *************/
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b00);
 
                /* TODO: Find out whether sign extension is required or not! */
                /* Extra processing for EXECUTE */
@@ -1662,7 +1662,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b111) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count, 2'b11);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count }, 2'b11);
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1679,7 +1679,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h39) begin
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1695,7 +1695,7 @@ module Decode (
                   opcodeValidOut = 1;
                end
             end else if (opcode == 8'h3B) begin
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1742,66 +1742,66 @@ module Decode (
                                  opcode == 8'h7E ||
                                  opcode == 8'h7F ||
                                  opcode == 8'hE3 ) begin
-               decode_D(imm8, imm32, 1, currentRipIn+instr_count);
+               decode_D(imm8, imm32, 1, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hD1 && reg_field == 3'b100) begin
                /****************** For SAL/SHL *************/
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hD3 && reg_field == 3'b100) begin
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hC1 && reg_field == 3'b100) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b00);
             end else if (opcode == 8'hD1 && reg_field == 3'b111) begin
                /****************** For SAR *************/
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hD3 && reg_field == 3'b111) begin
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hC1 && reg_field == 3'b111) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b00);
             end else if (opcode == 8'hD1 && reg_field == 3'b101) begin
                /****************** For SHR *************/
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hD3 && reg_field == 3'b101) begin
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hC1 && reg_field == 3'b101) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b00);
             end else if (opcode == 8'hD1 && reg_field == 3'b010) begin
                /****************** For RCL *************/
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hD3 && reg_field == 3'b010) begin
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hC1 && reg_field == 3'b010) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b00);
             end else if (opcode == 8'hD1 && reg_field == 3'b011) begin
                /****************** For RCR *************/
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hD3 && reg_field == 3'b011) begin
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hC1 && reg_field == 3'b011) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b00);
             end else if (opcode == 8'hD1 && reg_field == 3'b000) begin
                /****************** For ROL *************/
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hD3 && reg_field == 3'b000) begin
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hC1 && reg_field == 3'b000) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b00);
             end else if (opcode == 8'hD1 && reg_field == 3'b001) begin
                /****************** For ROR *************/
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hD3 && reg_field == 3'b001) begin
-               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count);
+               decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hC1 && reg_field == 3'b001) begin
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b00);
 
             end else if (opcode == 8'hF7 && reg_field == 3'b110) begin
                /****************** For DIV *************/
-               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hF7 && reg_field == 3'b111) begin
                /****************** For IDIV *************/
-               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hF7 && reg_field == 3'b101) begin
                /****************** For IMUL *************/
-               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1820,7 +1820,7 @@ module Decode (
                end
             end else if (opcode == 8'hF7 && reg_field == 3'b100) begin
                /****************** For MUL *************/
-               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1839,7 +1839,7 @@ module Decode (
                end
             end else if (opcode == 8'hF7 && reg_field == 3'b011) begin
                /****************** For NEG *************/
-               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1856,7 +1856,7 @@ module Decode (
                end
             end else if (opcode == 8'hF7 && reg_field == 3'b010) begin
                /****************** For NOT *************/
-               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1873,10 +1873,10 @@ module Decode (
                end
             end else if (opcode == 8'hF7 && reg_field == 3'b000) begin
                /****************** For TEST *************/
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count, 2'b11);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count }, 2'b11);
             end else if (opcode == 8'h69) begin
                /****************** For IMUL *************/
-               decode_RMI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, 1, currentRipIn+instr_count);
+               decode_RMI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1893,7 +1893,7 @@ module Decode (
                end
             end else if (opcode == 8'h6B) begin
                /****************** For IMUL *************/
-               decode_RMI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count);
+               decode_RMI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1913,7 +1913,7 @@ module Decode (
                decode_I(imm32, 1);
             end else if (opcode == 8'h85) begin
                /****************** For TEST *************/
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'h58 ||
                 opcode == 8'h59 ||
                 opcode == 8'h5A ||
@@ -1927,7 +1927,7 @@ module Decode (
                decode_O(rex_field, oi_reg[5:7]);
             end else if (opcode == 8'h8F && reg_field == 3'b000) begin
                /****************** For POP *************/
-               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'h50 ||
                 opcode == 8'h51 ||
                 opcode == 8'h52 ||
@@ -1941,10 +1941,10 @@ module Decode (
                decode_O(rex_field, oi_reg[5:7]);
             end else if (opcode == 8'hFF && reg_field == 3'b110) begin
                /****************** For PUSH *************/
-               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hFF && reg_field == 3'b000) begin
                /****************** For INC *************/
-               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1961,7 +1961,7 @@ module Decode (
                end
             end else if (opcode == 8'hFF && reg_field == 3'b001) begin
                /****************** For DEC *************/
-               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -1978,7 +1978,7 @@ module Decode (
                end
             end else if (opcode == 8'hFF && reg_field == 3'b100) begin
                /****************** For JMP *************/
-               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'h6A) begin
                /****************** For PUSH *************/
                //$write("$0x%x", imm8);
@@ -1986,11 +1986,11 @@ module Decode (
                /****************** For PUSH *************/
                //$write("$0x%x", flip_byte_order_32(imm32));
             end else if (opcode == 8'hEB) begin
-               decode_D(imm8, imm32, 1, currentRipIn+instr_count);
+               decode_D(imm8, imm32, 1, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hE9) begin
-               decode_D(imm8, imm32, 0, currentRipIn+instr_count);
+               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hE8) begin
-               decode_D(imm8, imm32, 0, currentRipIn+instr_count);       
+               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });       
             end else if (opcode == 8'h91 ||
                 opcode == 8'h92 ||
                 opcode == 8'h93 ||
@@ -2003,10 +2003,10 @@ module Decode (
                //$write("%s, %s ", decode_64_reg({rex_field[7], rm_field}),  decode_64_reg(4'b000));
             end else if (opcode == 8'h87) begin
                /****************** For XCHG *************/
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'h8D) begin
                /****************** For LEA *************/
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hC2 || opcode == 8'hCA) begin
                /****************** For RET *************/
                //$write("$0x%x", flip_byte_order_16(imm16));
@@ -2021,10 +2021,10 @@ module Decode (
          end else if (((opcode_end_index - opcode_start_index) == 1) && (exit_after_print == 0)) begin
             if (opcode == 8'hBC) begin
                //$write("bsf     ,");
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hBD) begin
                //$write("bsr     ,");
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hC8 ||
                 opcode == 8'hC9 ||
                 opcode == 8'hCA ||
@@ -2038,34 +2038,34 @@ module Decode (
                decode_O(rex_field, oi_reg[5:7]);
             end else if (opcode == 8'hA3) begin
                //$write("bt      ,");
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hBA && reg_field == 3'b100) begin
                //$write("bt      ,");
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b00);
             end else if (opcode == 8'hBB) begin
                //$write("btc     ,");
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hBA && reg_field == 3'b111) begin
                //$write("btc     ,");
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b00);
             end else if (opcode == 8'hB3) begin
                //$write("btr     ,");
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hBA && reg_field == 3'b110) begin
                //$write("btr     ,");
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b00);
             end else if (opcode == 8'hAB) begin
                //$write("bts     ,");
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hBA && reg_field == 3'b101) begin
                //$write("bts     ,");
-               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+instr_count, 2'b00);
+               decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b00);
             end else if (opcode == 8'hB1) begin //TODO: Implement 0f b0 too?? 8 byte regs used.
                //$write("cmpxchg ,");
-               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hAF) begin
                //$write("imul    ,");
-               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+instr_count);
+               decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
 
                /* Extra processing for EXECUTE */
                if (mod_field == 2'b11) begin
@@ -2097,52 +2097,52 @@ module Decode (
                //$write("sysret");
             end else if (opcode == 8'h80) begin
                //$write("jo       ");
-               decode_D(imm8, imm32, 0, currentRipIn+instr_count);
+               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'h81) begin
                //$write("jno      ");
-               decode_D(imm8, imm32, 0, currentRipIn+instr_count);
+               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'h82) begin
                //$write("jb       ");
-               decode_D(imm8, imm32, 0, currentRipIn+instr_count);
+               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'h83) begin
                //$write("jae      ");
-               decode_D(imm8, imm32, 0, currentRipIn+instr_count);       
+               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });       
             end else if (opcode == 8'h84) begin
                //$write("je       ");
-               decode_D(imm8, imm32, 0, currentRipIn+instr_count);
+               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'h85) begin
                //$write("jne      ");
-               decode_D(imm8, imm32, 0, currentRipIn+instr_count);       
+               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });       
             end else if (opcode == 8'h86) begin
                //$write("jna      ");
-               decode_D(imm8, imm32, 0, currentRipIn+instr_count);      
+               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });      
             end else if (opcode == 8'h87) begin
                //$write("ja       ");
-               decode_D(imm8, imm32, 0, currentRipIn+instr_count);       
+               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });       
             end else if (opcode == 8'h88) begin
                //$write("js       ");
-               decode_D(imm8, imm32, 0, currentRipIn+instr_count);       
+               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });       
             end else if (opcode == 8'h89) begin
                //$write("jns      ");
-               decode_D(imm8, imm32, 0, currentRipIn+instr_count);       
+               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });       
             end else if (opcode == 8'h8A) begin
                //$write("jp       ");
-               decode_D(imm8, imm32, 0, currentRipIn+instr_count);       
+               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });       
             end else if (opcode == 8'h8B) begin
                //$write("jpo      ");
-               decode_D(imm8, imm32, 0, currentRipIn+instr_count);       
+               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });       
             end else if (opcode == 8'h8C) begin
                //$write("jnge     ");
-               decode_D(imm8, imm32, 0, currentRipIn+instr_count);       
+               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });       
             end else if (opcode == 8'h8D) begin
                //$write("jnl      ");
-               decode_D(imm8, imm32, 0, currentRipIn+instr_count);
+               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'h8E) begin
                //$write("jle      ");
-               decode_D(imm8, imm32, 0, currentRipIn+instr_count); 
+               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count }); 
             end else if (opcode == 8'h8F) begin
                //$write("jnle     ");
-               decode_D(imm8, imm32, 0, currentRipIn+instr_count);       
+               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });       
             end else begin
                //$write("Couldn't decode this!!\n");
             end

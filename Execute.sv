@@ -1,7 +1,7 @@
 /* Copyright Tapti Palit, Amitav Paul, Sonam Mandal, 2014, All rights reserved. */
 
 module Execute (
-		input [0:31]  currentRipIn,
+		input [0:63]  currentRipIn,
 		input         canExecuteIn,
 		input [0:2]   extendedOpcodeIn,
 		input [0:31]  hasExtendedOpcodeIn,
@@ -33,7 +33,7 @@ module Execute (
 		output [0:63] aluResultOut,
 		output [0:63] aluResultSpecialOut,
 
-		output [0:31] currentRipOut,
+		output [0:63] currentRipOut,
 		output [0:2]  extendedOpcodeOut,
 		output [0:31] hasExtendedOpcodeOut,
 		output [0:31] opcodeLengthOut,

@@ -6,7 +6,7 @@ module WriteBack (
 		input         regInUseBitMapIn[16],
    		input [63:0]  regFileIn[16],
 
-		input [0:31]  currentRipIn,
+		input [0:63]  currentRipIn,
 		input [0:3]   sourceReg1In,
 		input [0:3]   sourceReg2In,
 		input         sourceReg1ValidIn,
@@ -17,7 +17,7 @@ module WriteBack (
 		input [0:63]  aluResultIn,
 		input [0:63]  aluResultSpecialIn,
 
-		output [0:31] currentRipOut,
+		output [0:63] currentRipOut,
 		output [0:3]  sourceRegCode1Out,
 		output [0:3]  sourceRegCode2Out,
 		output        sourceRegCode1ValidOut,

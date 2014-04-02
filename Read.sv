@@ -8,7 +8,7 @@ module Read (
 	     input [63:0]  registerFileIn[16],
 
 	     /* Just connnect it to the output */
-	     input [0:31]  currentRipIn,
+	     input [0:63]  currentRipIn,
 	     input [0:2]   extendedOpcodeIn,
 	     input [0:31]  hasExtendedOpcodeIn,
 	     input [0:31]  opcodeLengthIn,
@@ -37,7 +37,7 @@ module Read (
 	     output 	   sourceRegCode1ValidOut,
 	     output 	   sourceRegCode2ValidOut,
 	     /* Just get connection from the input */
-	     output [0:31] currentRipOut,
+	     output [0:63] currentRipOut,
 	     output [0:2]  extendedOpcodeOut,
 	     output [0:31] hasExtendedOpcodeOut,
 	     output [0:31] opcodeLengthOut,

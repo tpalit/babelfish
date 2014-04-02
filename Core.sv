@@ -26,11 +26,10 @@ module Core (
 
    /******** Latches ********/
 
-   /* TODO: Change this to 64 bits */
-   logic [31:0] 	ifidCurrentRip;
-   logic [31:0] 	idrdCurrentRip;
-   logic [31:0] 	rdexCurrentRip;
-   logic [31:0] 	exwbCurrentRip;
+   logic [63:0] 	ifidCurrentRip;
+   logic [63:0] 	idrdCurrentRip;
+   logic [63:0] 	rdexCurrentRip;
+   logic [63:0] 	exwbCurrentRip;
 
    logic [0:2] 		idrdExtendedOpcode = 0;
    logic [0:31] 	idrdHasExtendedOpcode = 0;
@@ -119,11 +118,11 @@ module Core (
    /******** Wires ********/
 
    /* TODO: Change this to 64 bits */
-   logic [31:0]         idCurrentRipOut; 
-   logic [31:0]         rdCurrentRipOut;
+   logic [63:0]         idCurrentRipOut; 
+   logic [63:0]         rdCurrentRipOut;
    /* verilator lint_off UNUSED */
-   logic [31:0]         exCurrentRipOut;
-   logic [31:0]         wbCurrentRipOut;
+   logic [63:0]         exCurrentRipOut;
+   logic [63:0]         wbCurrentRipOut;
    logic 		idStallOut;
    /* verilator lint_on UNUSED */
 
