@@ -1,5 +1,5 @@
-module SRAM(input[width-1:0] writeData, output[width-1:0] readData, input[logDepth-1:0] writeAddr, input[logDepth-1:0] readAddr, input writeEnable, input clk);
-	parameter width=16, logDepth=9, ports=1, delay=(logDepth-8>0?logDepth-8:1)*(ports>1?(ports>2?(ports>3?100:20):14):10)/10-1;
+module SRAM(input[width-1:0] writeData, output[width-1:0] readData, input[logDepth-1:0] writeAddr, input[logDepth-1:0] readAddr, input[logOffDepth-1:0] writeOffset, input writeEnable, input clk);
+	parameter width=16, logDepth=9, logOffDepth=3, ports=1, delay=(logDepth-8>0?logDepth-8:1)*(ports>1?(ports>2?(ports>3?100:20):14):10)/10-1;
 
 	logic[width-1:0] mem[(1<<logDepth)-1:0];
 
@@ -13,13 +13,13 @@ module SRAM(input[width-1:0] writeData, output[width-1:0] readData, input[logDep
 	always @ (posedge clk) begin
 		if (delay > 0) begin
 			readpipe[0] <= mem[readAddr];
-			for(int i=1; i<delay; ++i) readpipe[i] <= readpipe[i-1];
+			for(int i=1; i<delay; i=i+1) readpipe[i] <= readpipe[i-1];
 			readData <= readpipe[delay-1];
-		end else
-		begin
+		end else begin
 			readData <= mem[readAddr];
 		end
-		if (writeEnable)
-			mem[writeAddr] <= writeData;
-	end
+
+		if (writeEnable) begin
+			mem[writeAddr][writeOffset*(width/(1<<logOffDepth))+:(width/(1<<logOffDepth))] <= writeData[writeOffset*(width/(1<<logOffDepth))+:(width/(1<<logOffDepth))];
+		end
 endmodule
