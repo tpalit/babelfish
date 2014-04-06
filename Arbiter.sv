@@ -21,22 +21,4 @@ module Arbiter #(WIDTH = 64, TAG_WIDTH = 13) (
 	ArbiterCacheInterface instruction_cache
 );
 
-/* TAGS: 
- * The way memory interfacing works is that we need to create a TAG which
- * describes what operation we want from the memory.  There are 13 bits set
- * aside for the TAG in the main implementation, and even system.cpp assumes
- * the TAG size is 13 bits.  The most significant bit is set to indicate
- * whether it is a READ or WRITE operation.  The next 4 bits are used to
- * differentiate between MEMORY, MMIO, IRQ, PORT (I am not sure what exactly
- * PORT is used for).  That leaves 8 bits for us to define and use as we want.
- *
- * So what we need to do, is set aside 1 bit to figure out whether the request
- * is for DATA or for INSTRUCTION.  This will help the Arbiter in figuring out
- * which cache to send the data to.  Based on which ArbiterCacheInterface a
- * request comes from, we need to figure out which bit to set in the Tag, and
- * then forward the request to the Sysbus.  The Caches will construct rest of
- * the Tag. 
- */
-
-
 endmodule

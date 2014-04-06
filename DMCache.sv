@@ -23,11 +23,13 @@ module DMCache #(WIDTH = 64, LOGDEPTH = 9, LOGLINESIZE = 3) (
 	ArbiterCacheInterface arbiter
 );
 
-	/* Assuming we need two state bits: 0 - Invalid bit, 1 - Dirty bit
+	/**
+	 * Assuming we need two state bits: 0 - Invalid bit, 1 - Dirty bit
 	 * INVALID BIT: 0 - valid, 1 - invalid
-         * DIRTY BIT: 0 - clean, 1 - dirty
+	 * DIRTY BIT: 0 - clean, 1 - dirty
 	 */
 	logic[1:0] state[(1<<LOGDEPTH)-1:0];
+
 	logic[WIDTH-LOGDEPTH-LOGLINESIZE-1:0] addr_tag[(1<<LOGDEPTH)-1:0];
 
 	logic[(WIDTH * (1<<LOGLINESIZE))-1:0] readDataCacheLine = 0;

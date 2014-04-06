@@ -1,5 +1,16 @@
-module SRAM(input[width-1:0] writeData, output[width-1:0] readData, input[logDepth-1:0] writeAddr, input[logDepth-1:0] readAddr, input[logOffDepth-1:0] writeOffset, input writeEnable, input clk);
-	parameter width=16, logDepth=9, logOffDepth=3, ports=1, delay=(logDepth-8>0?logDepth-8:1)*(ports>1?(ports>2?(ports>3?100:20):14):10)/10-1;
+module SRAM(input[width-1:0] writeData, output[width-1:0] readData, input[logDepth-1:0] writeAddr, input[logDepth-1:0] readAddr, input[logLineOffset-1:0] writeOffset, input writeEnable, input clk);
+   /**
+    * 
+    * writeData: The full line to write. Only the data at the offset 'writeOffset', is valid.
+    * readData: The full line read out.
+    * writeAddr: The address to be written to.
+    * readAddr: The address to be read from.
+    * writeOffset: The offset to write to. 
+    * writeEnable: Active high.
+    * clk: The input clock.
+    * 
+    */
+	parameter width=16, logDepth=9, logLineOffset=3, ports=1, delay=(logDepth-8>0?logDepth-8:1)*(ports>1?(ports>2?(ports>3?100:20):14):10)/10-1;
 
 	logic[width-1:0] mem[(1<<logDepth)-1:0];
 
@@ -20,6 +31,6 @@ module SRAM(input[width-1:0] writeData, output[width-1:0] readData, input[logDep
 		end
 
 		if (writeEnable) begin
-			mem[writeAddr][writeOffset*(width/(1<<logOffDepth))+:(width/(1<<logOffDepth))] <= writeData[writeOffset*(width/(1<<logOffDepth))+:(width/(1<<logOffDepth))];
+			mem[writeAddr][writeOffset*(width/(1<<logLineOffset))+:(width/(1<<logLineOffset))] <= writeData[writeOffset*(width/(1<<logLineOffset))+:(width/(1<<logLineOffset))];
 		end
 endmodule
