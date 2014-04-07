@@ -3,11 +3,18 @@ module SRAM(input[width-1:0] writeData, output[width-1:0] readData, input[logDep
     * 
     * writeData: The full line to write. Only the data at the offset 'writeOffset', is valid.
     * readData: The full line read out.
-    * writeAddr: The address to be written to.
-    * readAddr: The address to be read from.
+    * writeAddr: The address to be written to, as an index into the mem array.
+    * readAddr: The address to be read from, as an index into the mem array.
     * writeOffset: The offset to write to. 
     * writeEnable: Active high.
     * clk: The input clock.
+    * 
+    * The parameters are -
+    * 1. width: The width in bits.
+    * 2. logDepth: The log of the depth of the cache. 
+    * 3. logLineOffset: The log of the line offset to which we are writing.
+    * 4. ports: The number of ports
+    * 5. delay: The artificial, simulated delay. Dependent on the logdepth and ports.
     * 
     */
 	parameter width=16, logDepth=9, logLineOffset=3, ports=1, delay=(logDepth-8>0?logDepth-8:1)*(ports>1?(ports>2?(ports>3?100:20):14):10)/10-1;
