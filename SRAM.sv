@@ -46,16 +46,16 @@ module SRAM(input[width-1:0] writeData, output[width-1:0] readData, inout isRead
 	 readData <= readpipe[delay-1];
 	 delayCounter <= delayCounter-1;
 	 if (delayCounter==0) begin
-	    isReadValid = 1;
+	    isReadValid <= 1;
 	 end
       end else begin
 	 readData <= mem[readAddr];
-	 isReadValid = 1;
+	 isReadValid <= 1;
       end
 
       if (writeEnable && isWriteConfirmed) begin
 	 mem[writeAddr][writeOffset*(width/(1<<logLineOffset))+:(width/(1<<logLineOffset))] <= writeData[writeOffset*(width/(1<<logLineOffset))+:(width/(1<<logLineOffset))];
 	 // Clear the control signal
-	 isWriteConfirmed = 0;
+	 isWriteConfirmed <= 0;
       end
       endmodule

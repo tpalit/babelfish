@@ -152,9 +152,9 @@ module DMCache #(WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3) (
 	       /* TODO: Set bus req and reqack? */
 	    end
 	    // Turn down read control signals.
-	    isTagReadValid = 0;
-	    isCacheLineReadValid = 0;
-	    isReadDataInCache = 0;
+	    isTagReadValid <= 0;
+	    isCacheLineReadValid <= 0;
+	    isReadDataInCache <= 0;
 	 end 
       end else begin
 	 if (isTagReadValid) begin
@@ -164,8 +164,8 @@ module DMCache #(WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3) (
 	       /* TODO - Do whatever it takes to send it off to DRAM */
 	    end
 	    // Turn down write control signals.
-	    isTagReadValid = 0;
-	    isWriteDataInCache = 0;
+	    isTagReadValid <= 0;
+	    isWriteDataInCache <= 0;
 	 end
       end
    end
