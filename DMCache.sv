@@ -6,7 +6,8 @@
  * This is a generic version of a Direct Mapped Cache.  Multiple instances of
  * this can be created for creating multiple levels, or for creating data and
  * instruction caches.
- *
+ * This cache includes two SRAM modules, one for the Data and one for the tags.
+ * 
  * The Cache does more than just caching, but also does the following:
  * 1) Caching (duh!)
  * 2) Maintaining a list of in-flight memory requests (may be required for
@@ -21,14 +22,17 @@
  * 3. LOGLINESIZE: The log of the size of the line, it terms of "units" addressable. For example, if we store 8 blocks of 8 byte size, this parameter will be log(8) = 3. 
  * 
  */
+
+`define WORDSIZE 64
+
 module DMCache #(WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3) (
-							       input [WIDTH-1:0]  writeData,
-							       output [WIDTH-1:0] readData,
-							       input [WIDTH-1:0]  writeAddr,
-							       input [WIDTH-1:0]  readAddr,
+							       input [WORDSIZE-1:0]  writeData,
+							       output [WORDSIZE-1:0] readData,
+							       input [WORDSIZE-1:0]  writeAddr,
+							       input [WORDSIZE-1:0]  readAddr,
 							       input 		  writeEnable,
 							       input 		  clk,
-							       ArbiterCacheInte rface arbiter
+							       ArbiterCacheInterface arbiter
 							       );
 
    /**
@@ -38,21 +42,24 @@ module DMCache #(WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3) (
     */
    logic [1:0] 									  state[(1<<LOGDEPTH)-1:0];
 
-   logic [WIDTH-LOGDEPTH-LOGLINEOFFSET-1:0] 					  readDataTag = 0;
-   logic [WIDTH-LOGDEPTH-LOGLINEOFFSET-1:0] 					  writeDataTag = 0;
+   logic [WORDSIZE-LOGDEPTH-LOGLINEOFFSET-1:0] 					  readDataTag = 0;
+   logic [WORDSIZE-LOGDEPTH-LOGLINEOFFSET-1:0] 					  writeDataTag = 0;
 
    logic [(WIDTH * (1<<LOGLINEOFFSET))-1:0] 					  readDataCacheLine = 0;
    logic [(WIDTH * (1<<LOGLINEOFFSET))-1:0] 					  writeDataCacheLine = 0;
 
    logic [LOGLINEOFFSET:0] 							  writeOffset = 0;
+   logic [LOGLINEOFFSET:0] 							  readOffset = 0;
    
    bit 										  isReadDataInCache = 0;
    bit 										  isWriteDataInCache = 0;
 
-   // Signals to indicate if the data read from the SRAMs are valid.
+   // Signals to indicate if the data read from the SRAMs are valid. 
    bit 										  isTagReadValid;
    bit 										  isCacheLineReadValid;
-   
+
+   // Signal to indicate if the SRAM can go ahead with the write.
+   bit 										  isCacheWriteConfirmed;
        
    initial begin
       for(int i=0; i<(1<<LOGDEPTH); i=i+1) begin
@@ -67,7 +74,8 @@ module DMCache #(WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3) (
    SRAM #(WIDTH * (1<<LOGLINEOFFSET), LOGDEPTH, LOGLINEOFFSET) dm_l1_cache(
 									   writeDataCacheLine, /* in */
 									   readDataCacheLine, /* out */
-									   isCacheLineReadValid, /* out */
+									   isCacheLineReadValid, /* inout */
+									   isCacheWriteConfirmed,
 									   writeAddr[LOGLINEOFFSET+LOGDEPTH-1:LOGLINEOFFSET],
 									   readAddr[LOGLINEOFFSET+LOGDEPTH-1:LOGLINEOFFSET],
 									   writeOffset,
@@ -78,7 +86,8 @@ module DMCache #(WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3) (
    SRAM #(WIDTH-LOGDEPTH-LOGLINEOFFSET, LOGDEPTH, 0) addr_tag(
 							      writeDataTag, /* in */
 							      readDataTag, /* out */
-							      isTagReadValid, /* out */
+							      isTagReadValid, /* inout */
+							      0, /* TODO - handle the write back when memory access completes. */
 							      writeAddr[LOGLINEOFFSET+LOGDEPTH-1:LOGLINEOFFSET],
 							      readAddr[LOGLINEOFFSET+LOGDEPTH-1:LOGLINEOFFSET],
 							      0,
@@ -87,6 +96,12 @@ module DMCache #(WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3) (
 							      );
 
    always_comb begin
+      if (!writeEnable) begin
+	 readOffset = readAddr[LOGLINEOFFSET-1:0];
+      end else begin
+	 writeOffset = writeAddr[LOGLINEOFFSET-1:0];
+      end
+      
       /**
        * READ DATA LOGIC --
        * 1. Check if the state is valid.
@@ -97,55 +112,62 @@ module DMCache #(WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3) (
        * 5. If not same, send request to the memory.
        * 
        */
-
-      if (state[readAddr[LOGLINEOFFSET+LOGDEPTH-1:LOGLINEOFFSET]][0]) begin
-	 // If the tag and the cache reads are done
-	 if (isTagReadValid && isCacheLineReadValid) begin
-	    if (readDataTag == readAddr[WIDTH-1:LOGLINEOFFSET+LOGDEPTH]) begin
-	       // Hit!
-	       isReadDataInCache = 1;
-	    end else begin
-	       // Miss!
-	       isReadDataInCache = 0;
+      isReadDataInCache = 0;
+      isWriteDataInCache = 0;
+      if (!writeEnable) begin
+	 if (state[readAddr[LOGLINEOFFSET+LOGDEPTH-1:LOGLINEOFFSET]][0]) begin
+	    // If the tag and the cache reads are done
+	    if (isTagReadValid && isCacheLineReadValid) begin
+	       if (readDataTag == readAddr[WORDSIZE-1:LOGLINEOFFSET+LOGDEPTH]) begin
+		  // Hit!
+		  isReadDataInCache = 1;
 	    end
 	 end
-      end // if (state[readAddr[LOGLINEOFFSET+LOGDEPTH-1:LOGLINEOFFSET]][0])
-
-      if (writeEnable) begin
-	 
-      end
-      
-      /*
-      if (writeEnable) begin
-	 if ((!state[writeAddr[LOGLINEOFFSET+LOGDEPTH-1:LOGLINEOFFSET]][0]) &&
-	     (addr_tag[LOGLINEOFFSET+LOGDEPTH-1:LOGLINEOFFSET] == writeAddr[WIDTH-1:LOGLINEOFFSET+LOGDEPTH])) begin
-	    isWriteDataInCache = 1;
-	 end else begin
-	    isWriteDataInCache = 0;
+      end else begin
+	 if (state[writeAddr[LOGLINEOFFSET+LOGDEPTH-1:LOGLINEOFFSET]][0]) begin
+	    if (isTagReadValid) begin
+	       if (readDataTag == writeAddr[WORDSIZE-1:LOGLINEOFFSET+LOGDEPTH]) begin
+		  isWriteDataInCache = 1;
+		  isCacheWriteConfirmed = 1; // Tell the SRAM module that it can go ahead and write it.
+		  writeDataCacheLine = 0;
+		  writeDataCacheLine[writeOffset*(width/(1<<logLineOffset))+:(width/(1<<logLineOffset))]
+		  writeDataOffset = ;
+	       end
+	    end
 	 end
       end
-       */
-
    end
    
    
    end
 
    always @ (posedge clk) begin
-      if (isReadDataInCache) begin
-	 readData <= readDataCacheLine[WIDTH*(1<<LOGLINEOFFSET)-1:WIDTH];
+      if (!writeEnable) begin
+	 // Check if done reading everything
+	 if (isTagReadValid && isCacheLineReadValid) begin
+	    if (isReadDataInCache) begin
+	       // Read word at the correct offset
+	       readData <= readDataCacheLine[readOffset+:WORDSIZE];
+	    end else begin
+	       /* TODO: Set bus req and reqack? */
+	    end
+	    // Turn down read control signals.
+	    isTagReadValid = 0;
+	    isCacheLineReadValid = 0;
+	    isReadDataInCache = 0;
+	 end 
       end else begin
-	 /* TODO: Set bus req and reqack? */
-      end
-
-      if (writeEnable) begin
-	 if (isWriteDataInCache) begin
-	    /* TODO: Does this belong here to comb block? */
-	    writeDataCacheLine[(writeAddr[(LOGLINEOFFSET-1):0]*WIDTH)+:WIDTH] <= writeData;
-	 end else begin
-	    /* TODO: Set bus req and reqack? */
+	 if (isTagReadValid) begin
+	    // If there is a match, then the data would be directly written into the cache.
+	    // No need to handle it here.
+	    if (!isWriteDataInCache) begin
+	       /* TODO - Do whatever it takes to send it off to DRAM */
+	    end
+	    // Turn down write control signals.
+	    isTagReadValid = 0;
+	    isWriteDataInCache = 0;
 	 end
-
       end
-
-      endmodule
+   end
+   
+endmodule
