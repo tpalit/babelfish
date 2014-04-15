@@ -21,4 +21,19 @@ module Arbiter #(WIDTH = 64, TAG_WIDTH = 13) (
 	ArbiterCacheInterface instruction_cache
 );
 
+	/* This signal goes high when servicing a request and low when idle. */
+	bit reqStateSignal;
+
+	initial begin
+		reqStateSignal = 0;
+	end
+
+	always @ (posedge bus.clk)
+		if (instruction_cache.reqcyc && !reqStateSignal) begin
+			bus.req <= instruction_cache.req;
+			bus.reqtag <= instruction_cache.reqtag;
+			instruction_cache.reqack <= 1;
+			reqStateSignal <= 1;
+		end
+
 endmodule

@@ -1,12 +1,13 @@
 /* Copyright Tapti Palit, Amitav Paul, Sonam Mandal, 2014, All rights reserved. */
 
 /* This interface connects the Cache to the Arbiter. */
-interface ArbiterCacheInterface #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
+interface CacheCoreInterface #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	input reset,
 	input clk
 );
 
 wire[DATA_WIDTH-1:0] req;
+wire[DATA_WIDTH-1:0] reqdata; //Write data placed on these lines.
 wire[TAG_WIDTH-1:0] reqtag;
 wire[DATA_WIDTH-1:0] resp;
 wire[TAG_WIDTH-1:0] resptag;
@@ -25,7 +26,7 @@ parameter
 	DATA	/* verilator public */ = 1'b1,
 	INSTR	/* verilator public */ = 1'b0;
 
-modport CachePorts (
+modport CorePorts (
 	input reset,
 	input clk,
 	output req,
@@ -38,7 +39,7 @@ modport CachePorts (
 	output respack
 );
 
-modport ArbiterPorts (
+modport CachePorts (
 	input reset,
 	input clk,
 	input req,

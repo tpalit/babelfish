@@ -1,6 +1,6 @@
 /* Copyright Tapti Palit, Amitav Paul, Sonam Mandal, 2014, All rights reserved. */
 
-module Core (
+module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    input[63:0] entry
 ,   /* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */ Sysbus bus /* verilator lint_on UNUSED */ /* verilator lint_on UNDRIVEN */
 );
@@ -250,9 +250,20 @@ module Core (
 
    logic [3:0]                 bytes_decoded_this_cycle;
 
+   CacheCoreInterface #(DATA_WIDTH, TAG_WIDTH) instrCacheCoreInf(bus.reset, bus.clk);
+   CacheCoreInterface #(DATA_WIDTH, TAG_WIDTH) dataCacheCoreInf(bus.reset, bus.clk);
+
+   ArbiterCacheInterface #(DATA_WIDTH, TAG_WIDTH) instrArbiterCacheInf(bus.reset, bus.clk);
+   ArbiterCacheInterface #(DATA_WIDTH, TAG_WIDTH) dataArbiterCacheInf(bus.reset, bus.clk);
+
+   DMCache #(DATA_WIDTH, 64, 9, 3) instrCache(instrCacheCoreInf.CachePorts, instrArbiterCacheInf.CachePorts);
+   DMCache #(DATA_WIDTH, 64, 9, 3) dataCache(dataCacheCoreInf.CachePorts, dataArbiterCacheInf.CachePorts);
+
+   Arbiter #(DATA_WIDTH, TAG_WIDTH) cacheArbiter(instrArbiterCacheInf.ArbiterPorts, dataArbiterCacheInf.ArbiterPorts);
+
    Fetch fetch(
 		entry,
-		bus,
+		instrCacheCoreInf.CorePorts,
 		decode_offset,
 		fetch_rip,
 		fetch_skip,

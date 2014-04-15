@@ -21,7 +21,9 @@ parameter
 ,	MEMORY /* verilator public */ = 4'b0001
 ,	MMIO   /* verilator public */ = 4'b0011
 ,	PORT   /* verilator public */ = 4'b0100
-,	IRQ    /* verilator public */ = 4'b1110;
+,	IRQ    /* verilator public */ = 4'b1110
+,	DATA   /* verilator public */ = 1'b1
+,	INSTR  /* verilator public */ = 1'b0;
 
 modport Top (
 	input reset
