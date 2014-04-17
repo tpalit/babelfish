@@ -144,7 +144,7 @@ void System::tick(int clk) {
 		top->respcyc = 1;
 		top->resp = tx_queue.begin()->first;
 		top->resptag = tx_queue.begin()->second;
-		//cerr << "responding data " << top->resp << " on tag " << std::hex << top->resptag << endl;
+		//		cerr << "responding data " << top->resp << " on tag " << std::hex << top->resptag << endl;
 	} else {
 		top->respcyc = 0;
 		top->resp = 0xaaaaaaaaaaaaaaaaULL;

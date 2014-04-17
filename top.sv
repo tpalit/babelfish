@@ -15,7 +15,7 @@ module top #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	/* verilator lint_off UNUSED */
 	Sysbus #(DATA_WIDTH, TAG_WIDTH) uncore_bus(reset, clk);
 	SysbusBottom #(DATA_WIDTH, TAG_WIDTH) dummy(uncore_bus.Bottom, req, reqtag, resp, resptag, reqcyc, respcyc, reqack, respack);
-	Core #(DATA_WIDTH, TAG_WIDTH) core(entry, uncore_bus.Top);
+	Core #(DATA_WIDTH, TAG_WIDTH) core(entry, uncore_bus.Top, clk, reset);
 	/* verilator lint_on UNUSED */
 	/* verilator lint_on UNDRIVEN */
 

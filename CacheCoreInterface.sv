@@ -1,6 +1,9 @@
 /* Copyright Tapti Palit, Amitav Paul, Sonam Mandal, 2014, All rights reserved. */
 
 /* This interface connects the Cache to the Arbiter. */
+/* verilator lint_off UNDRIVEN */
+/* verilator lint_off UNUSED */
+
 interface CacheCoreInterface #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	input reset,
 	input clk
@@ -53,3 +56,5 @@ modport CachePorts (
 );
 
 endinterface
+/* verilator lint_on UNUSED */
+/* verilator lint_on UNDRIVEN */

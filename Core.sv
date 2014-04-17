@@ -3,6 +3,8 @@
 module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    input[63:0] entry
 ,   /* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */ Sysbus bus /* verilator lint_on UNUSED */ /* verilator lint_on UNDRIVEN */
+   , input clk
+   , input reset
 );
    /* verilator lint_off UNUSED */
    enum { fetch_idle, fetch_waiting, fetch_active } fetch_state;
@@ -250,20 +252,33 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
    logic [3:0]                 bytes_decoded_this_cycle;
 
-   CacheCoreInterface #(DATA_WIDTH, TAG_WIDTH) instrCacheCoreInf(bus.reset, bus.clk);
-   CacheCoreInterface #(DATA_WIDTH, TAG_WIDTH) dataCacheCoreInf(bus.reset, bus.clk);
 
-   ArbiterCacheInterface #(DATA_WIDTH, TAG_WIDTH) instrArbiterCacheInf(bus.reset, bus.clk);
-   ArbiterCacheInterface #(DATA_WIDTH, TAG_WIDTH) dataArbiterCacheInf(bus.reset, bus.clk);
+	/* verilator lint_off UNDRIVEN */
+	/* verilator lint_off UNUSED */
 
+   CacheCoreInterface #(DATA_WIDTH, TAG_WIDTH) instrCacheCoreInf(reset, clk);
+
+   CacheCoreInterface #(DATA_WIDTH, TAG_WIDTH) dataCacheCoreInf(reset, clk);
+
+
+   ArbiterCacheInterface #(DATA_WIDTH, TAG_WIDTH) instrArbiterCacheInf(reset, clk);
+   ArbiterCacheInterface #(DATA_WIDTH, TAG_WIDTH) dataArbiterCacheInf(reset, clk);
+
+   /*
    DMCache #(DATA_WIDTH, 64, 9, 3) instrCache(instrCacheCoreInf.CachePorts, instrArbiterCacheInf.CachePorts);
    DMCache #(DATA_WIDTH, 64, 9, 3) dataCache(dataCacheCoreInf.CachePorts, dataArbiterCacheInf.CachePorts);
 
-   Arbiter #(DATA_WIDTH, TAG_WIDTH) cacheArbiter(instrArbiterCacheInf.ArbiterPorts, dataArbiterCacheInf.ArbiterPorts);
+   Arbiter #(DATA_WIDTH, TAG_WIDTH) cacheArbiter(bus.Top, dataArbiterCacheInf.ArbiterPorts, instrArbiterCacheInf.ArbiterPorts);
+    */
 
+   DMCache #(DATA_WIDTH, 64, 9, 3) instrCache(instrCacheCoreInf, instrArbiterCacheInf);
+   DMCache #(DATA_WIDTH, 64, 9, 3) dataCache(dataCacheCoreInf, dataArbiterCacheInf);
+
+   Arbiter #(DATA_WIDTH, TAG_WIDTH) cacheArbiter(bus.Top, dataArbiterCacheInf, instrArbiterCacheInf);
+   
    Fetch fetch(
 		entry,
-		instrCacheCoreInf.CorePorts,
+		instrCacheCoreInf,
 		decode_offset,
 		fetch_rip,
 		fetch_skip,
@@ -272,6 +287,9 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		decode_buffer
 		);
 
+   /* verilator lint_on UNUSED */
+   /* verilator lint_on UNDRIVEN */
+   
    wire[0:(128+15)*8-1] decode_bytes_repeated = { decode_buffer, decode_buffer[0:15*8-1] }; // NOTE: buffer bits are left-to-right in increasing order
    wire [0:15*8-1]         decode_bytes = decode_bytes_repeated[decode_offset*8 +: 15*8]; // NOTE: buffer bits are left-to-right in increasing order
    wire can_decode = (fetch_offset - decode_offset >= 7'd15);
@@ -434,7 +452,13 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
    WriteBack writeback(	       
 		canWriteBack,
-          	killLatch,
+          	killLatch,	
+	/* verilator lint_off UNDRIVEN */
+	/* verilator lint_off UNUSED */
+		dataCacheCoreInf.CorePorts,
+	/* verilator lint_on UNUSED */
+	/* verilator lint_on UNDRIVEN */
+			       
 		regInUseBitMap,
 		regFile,
 		exwbCurrentRip,

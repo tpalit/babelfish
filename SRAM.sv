@@ -1,4 +1,7 @@
-module SRAM(input[width-1:0] writeData, output[width-1:0] readData, inout isWriteConfirmed, input[logDepth-1:0] writeAddr, input[logDepth-1:0] readAddr, input[(1<<logLineOffset)-1:0] writeEnable, input clk);
+module SRAM(
+	    /* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */
+	    input [width-1:0] writeData, output[width-1:0] readData, input[logDepth-1:0] writeAddr, input[logDepth-1:0] readAddr, input[(1<<logLineOffset)-1:0] writeEnable, input clk
+	    /* verilator lint_on UNDRIVEN */ /* verilator lint_on UNUSED */);
    
    /**
     * 
@@ -7,7 +10,6 @@ module SRAM(input[width-1:0] writeData, output[width-1:0] readData, inout isWrit
     * 
     * writeData: The full line to write. Only the data at the writeEnable[j] is valid.
     * readData: The full line read out.
-    * isWriteConfirmed: The signal to denote whether to go ahead with the write. Writes are more tricky and can't be done in parallel.
     * writeAddr: The address to be written to, as an index into the mem array.
     * readAddr: The address to be read from, as an index into the mem array.
     * writeEnable: Active high (each word has own enable).
@@ -33,24 +35,19 @@ module SRAM(input[width-1:0] writeData, output[width-1:0] readData, inout isWrit
       assert(ports == 1) else $fatal("multi-ported SRAM not supported");
    end
 
-   always @ (posedge clk) begin
-      if (delay > 0) begin
-	 readpipe[0] <= mem[readAddr];
-	 for(int i=1; i<delay; i=i+1) readpipe[i] <= readpipe[i-1];
-	 readData <= readpipe[delay-1];
+   always @ (posedge clk)
+
+
+      if (writeEnable[0]) begin /* TODO - Wait for Varun to push changes. */
+	 mem[writeAddr] <= writeData;
       end else begin
-	 readData <= mem[readAddr];
-      end
-
-      if (writeEnable && isWriteConfirmed) begin
-         for (int j=0; j<(1<<logLineOffset); j=j+1) begin
-            if (writeEnable[j] == 1) begin
-               mem[writeAddr][j*(width/(1<<logLineOffset))+:(width/(1<<logLineOffset))] <= writeData[j*(width/(1<<logLineOffset))+:(width/(1<<logLineOffset))];
-            end
-         end
-
-	 // Clear the control signal
-	 isWriteConfirmed <= 0;
+	 if (delay > 0) begin
+	    readpipe[0] <= mem[readAddr];
+	    for(int i=1; i<delay; i=i+1) readpipe[i] <= readpipe[i-1];
+	    readData <= readpipe[delay-1];
+	 end else begin
+	    readData <= mem[readAddr];
+	 end
       end
 
 endmodule

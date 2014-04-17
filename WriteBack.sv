@@ -1,34 +1,35 @@
 /* Copyright Tapti Palit, Amitav Paul, Sonam Mandal, 2014, All rights reserved. */
 
 module WriteBack (
-		input         canWriteBackIn,
-		input         killIn,
-		input         regInUseBitMapIn[16],
+		input 	      canWriteBackIn,
+		input 	      killIn,
+		/* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */ CacheCoreInterface iCacheCoreBus /* verilator lint_on UNUSED */ /* verilator lint_on UNDRIVEN */,		  
+		input 	      regInUseBitMapIn[16],
    		input [63:0]  regFileIn[16],
 
 		input [0:63]  currentRipIn,
 		input [0:3]   sourceReg1In,
 		input [0:3]   sourceReg2In,
-		input         sourceReg1ValidIn,
-		input         sourceReg2ValidIn,
+		input 	      sourceReg1ValidIn,
+		input 	      sourceReg2ValidIn,
 		input [0:3]   destRegIn,
 		input [0:3]   destRegSpecialIn,
-		input         destRegSpecialValidIn,
+		input 	      destRegSpecialValidIn,
 		input [0:63]  aluResultIn,
 		input [0:63]  aluResultSpecialIn,
 
 		output [0:63] currentRipOut,
 		output [0:3]  sourceRegCode1Out,
 		output [0:3]  sourceRegCode2Out,
-		output        sourceRegCode1ValidOut,
-		output        sourceRegCode2ValidOut,
+		output 	      sourceRegCode1ValidOut,
+		output 	      sourceRegCode2ValidOut,
 		output [0:3]  destRegOut,
 		output [0:3]  destRegSpecialOut,
-		output        destRegSpecialValidOut,
+		output 	      destRegSpecialValidOut,
 		output [0:63] aluResultOut,
 		output [0:63] aluResultSpecialOut,
 
-		output        regInUseBitMapOut[16],
+		output 	      regInUseBitMapOut[16],
    		output [63:0] regFileOut[16]
 		);
 
