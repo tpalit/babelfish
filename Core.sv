@@ -264,21 +264,14 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    ArbiterCacheInterface #(DATA_WIDTH, TAG_WIDTH) instrArbiterCacheInf(reset, clk);
    ArbiterCacheInterface #(DATA_WIDTH, TAG_WIDTH) dataArbiterCacheInf(reset, clk);
 
-   /*
    DMCache #(DATA_WIDTH, 64, 9, 3) instrCache(instrCacheCoreInf.CachePorts, instrArbiterCacheInf.CachePorts);
    DMCache #(DATA_WIDTH, 64, 9, 3) dataCache(dataCacheCoreInf.CachePorts, dataArbiterCacheInf.CachePorts);
 
    Arbiter #(DATA_WIDTH, TAG_WIDTH) cacheArbiter(bus.Top, dataArbiterCacheInf.ArbiterPorts, instrArbiterCacheInf.ArbiterPorts);
-    */
 
-   DMCache #(DATA_WIDTH, 64, 9, 3) instrCache(instrCacheCoreInf, instrArbiterCacheInf);
-   DMCache #(DATA_WIDTH, 64, 9, 3) dataCache(dataCacheCoreInf, dataArbiterCacheInf);
-
-   Arbiter #(DATA_WIDTH, TAG_WIDTH) cacheArbiter(bus.Top, dataArbiterCacheInf, instrArbiterCacheInf);
-   
    Fetch fetch(
 		entry,
-		instrCacheCoreInf,
+		instrCacheCoreInf.CorePorts,
 		decode_offset,
 		fetch_rip,
 		fetch_skip,

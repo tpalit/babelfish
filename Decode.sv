@@ -728,8 +728,6 @@ module Decode (
    always_comb begin
       //if (canDecodeIn && !stallIn) begin : decode_block
       if (canDecodeIn) begin : decode_block
-
-	 
          int instr_count = 0;
          int opcode_start_index = 0; // the index of the first byte of the opcode
          int opcode_end_index = 0; // the index of the last byte of the opcode.
@@ -780,6 +778,9 @@ module Decode (
 	 destRegOut = 0;
 	 destRegSpecialOut = 0;
 	 destRegSpecialValidOut = 0;
+	 $write("can decode!");
+	 
+	 
 
          while (is_prefix_flag) begin
             instr_count = instr_count + 1;
