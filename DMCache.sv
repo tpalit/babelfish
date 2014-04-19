@@ -146,7 +146,7 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3) (
 	cacheCoreBus.reqack <= 1;
 	// Check the state, if the index is valid, go to SRAM to get tags.
 	// Else, directly go to memory, 
-	if (state[reqAddrIndex][0] == 0) begin
+	if (state[reqAddrIndex][0] == 1) begin
 	   cache_state <= cache_waiting_sram;
 	   waitCounter <= delay;
 	end else begin
@@ -181,11 +181,11 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3) (
 	      arbiterCacheBus.reqcyc <= 1;
 	      arbiterCacheBus.req <= cacheCoreBus.req;
 	      arbiterCacheBus.reqtag <= cacheCoreBus.reqtag;
+	      state[reqAddrIndex][0] <= 1; // Mark the entry as invalid
+	      waitCounter <= waitCounter-1;
 	   end
-	end else begin // if (waitCounter == 0)
-	   state[reqAddrIndex][0] <= 1; // Mark the entry as invalid
-	   waitCounter <= waitCounter-1;
 	end
+
      end else if (cache_state == cache_waiting_memory) begin
 	if (arbiterCacheBus.reqack == 1) begin
 		arbiterCacheBus.reqcyc <= 0;

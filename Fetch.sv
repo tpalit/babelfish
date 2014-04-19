@@ -22,11 +22,13 @@ module Fetch (
 		end else begin
 			send_fetch_req = (fetch_offset_in - decode_offset_in < 7'd32);
 		end
+	      $write("bus.respcyc: %x, bus.resp: %x\n", iCacheCoreBus.respcyc, iCacheCoreBus.resp);   
 	end	   
 
 	assign iCacheCoreBus.respack = iCacheCoreBus.respcyc; // always able to accept response
 
 	always @ (posedge iCacheCoreBus.clk)
+
 		if (iCacheCoreBus.reset) begin
 			fetch_state_in <= fetch_idle;
 			fetch_rip_in <= entry & ~63;
@@ -56,6 +58,7 @@ module Fetch (
 				end
 			end
 
-		end
+		end // else: !if(iCacheCoreBus.reset)
+
 
 endmodule
