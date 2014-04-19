@@ -30,14 +30,15 @@ module WriteBack (
 		output [0:63] aluResultSpecialOut,
 
 		output 	      regInUseBitMapOut[16],
-   		output [63:0] regFileOut[16]
+   		output [63:0] regFileOut[16],
+		output 	      killOut
 		);
 
 	always_comb begin
 		if (canWriteBackIn == 1) begin
-             		if (killIn) begin
-               			$finish;
-             		end
+//             		if (killIn) begin
+//               			$finish;
+//             		end
              
 			/* Check regInUseBitMapIn, and set all sources and dest as unused. */
 			if (sourceReg1ValidIn == 1) begin
@@ -73,6 +74,8 @@ module WriteBack (
 		        destRegSpecialValidOut = destRegSpecialValidIn;
 			aluResultOut = aluResultIn;
 			aluResultSpecialOut = aluResultSpecialIn;
+
+			killOut = killIn;
 		end else begin
 		end
 	end

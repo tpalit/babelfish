@@ -59,12 +59,12 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3) (
    bit										  writeEnableTag;
    int										  waitCounter;
    int 										  read_count;
-   
+
    /* The parts of the original address requested */
    logic [0:WORDSIZE-LOGLINEOFFSET-LOGDEPTH-1] 					  reqAddrTag;
    logic [0:LOGDEPTH-1] 							  reqAddrIndex;
    logic [0:LOGLINEOFFSET-1] 							  reqAddrOffset;
-   
+
    enum 									  { cache_idle, cache_waiting_sram, cache_waiting_memory } cache_state;
    
    /*
@@ -93,23 +93,23 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3) (
       $display("Initializing L1 Cache");
    end
 
-   SRAM #(WIDTH * (1<<LOGLINEOFFSET), LOGDEPTH, LOGLINEOFFSET) sram_cache(
-									writeDataCacheLine, /* in */
-									readDataCacheLine, /* out */
+   SRAM #(WIDTH * (1<<LOGLINEOFFSET), LOGDEPTH, 64) sram_cache(
+									cacheCoreBus.clk,
 									cacheCoreBus.req[LOGLINEOFFSET+:LOGDEPTH], /* readAddr */
+									readDataCacheLine, /* out */
 									cacheCoreBus.req[LOGLINEOFFSET+:LOGDEPTH], /* writeAddr */
-									writeEnable,
-									cacheCoreBus.clk
+									writeDataCacheLine, /* in */
+									writeEnable
 									);
 
 
-   SRAM #(WIDTH-LOGDEPTH-LOGLINEOFFSET, LOGDEPTH, 0) sram_tags(
-							      writeDataTag, /* in */
-							      readDataTag, /* out */
+   SRAM #(WIDTH-LOGDEPTH-LOGLINEOFFSET, LOGDEPTH, WIDTH-LOGDEPTH-LOGLINEOFFSET) sram_tags(
+							      cacheCoreBus.clk,
 							      cacheCoreBus.req[LOGLINEOFFSET+:LOGDEPTH], /* readAddr */
+							      readDataTag, /* out */
 							      cacheCoreBus.req[LOGLINEOFFSET+:LOGDEPTH], /* writeAddr */
-							      writeEnableTag,
-							      cacheCoreBus.clk
+							      writeDataTag, /* in */
+							      writeEnableTag
 							      );
 
    always_comb begin
@@ -119,14 +119,16 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3) (
       reqAddrOffset = cacheCoreBus.req[LOGLINEOFFSET-1:0];
 
       /* Read or write */
+/*
       if (cacheCoreBus.reqtag[12] & cacheCoreBus.READ) begin
          writeEnable = 0;
       end else begin
-	 writeEnable = 1;
+	 writeEnable[reqAddrOffset] = 1;
       end
+*/
    end
 
-   assign arbiterCacheBus.reqack = arbiterCacheBus.reqcyc;
+//   assign arbiterCacheBus.reqack = arbiterCacheBus.reqcyc;
 
    always @ (posedge cacheCoreBus.clk)
      
@@ -164,8 +166,12 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3) (
 	   // else make a memory request.
 	   if (readDataTag == reqAddrTag) begin
 	      cacheCoreBus.respcyc <= 1;
-	      cacheCoreBus.resp <= readDataCacheLine[reqAddrOffset*8+:WORDSIZE];
+	      cacheCoreBus.resp <= readDataCacheLine[reqAddrOffset*WORDSIZE+:WORDSIZE];
 	      cache_state <= cache_idle;
+
+	      /* Setting state of this reqAddrIndex as valid */
+	      state[reqAddrIndex][0] <= 0;
+
 	      /* NOTE, TODO - For writes, set the write enable bit here. */
 	   end else begin
 	      cache_state <= cache_waiting_memory;
@@ -181,25 +187,53 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3) (
 	   waitCounter <= waitCounter-1;
 	end
      end else if (cache_state == cache_waiting_memory) begin
+	if (arbiterCacheBus.reqack == 1) begin
+		arbiterCacheBus.reqcyc <= 0;
+	end
+
 	cacheCoreBus.reqack <= 0;
 	if (arbiterCacheBus.respcyc) begin
 	   // acknowledge
 	   arbiterCacheBus.respack <= 1;
+	   cacheCoreBus.respcyc <= 1;
+
 	   read_count <= read_count+1;
 	   cacheCoreBus.resp <= arbiterCacheBus.resp;
-	   cacheCoreBus.respcyc <= 1;	   
-	   /* TODO - Do cachey stuff to update the data in the cache. */
+	   cacheCoreBus.resptag <= arbiterCacheBus.resptag;
 
-	   if (read_count == 7) begin
+	   /* TODO - Do cachey stuff to update the data in the cache. */
+	   if (read_count < 8) begin
+	   	writeDataCacheLine[read_count*WORDSIZE+:WORDSIZE] <= arbiterCacheBus.resp;
+	   end
+
+	   if (read_count >= 7) begin
 	      state[reqAddrIndex][0] <= 0; // Mark the cache entry as valid
 	      // Write to the tag.
 	      writeEnableTag <= 1;
 	      writeDataTag <= reqAddrTag;
+
+	      $write("\nAddress: %h, address index: %h", {reqAddrTag, reqAddrIndex, reqAddrOffset}, reqAddrIndex);
+	      for(int j=0; j < 8; j=j+1) begin
+		 writeEnable[j] <= 1;
+		 $write("\nWRITING offset %d: %h", j, writeDataCacheLine[j*WORDSIZE+:WORDSIZE]);
+	      end
+
+	      $write("\n");
+
 	   end
 	end else begin 
-	   if (read_count == 7) begin
+	   if (read_count >= 7) begin
+	      arbiterCacheBus.respack <= 0;
 	      cacheCoreBus.respcyc <= 0;
 	      cache_state <= cache_idle;
+
+	      writeEnableTag <= 0;
+
+              for(int j=0; j < 8; j=j+1) begin
+                 writeEnable[j] <= 0;
+              end
+
+	      read_count <= 0;
 	   end
 	end
      end

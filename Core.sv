@@ -228,6 +228,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [63:0] 	regFileOut[16];
 
    bit              killOut;
+   bit              killOutWb;
    bit              killLatch;
    
    initial begin
@@ -240,6 +241,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	 regInUseBitMap[k] = 0;
       end
       rflags = 64'h00200200;
+
+      fetch_skip = 0;
    end
 
    function logic mtrr_is_mmio(logic[63:0] physaddr);
@@ -475,7 +478,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		wbAluResultOut,
 		wbAluResultSpecialOut,
 		regInUseBitMapOut,
-		regFileOut
+		regFileOut,
+		killOutWb
 		);
 
    always @ (posedge bus.clk)
@@ -501,6 +505,10 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
         regFile[15] <= 0;
 
      end else begin // !bus.reset
+
+	if (killOutWb == 1) begin
+		$finish;
+	end
 
         decode_offset <= decode_offset + { 3'b0, bytes_decoded_this_cycle };
         if (bytes_decoded_this_cycle > 0) begin
