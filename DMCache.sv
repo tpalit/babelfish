@@ -212,13 +212,13 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3) (
 	      writeEnableTag <= 1;
 	      writeDataTag <= reqAddrTag;
 
-	      $write("\nAddress: %h, address index: %h", {reqAddrTag, reqAddrIndex, reqAddrOffset}, reqAddrIndex);
+//	      $write("\nAddress: %h, address index: %h", {reqAddrTag, reqAddrIndex, reqAddrOffset}, reqAddrIndex);
 	      for(int j=0; j < 8; j=j+1) begin
 		 writeEnable[j] <= 1;
-		 $write("\nWRITING offset %d: %h", j, writeDataCacheLine[j*WORDSIZE+:WORDSIZE]);
+//		 $write("\nWRITING offset %d: %h", j, writeDataCacheLine[j*WORDSIZE+:WORDSIZE]);
 	      end
 
-	      $write("\n");
+//	      $write("\n");
 
 	   end
 	end else begin 

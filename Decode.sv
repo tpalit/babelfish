@@ -41,7 +41,7 @@ module Decode (
    bit 				op_len2_modrm_array[0:255];
    int 				op_len2_imm_array[0:255];
 
-   
+
    initial begin
       for(int i=0; i<256;i=i+1) begin
          modrm_array[i] = 0;
@@ -778,7 +778,7 @@ module Decode (
 	 destRegOut = 0;
 	 destRegSpecialOut = 0;
 	 destRegSpecialValidOut = 0;
-	 $write("can decode!");
+
 	 
 	 
 
@@ -812,7 +812,8 @@ module Decode (
 
          if (opcode_start_index == opcode_end_index) begin
             opcode = decode_bytes[opcode_start_index*8 +: 8];
-
+//	    $write("opcode = %x", opcode);
+	    
             if (decode_bytes[opcode_start_index*8 +: 8] == 8'h83 ||
                 decode_bytes[opcode_start_index*8 +: 8] == 8'h80 ||
                 decode_bytes[opcode_start_index*8 +: 8] == 8'h81 ||
@@ -964,6 +965,8 @@ module Decode (
          end // if ((opcode_end_index - opcode_start_index) == 1)
 
          bytesDecodedThisCycleOut = instr_count[3:0];
+//	 $write("Decoding bytes: %x\n", bytesDecodedThisCycleOut);
+	 
          //$write("%x:   ", currentRipIn);
          
          for(int i=0; i< {28'b0,bytesDecodedThisCycleOut}; i=i+1) begin
