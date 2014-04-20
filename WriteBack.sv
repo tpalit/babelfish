@@ -3,8 +3,10 @@
 module WriteBack (
 		input 	      canWriteBackIn,
 		input 	      killIn,
-		/* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */ CacheCoreInterface iCacheCoreBus /* verilator lint_on UNUSED */ /* verilator lint_on UNDRIVEN */,		  
+			      /* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */ CacheCoreInterface iCacheCoreBus /* verilator lint_on UNUSED */ /* verilator lint_on UNDRIVEN */,
+		  /* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */
 		input 	      regInUseBitMapIn[16],
+		  /* verilator lint_on UNDRIVEN */ /* verilator lint_on UNUSED */
    		input [63:0]  regFileIn[16],
 
 		input [0:63]  currentRipIn,
@@ -29,7 +31,9 @@ module WriteBack (
 		output [0:63] aluResultOut,
 		output [0:63] aluResultSpecialOut,
 
+		  /* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */
 		output 	      regInUseBitMapOut[16],
+		  /* verilator lint_on UNDRIVEN */ /* verilator lint_on UNUSED */
    		output [63:0] regFileOut[16],
 		output 	      killOut
 		);
@@ -41,6 +45,7 @@ module WriteBack (
 //             		end
              
 			/* Check regInUseBitMapIn, and set all sources and dest as unused. */
+
 			if (sourceReg1ValidIn == 1) begin
 				regInUseBitMapOut[sourceReg1In] = 0;
 			end else begin
@@ -62,6 +67,8 @@ module WriteBack (
 			end
 
 			regInUseBitMapOut[destRegIn] = 0;
+//		   $display("here");
+		   
 			regFileOut[destRegIn] = aluResultIn;
 
   		        currentRipOut = currentRipIn;

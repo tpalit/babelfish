@@ -1,6 +1,7 @@
 #include "Vtop.h"
 #include "verilated.h"
 #include "system.h"
+#include <iostream>
 #if VM_TRACE
 # include <verilated_vcd_c.h>	// Trace file format header
 #endif
@@ -49,7 +50,6 @@ int main(int argc, char* argv[]) {
 	while(main_time/ps_per_clock < 10*K && !Verilated::gotFinish()) {
 		TICK();
 	}
-
 	top.final();
 
 #if VM_TRACE
