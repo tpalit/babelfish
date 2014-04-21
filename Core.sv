@@ -45,6 +45,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    bit 			idrdSourceRegCode1Valid = 0;
    bit 			idrdSourceRegCode2Valid = 0;
    logic [0:31] 	idrdImmLen = 0;
+   bit			idrdIsMemoryAccess = 0;
    logic [0:31] 	idrdDispLen = 0;
    logic [0:7] 		idrdImm8 = 0;
    logic [0:15] 	idrdImm16 = 0;
@@ -141,6 +142,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    bit 			idSourceRegCode1ValidOut = 0;
    bit 			idSourceRegCode2ValidOut = 0;   
    logic [0:31] 	idImmLenOut = 0;
+   bit			idIsMemoryAccessOut = 0;
    logic [0:31] 	idDispLenOut = 0;
    logic [0:7] 		idImm8Out = 0;
    logic [0:15] 	idImm16Out = 0;
@@ -317,6 +319,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		idSourceRegCode1ValidOut,
 		idSourceRegCode2ValidOut,
 		idImmLenOut,
+		idIsMemoryAccessOut,
 		idDispLenOut,
 		idImm8Out,
 		idImm16Out,
@@ -347,6 +350,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		idrdOpcodeValid,
 		idrdOpcode,
 		idrdImmLen,
+		idrdIsMemoryAccess,
 		idrdDispLen,
 		idrdImm8,
 		idrdImm16,
@@ -539,6 +543,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	idrdSourceRegCode1Valid <= idSourceRegCode1ValidOut;
 	idrdSourceRegCode2Valid <= idSourceRegCode2ValidOut;
 	idrdImmLen <= idImmLenOut;
+	idrdIsMemoryAccess <= idIsMemoryAccessOut;
 	idrdDispLen <= idDispLenOut;
 	idrdImm8 <=  idImm8Out ;
 	idrdImm16 <= idImm16Out;

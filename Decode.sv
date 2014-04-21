@@ -21,6 +21,7 @@ module Decode (
 	       output 		sourceRegCode1ValidOut,
 	       output 		sourceRegCode2ValidOut,
 	       output [0:31] 	immLenOut,
+	       output		isMemoryAccessOut,	// Tells us whether it is a memory access or register access
 	       output [0:31] 	dispLenOut,
 	       output [0:7] 	imm8Out,
 	       output [0:15] 	imm16Out,
@@ -778,7 +779,7 @@ module Decode (
 	 destRegOut = 0;
 	 destRegSpecialOut = 0;
 	 destRegSpecialValidOut = 0;
-
+	 isMemoryAccessOut = 0;
 	 
 	 
 
@@ -1017,6 +1018,7 @@ module Decode (
                   extendedOpcodeOut = 3'b000;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h89) begin
                decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
@@ -1034,6 +1036,7 @@ module Decode (
                   extendedOpcodeOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h8B) begin
                decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
@@ -1050,6 +1053,7 @@ module Decode (
                   extendedOpcodeOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'hB8 ||
                          opcode == 8'hB9 ||
@@ -1074,6 +1078,7 @@ module Decode (
                extendedOpcodeOut = 0;
                hasExtendedOpcodeOut = 0;
                opcodeValidOut = 1;
+               isMemoryAccessOut = 0;
             end else if (opcode == 8'h83 && reg_field == 3'b110) begin
                /****************** For XOR *************/
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b10);
@@ -1091,6 +1096,7 @@ module Decode (
                   extendedOpcodeOut = 3'b110;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b110) begin
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count }, 2'b11);
@@ -1108,6 +1114,7 @@ module Decode (
                   extendedOpcodeOut = 3'b110;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h31) begin
                decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
@@ -1124,6 +1131,7 @@ module Decode (
                   extendedOpcodeOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h33) begin
                decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
@@ -1140,6 +1148,7 @@ module Decode (
                   extendedOpcodeOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h35) begin
                decode_I(imm32, 1);
@@ -1156,6 +1165,7 @@ module Decode (
                extendedOpcodeOut = 0;
                hasExtendedOpcodeOut = 0;
                opcodeValidOut = 1;
+	       isMemoryAccessOut = 0;
             end else if (opcode == 8'h83 && reg_field == 3'b100) begin
                /****************** For AND *************/
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b10);
@@ -1173,6 +1183,7 @@ module Decode (
                   extendedOpcodeOut = 3'b100;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b100) begin
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count }, 2'b11);
@@ -1190,6 +1201,7 @@ module Decode (
                   extendedOpcodeOut = 3'b100;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h21) begin
                decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
@@ -1206,6 +1218,7 @@ module Decode (
                   extendedOpcodeOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h23) begin
                decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
@@ -1222,6 +1235,7 @@ module Decode (
                   extendedOpcodeOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h25) begin
                decode_I(imm32, 1);
@@ -1238,6 +1252,7 @@ module Decode (
                extendedOpcodeOut = 0;
                hasExtendedOpcodeOut = 0;
                opcodeValidOut = 1;
+	       isMemoryAccessOut = 0;
             end else if (opcode == 8'h83 && reg_field == 3'b000) begin
                /****************** For ADD *************/
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b10);
@@ -1255,6 +1270,7 @@ module Decode (
                   extendedOpcodeOut = 3'b000;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b000) begin
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count }, 2'b11);
@@ -1272,6 +1288,7 @@ module Decode (
                   extendedOpcodeOut = 3'b000;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h01) begin
                decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
@@ -1288,6 +1305,7 @@ module Decode (
                   extendedOpcodeOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h03) begin
                decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
@@ -1304,6 +1322,7 @@ module Decode (
                   extendedOpcodeOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h05) begin
                decode_I(imm32, 1);
@@ -1320,6 +1339,7 @@ module Decode (
                extendedOpcodeOut = 0;
                hasExtendedOpcodeOut = 0;
                opcodeValidOut = 1;
+	       isMemoryAccessOut = 0;
             end else if (opcode == 8'h83 && reg_field == 3'b010) begin
                /****************** For ADC *************/
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b10);
@@ -1337,6 +1357,7 @@ module Decode (
                   extendedOpcodeOut = 3'b010;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b010) begin
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count }, 2'b11);
@@ -1354,6 +1375,7 @@ module Decode (
                   extendedOpcodeOut = 3'b010;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h11) begin
                decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
@@ -1370,6 +1392,7 @@ module Decode (
                   extendedOpcodeOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h13) begin
                decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
@@ -1386,6 +1409,7 @@ module Decode (
                   extendedOpcodeOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h15) begin
                decode_I(imm32, 1);    
@@ -1402,6 +1426,7 @@ module Decode (
                extendedOpcodeOut = 0;
                hasExtendedOpcodeOut = 0;
                opcodeValidOut = 1;
+	       isMemoryAccessOut = 0;
             end else if (opcode == 8'h83 && reg_field == 3'b001) begin
                /****************** For OR *************/
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b10);
@@ -1419,6 +1444,7 @@ module Decode (
                   extendedOpcodeOut = 3'b001;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b001) begin
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count }, 2'b11);
@@ -1436,6 +1462,7 @@ module Decode (
                   extendedOpcodeOut = 3'b001;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h09) begin
                decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
@@ -1452,6 +1479,7 @@ module Decode (
                   extendedOpcodeOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h0B) begin
                decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
@@ -1468,6 +1496,7 @@ module Decode (
                   extendedOpcodeOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h0D) begin
                decode_I(imm32, 1);
@@ -1484,6 +1513,7 @@ module Decode (
                extendedOpcodeOut = 0;
                hasExtendedOpcodeOut = 0;
                opcodeValidOut = 1;
+	       isMemoryAccessOut = 0;
             end else if (opcode == 8'h83 && reg_field == 3'b011) begin
                /****************** For SBB *************/
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b10);
@@ -1501,6 +1531,7 @@ module Decode (
                   extendedOpcodeOut = 3'b011;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b011) begin
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count }, 2'b11);
@@ -1518,6 +1549,7 @@ module Decode (
                   extendedOpcodeOut = 3'b011;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h19) begin
                decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
@@ -1534,6 +1566,7 @@ module Decode (
                   extendedOpcodeOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h1B) begin
                decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
@@ -1550,6 +1583,7 @@ module Decode (
                   extendedOpcodeOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h1D) begin
                decode_I(imm32, 1);    
@@ -1566,6 +1600,7 @@ module Decode (
                extendedOpcodeOut = 0;
                hasExtendedOpcodeOut = 0;
                opcodeValidOut = 1;
+	       isMemoryAccessOut = 0;
             end else if (opcode == 8'h83 && reg_field == 3'b101) begin
                /****************** For SUB *************/
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b10);
@@ -1583,6 +1618,7 @@ module Decode (
                   extendedOpcodeOut = 3'b101;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b101) begin
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count }, 2'b11);
@@ -1600,6 +1636,7 @@ module Decode (
                   extendedOpcodeOut = 3'b101;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h29) begin
                decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
@@ -1616,6 +1653,7 @@ module Decode (
                   extendedOpcodeOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h2B) begin
                decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
@@ -1632,6 +1670,7 @@ module Decode (
                   extendedOpcodeOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h2D) begin
                decode_I(imm32, 1);    
@@ -1648,6 +1687,7 @@ module Decode (
                extendedOpcodeOut = 0;
                hasExtendedOpcodeOut = 0;
                opcodeValidOut = 1;
+               isMemoryAccessOut = 0;
             end else if (opcode == 8'h83 && reg_field == 3'b111) begin
                /****************** For CMP *************/
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b00);
@@ -1666,6 +1706,7 @@ module Decode (
                   extendedOpcodeOut = 3'b111;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h81 && reg_field == 3'b111) begin
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count }, 2'b11);
@@ -1683,6 +1724,7 @@ module Decode (
                   extendedOpcodeOut = 3'b111;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h39) begin
                decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
@@ -1699,6 +1741,7 @@ module Decode (
                   extendedOpcodeOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h3B) begin
                decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
@@ -1715,6 +1758,7 @@ module Decode (
                   extendedOpcodeOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h3D) begin
                decode_I(imm32, 1);
@@ -1731,6 +1775,7 @@ module Decode (
                extendedOpcodeOut = 0;
                hasExtendedOpcodeOut = 0;
                opcodeValidOut = 1;
+	       isMemoryAccessOut = 0;
             end else if (opcode == 8'h70 ||
                                  opcode == 8'h71 ||
                                  opcode == 8'h72 ||
@@ -1823,6 +1868,7 @@ module Decode (
                   extendedOpcodeOut = 3'b101;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'hF7 && reg_field == 3'b100) begin
                /****************** For MUL *************/
@@ -1842,6 +1888,7 @@ module Decode (
                   extendedOpcodeOut = 3'b100;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'hF7 && reg_field == 3'b011) begin
                /****************** For NEG *************/
@@ -1859,6 +1906,7 @@ module Decode (
                   extendedOpcodeOut = 3'b011;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'hF7 && reg_field == 3'b010) begin
                /****************** For NOT *************/
@@ -1876,6 +1924,7 @@ module Decode (
                   extendedOpcodeOut = 3'b010;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'hF7 && reg_field == 3'b000) begin
                /****************** For TEST *************/
@@ -1896,6 +1945,7 @@ module Decode (
                   dispLenOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'h6B) begin
                /****************** For IMUL *************/
@@ -1913,6 +1963,7 @@ module Decode (
                   dispLenOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'hA9) begin
                /****************** For TEST *************/
@@ -1964,6 +2015,7 @@ module Decode (
                   extendedOpcodeOut = 3'b000;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'hFF && reg_field == 3'b001) begin
                /****************** For DEC *************/
@@ -1981,6 +2033,7 @@ module Decode (
                   extendedOpcodeOut = 3'b001;
                   hasExtendedOpcodeOut = 1;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'hFF && reg_field == 3'b100) begin
                /****************** For JMP *************/
@@ -2084,6 +2137,7 @@ module Decode (
                   dispLenOut = 0;
                   hasExtendedOpcodeOut = 0;
                   opcodeValidOut = 1;
+		  isMemoryAccessOut = 0;
                end
             end else if (opcode == 8'hA1) begin
                //$write("pop fs");

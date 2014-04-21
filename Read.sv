@@ -15,6 +15,7 @@ module Read (
 	     input [0:0]   opcodeValidIn, 
 	     input [0:7]   opcodeIn,
 	     input [0:31]  immLenIn,
+	     /* verilator lint_off UNUSED */ /* verilator lint_off UNDRIVEN */ input 	   isMemoryAccessIn /* verilator lint_on UNDRIVEN */ /* verilator lint_on UNUSED */,
 	     input [0:31]  dispLenIn,
 	     input [0:7]   imm8In,
 	     input [0:15]  imm16In,
