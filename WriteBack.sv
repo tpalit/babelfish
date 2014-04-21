@@ -35,11 +35,12 @@ module WriteBack (
 		output 	      regInUseBitMapOut[16],
 		  /* verilator lint_on UNDRIVEN */ /* verilator lint_on UNUSED */
    		output [63:0] regFileOut[16],
+		output 	      writeBackSuccessfulOut,
 		output 	      killOut
 		);
 
 	always_comb begin
-		if (canWriteBackIn == 1) begin
+		if (canWriteBackIn == 1 && killIn == 0) begin
 //             		if (killIn) begin
 //               			$finish;
 //             		end
@@ -83,7 +84,12 @@ module WriteBack (
 			aluResultSpecialOut = aluResultSpecialIn;
 
 			killOut = killIn;
+			writeBackSuccessfulOut = 1;
+		end else if (canWriteBackIn == 1 && killIn == 1) begin
+			killOut = killIn;
+			writeBackSuccessfulOut = 0;
 		end else begin
+			writeBackSuccessfulOut = 0;
 		end
 	end
 endmodule

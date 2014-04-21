@@ -223,6 +223,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
    bit			readSuccessfulOut = 0;
    bit			executeSuccessfulOut = 0;
+   bit			writeBackSuccessfulOut = 0;
    /* verilator lint_on UNUSED */
 
    bit 			regInUseBitMapOut[16];
@@ -485,6 +486,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		wbAluResultSpecialOut,
 		wbRegInUseBitMapOut,
 		regFileOut,
+		writeBackSuccessfulOut,
 		killOutWb
 		);
 
@@ -638,54 +640,81 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	 */
      	killLatch <= killOut;
 
-	regInUseBitMap[wbDestRegOut] <= wbRegInUseBitMapOut[wbDestRegOut];
-	regInUseBitMap[wbDestRegSpecialOut] <= wbRegInUseBitMapOut[wbDestRegSpecialOut];	 	 
-	regInUseBitMap[wbSourceRegCode1Out] <= wbRegInUseBitMapOut[wbSourceRegCode1Out];	 
-	regInUseBitMap[wbSourceRegCode2Out] <= wbRegInUseBitMapOut[wbSourceRegCode2Out];	 
+	if (writeBackSuccessfulOut) begin
+		regInUseBitMap[wbDestRegOut] <= wbRegInUseBitMapOut[wbDestRegOut];
 
+		if (wbDestRegSpecialValidOut) begin
+			regInUseBitMap[wbDestRegSpecialOut] <= wbRegInUseBitMapOut[wbDestRegSpecialOut];
+		end
 
-	if (!canWriteBack) begin
-	   regInUseBitMap[idDestRegOut] <= regInUseBitMapOut[idDestRegOut];
-	   regInUseBitMap[idDestRegSpecialOut] <= regInUseBitMapOut[idDestRegSpecialOut];
-	   regInUseBitMap[idSourceRegCode1Out] <= regInUseBitMapOut[idSourceRegCode1Out];
-	   regInUseBitMap[idSourceRegCode2Out] <= regInUseBitMapOut[idSourceRegCode2Out];
-	end else begin
-//	   $display("0.");
+		if (wbSourceRegCode1ValidOut) begin
+			regInUseBitMap[wbSourceRegCode1Out] <= wbRegInUseBitMapOut[wbSourceRegCode1Out];	 
+		end
 
-	   if ((idDestRegOut != wbDestRegOut)
-	       && ((idDestRegOut != wbDestRegSpecialOut) || !wbDestRegSpecialValidOut)
-	       && ((idDestRegOut != wbSourceRegCode1Out) || !wbSourceRegCode1ValidOut)
-	       && ((idDestRegOut != wbSourceRegCode2Out) || !wbSourceRegCode2ValidOut)) begin
-//	      $display("1.");
-	      
-	      regInUseBitMap[idDestRegOut] <= regInUseBitMapOut[idDestRegOut];
-	   end
-
-	   if ((idDestRegSpecialOut != wbDestRegOut)
-	       && ((idDestRegSpecialOut != wbDestRegSpecialOut) || !wbDestRegSpecialValidOut)
-	       && ((idDestRegSpecialOut != wbSourceRegCode1Out) || !wbSourceRegCode1ValidOut)
-	       && ((idDestRegSpecialOut != wbSourceRegCode2Out) || !wbSourceRegCode2ValidOut)) begin
-//	      $display("2.");
-	      regInUseBitMap[idDestRegSpecialOut] <= regInUseBitMapOut[idDestRegSpecialOut];
-	   end
-
-	   if ((idSourceRegCode1Out != wbDestRegOut)
-	       && ((idSourceRegCode1Out != wbDestRegSpecialOut) || !wbDestRegSpecialValidOut)
-	       && ((idSourceRegCode1Out != wbSourceRegCode1Out) || !wbSourceRegCode1ValidOut)
-	       && ((idSourceRegCode1Out != wbSourceRegCode2Out) || !wbSourceRegCode2ValidOut)) begin
-//	      $display("3.");
-	      regInUseBitMap[idSourceRegCode1Out] <= regInUseBitMapOut[idSourceRegCode1Out];
-	   end
-
-	   if ((idSourceRegCode2Out != wbDestRegOut)
-	       && ((idSourceRegCode2Out != wbDestRegSpecialOut) || !wbDestRegSpecialValidOut)
-	       && ((idSourceRegCode2Out != wbSourceRegCode1Out) || !wbSourceRegCode1ValidOut)
-	       && ((idSourceRegCode2Out != wbSourceRegCode2Out) || !wbSourceRegCode2ValidOut)) begin
-//	      $display("4.");
-	      
-	      regInUseBitMap[idSourceRegCode2Out] <= regInUseBitMapOut[idSourceRegCode2Out];
-	   end
+		if (wbSourceRegCode2ValidOut) begin
+			regInUseBitMap[wbSourceRegCode2Out] <= wbRegInUseBitMapOut[wbSourceRegCode2Out];	 
+		end
 	end
+
+	if (bytes_decoded_this_cycle > 0) begin
+		regInUseBitMap[idDestRegOut] <= regInUseBitMapOut[idDestRegOut];
+
+		if (idDestRegSpecialValidOut) begin
+			regInUseBitMap[idDestRegSpecialOut] <= regInUseBitMapOut[idDestRegSpecialOut];
+		end
+
+		if (idSourceRegCode1ValidOut) begin
+			regInUseBitMap[idSourceRegCode1Out] <= regInUseBitMapOut[idSourceRegCode1Out];	 
+		end
+
+		if (idSourceRegCode2ValidOut) begin
+			regInUseBitMap[idSourceRegCode2Out] <= regInUseBitMapOut[idSourceRegCode2Out];	 
+		end
+	end
+
+//	if (!writeBackSuccessfulOut) begin
+//	   regInUseBitMap[idDestRegOut] <= regInUseBitMapOut[idDestRegOut];
+//	   regInUseBitMap[idDestRegSpecialOut] <= regInUseBitMapOut[idDestRegSpecialOut];
+//	   regInUseBitMap[idSourceRegCode1Out] <= regInUseBitMapOut[idSourceRegCode1Out];
+//	   regInUseBitMap[idSourceRegCode2Out] <= regInUseBitMapOut[idSourceRegCode2Out];
+//	   $display("Copying from writeback");
+//	end else if (bytes_decoded_this_cycle > 0) begin
+////	   $display("0.");
+//	   $display("Copying from decode");
+//	   if ((idDestRegOut != wbDestRegOut)
+//	       && ((idDestRegOut != wbDestRegSpecialOut) || !wbDestRegSpecialValidOut)
+//	       && ((idDestRegOut != wbSourceRegCode1Out) || !wbSourceRegCode1ValidOut)
+//	       && ((idDestRegOut != wbSourceRegCode2Out) || !wbSourceRegCode2ValidOut)) begin
+////	      $display("1.");
+//	      
+//	      regInUseBitMap[idDestRegOut] <= regInUseBitMapOut[idDestRegOut];
+//	   end
+//
+//	   if ((idDestRegSpecialOut != wbDestRegOut)
+//	       && ((idDestRegSpecialOut != wbDestRegSpecialOut) || !wbDestRegSpecialValidOut)
+//	       && ((idDestRegSpecialOut != wbSourceRegCode1Out) || !wbSourceRegCode1ValidOut)
+//	       && ((idDestRegSpecialOut != wbSourceRegCode2Out) || !wbSourceRegCode2ValidOut)) begin
+////	      $display("2.");
+//	      regInUseBitMap[idDestRegSpecialOut] <= regInUseBitMapOut[idDestRegSpecialOut];
+//	   end
+//
+//	   if ((idSourceRegCode1Out != wbDestRegOut)
+//	       && ((idSourceRegCode1Out != wbDestRegSpecialOut) || !wbDestRegSpecialValidOut)
+//	       && ((idSourceRegCode1Out != wbSourceRegCode1Out) || !wbSourceRegCode1ValidOut)
+//	       && ((idSourceRegCode1Out != wbSourceRegCode2Out) || !wbSourceRegCode2ValidOut)) begin
+////	      $display("3.");
+//	      regInUseBitMap[idSourceRegCode1Out] <= regInUseBitMapOut[idSourceRegCode1Out];
+//	   end
+//
+//	   if ((idSourceRegCode2Out != wbDestRegOut)
+//	       && ((idSourceRegCode2Out != wbDestRegSpecialOut) || !wbDestRegSpecialValidOut)
+//	       && ((idSourceRegCode2Out != wbSourceRegCode1Out) || !wbSourceRegCode1ValidOut)
+//	       && ((idSourceRegCode2Out != wbSourceRegCode2Out) || !wbSourceRegCode2ValidOut)) begin
+////	      $display("4.");
+//	      
+//	      regInUseBitMap[idSourceRegCode2Out] <= regInUseBitMapOut[idSourceRegCode2Out];
+//	   end
+//	end
      end
 
    
