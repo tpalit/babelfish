@@ -14,8 +14,10 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic[0:2*64*8-1] decode_buffer; // NOTE: buffer bits are left-to-right in increasing order
    logic[6:0] fetch_offset, decode_offset;
 
-   wire canExecute;
    wire canRead;
+   wire canAddressCalculate;
+   wire canMemory;
+   wire canExecute;
    wire canWriteBack;
 
    logic [63:0] regFile[16];
@@ -32,7 +34,9 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
    logic [63:0] 	ifidCurrentRip;
    logic [63:0] 	idrdCurrentRip;
-   logic [63:0] 	rdexCurrentRip;
+   logic [63:0] 	rdacCurrentRip;
+   logic [63:0] 	acmemCurrentRip;
+   logic [63:0] 	memexCurrentRip;
    logic [63:0] 	exwbCurrentRip;
 
    logic [0:2] 		idrdExtendedOpcode = 0;
@@ -59,32 +63,86 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:3]		idrdDestRegSpecial = 0;
    bit	 		idrdDestRegSpecialValid = 0;
    
-   logic [0:2] 		rdexExtendedOpcode = 0;
-   logic [0:31] 	rdexHasExtendedOpcode = 0;
-   logic [0:31] 	rdexOpcodeLength = 0;
-   logic [0:0] 		rdexOpcodeValid = 0; 
-   logic [0:7] 		rdexOpcode = 0;
-   logic [0:63] 	rdexOperandVal1 = 0;
-   logic [0:63] 	rdexOperandVal2 = 0;
-   bit 			rdexOperandVal1Valid = 0;
-   bit 			rdexOperandVal2Valid = 0;   
-   logic [0:3] 		rdexSourceRegCode1 = 0;
-   logic [0:3] 		rdexSourceRegCode2 = 0;
-   bit 			rdexSourceRegCode1Valid = 0;
-   bit 			rdexSourceRegCode2Valid = 0;
-   logic [0:31] 	rdexImmLen = 0;
-   logic [0:31] 	rdexDispLen = 0;
-   logic [0:7] 		rdexImm8 = 0;
-   logic [0:15] 	rdexImm16 = 0;
-   logic [0:31] 	rdexImm32 = 0;
-   logic [0:63] 	rdexImm64 = 0;
-   logic [0:7] 		rdexDisp8 = 0;
-   logic [0:15] 	rdexDisp16 = 0;
-   logic [0:31] 	rdexDisp32 = 0;
-   logic [0:63] 	rdexDisp64 = 0;
-   logic [0:3]		rdexDestReg = 0;
-   logic [0:3]		rdexDestRegSpecial = 0;
-   bit	 		rdexDestRegSpecialValid = 0;
+   logic [0:2] 		rdacExtendedOpcode = 0;
+   logic [0:31] 	rdacHasExtendedOpcode = 0;
+   logic [0:31] 	rdacOpcodeLength = 0;
+   logic [0:0] 		rdacOpcodeValid = 0; 
+   logic [0:7] 		rdacOpcode = 0;
+   logic [0:63] 	rdacOperandVal1 = 0;
+   logic [0:63] 	rdacOperandVal2 = 0;
+   bit 			rdacOperandVal1Valid = 0;
+   bit 			rdacOperandVal2Valid = 0;   
+   logic [0:3] 		rdacSourceRegCode1 = 0;
+   logic [0:3] 		rdacSourceRegCode2 = 0;
+   bit 			rdacSourceRegCode1Valid = 0;
+   bit 			rdacSourceRegCode2Valid = 0;
+   logic [0:31] 	rdacImmLen = 0;
+   logic [0:31] 	rdacDispLen = 0;
+   logic [0:7] 		rdacImm8 = 0;
+   logic [0:15] 	rdacImm16 = 0;
+   logic [0:31] 	rdacImm32 = 0;
+   logic [0:63] 	rdacImm64 = 0;
+   logic [0:7] 		rdacDisp8 = 0;
+   logic [0:15] 	rdacDisp16 = 0;
+   logic [0:31] 	rdacDisp32 = 0;
+   logic [0:63] 	rdacDisp64 = 0;
+   logic [0:3]		rdacDestReg = 0;
+   logic [0:3]		rdacDestRegSpecial = 0;
+   bit	 		rdacDestRegSpecialValid = 0;
+
+   logic [0:2] 		acmemExtendedOpcode = 0;
+   logic [0:31] 	acmemHasExtendedOpcode = 0;
+   logic [0:31] 	acmemOpcodeLength = 0;
+   logic [0:0] 		acmemOpcodeValid = 0; 
+   logic [0:7] 		acmemOpcode = 0;
+   logic [0:63] 	acmemOperandVal1 = 0;
+   logic [0:63] 	acmemOperandVal2 = 0;
+   bit 			acmemOperandVal1Valid = 0;
+   bit 			acmemOperandVal2Valid = 0;   
+   logic [0:3] 		acmemSourceRegCode1 = 0;
+   logic [0:3] 		acmemSourceRegCode2 = 0;
+   bit 			acmemSourceRegCode1Valid = 0;
+   bit 			acmemSourceRegCode2Valid = 0;
+   logic [0:31] 	acmemImmLen = 0;
+   logic [0:31] 	acmemDispLen = 0;
+   logic [0:7] 		acmemImm8 = 0;
+   logic [0:15] 	acmemImm16 = 0;
+   logic [0:31] 	acmemImm32 = 0;
+   logic [0:63] 	acmemImm64 = 0;
+   logic [0:7] 		acmemDisp8 = 0;
+   logic [0:15] 	acmemDisp16 = 0;
+   logic [0:31] 	acmemDisp32 = 0;
+   logic [0:63] 	acmemDisp64 = 0;
+   logic [0:3]		acmemDestReg = 0;
+   logic [0:3]		acmemDestRegSpecial = 0;
+   bit	 		acmemDestRegSpecialValid = 0;
+
+   logic [0:2] 		memexExtendedOpcode = 0;
+   logic [0:31] 	memexHasExtendedOpcode = 0;
+   logic [0:31] 	memexOpcodeLength = 0;
+   logic [0:0] 		memexOpcodeValid = 0; 
+   logic [0:7] 		memexOpcode = 0;
+   logic [0:63] 	memexOperandVal1 = 0;
+   logic [0:63] 	memexOperandVal2 = 0;
+   bit 			memexOperandVal1Valid = 0;
+   bit 			memexOperandVal2Valid = 0;   
+   logic [0:3] 		memexSourceRegCode1 = 0;
+   logic [0:3] 		memexSourceRegCode2 = 0;
+   bit 			memexSourceRegCode1Valid = 0;
+   bit 			memexSourceRegCode2Valid = 0;
+   logic [0:31] 	memexImmLen = 0;
+   logic [0:31] 	memexDispLen = 0;
+   logic [0:7] 		memexImm8 = 0;
+   logic [0:15] 	memexImm16 = 0;
+   logic [0:31] 	memexImm32 = 0;
+   logic [0:63] 	memexImm64 = 0;
+   logic [0:7] 		memexDisp8 = 0;
+   logic [0:15] 	memexDisp16 = 0;
+   logic [0:31] 	memexDisp32 = 0;
+   logic [0:63] 	memexDisp64 = 0;
+   logic [0:3]		memexDestReg = 0;
+   logic [0:3]		memexDestRegSpecial = 0;
+   bit	 		memexDestRegSpecialValid = 0;
 
    /* verilator lint_off UNUSED */
    logic [0:2] 		exwbExtendedOpcode = 0;
@@ -127,6 +185,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [63:0]         idCurrentRipOut; 
    logic [63:0]         rdCurrentRipOut;
    /* verilator lint_off UNUSED */
+   logic [63:0]         acCurrentRipOut;
+   logic [63:0]         memCurrentRipOut;
    logic [63:0]         exCurrentRipOut;
    logic [63:0]         wbCurrentRipOut;
    logic 		idStallOut;
@@ -183,7 +243,60 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:3]		rdDestRegSpecialOut = 0;
    bit	 		rdDestRegSpecialValidOut = 0;
 
-   /* verilator lint_off UNUSED */
+   logic [0:2] 		acExtendedOpcodeOut = 0;
+   logic [0:31] 	acHasExtendedOpcodeOut = 0;
+   logic [0:31] 	acOpcodeLengthOut = 0;
+   logic [0:0] 		acOpcodeValidOut = 0; 
+   logic [0:7] 		acOpcodeOut = 0;
+   logic [0:63] 	acOperandVal1Out = 0;
+   logic [0:63] 	acOperandVal2Out = 0;
+   bit 			acOperandVal1ValidOut = 0;
+   bit 			acOperandVal2ValidOut = 0;   
+   logic [0:3] 		acSourceRegCode1Out = 0;
+   logic [0:3] 		acSourceRegCode2Out = 0;
+   bit 			acSourceRegCode1ValidOut = 0;
+   bit 			acSourceRegCode2ValidOut = 0;   
+   logic [0:31] 	acImmLenOut = 0;
+   logic [0:31] 	acDispLenOut = 0;
+   logic [0:7] 		acImm8Out = 0;
+   logic [0:15] 	acImm16Out = 0;
+   logic [0:31] 	acImm32Out = 0;
+   logic [0:63] 	acImm64Out = 0;
+   logic [0:7] 		acDisp8Out = 0;
+   logic [0:15] 	acDisp16Out = 0;
+   logic [0:31] 	acDisp32Out = 0;
+   logic [0:63] 	acDisp64Out = 0;
+   logic [0:3]		acDestRegOut = 0;
+   logic [0:3]		acDestRegSpecialOut = 0;
+   bit	 		acDestRegSpecialValidOut = 0;
+
+   logic [0:2] 		memExtendedOpcodeOut = 0;
+   logic [0:31] 	memHasExtendedOpcodeOut = 0;
+   logic [0:31] 	memOpcodeLengthOut = 0;
+   logic [0:0] 		memOpcodeValidOut = 0; 
+   logic [0:7] 		memOpcodeOut = 0;
+   logic [0:63] 	memOperandVal1Out = 0;
+   logic [0:63] 	memOperandVal2Out = 0;
+   bit 			memOperandVal1ValidOut = 0;
+   bit 			memOperandVal2ValidOut = 0;   
+   logic [0:3] 		memSourceRegCode1Out = 0;
+   logic [0:3] 		memSourceRegCode2Out = 0;
+   bit 			memSourceRegCode1ValidOut = 0;
+   bit 			memSourceRegCode2ValidOut = 0;   
+   logic [0:31] 	memImmLenOut = 0;
+   logic [0:31] 	memDispLenOut = 0;
+   logic [0:7] 		memImm8Out = 0;
+   logic [0:15] 	memImm16Out = 0;
+   logic [0:31] 	memImm32Out = 0;
+   logic [0:63] 	memImm64Out = 0;
+   logic [0:7] 		memDisp8Out = 0;
+   logic [0:15] 	memDisp16Out = 0;
+   logic [0:31] 	memDisp32Out = 0;
+   logic [0:63] 	memDisp64Out = 0;
+   logic [0:3]		memDestRegOut = 0;
+   logic [0:3]		memDestRegSpecialOut = 0;
+   bit	 		memDestRegSpecialValidOut = 0;
+
    logic [0:2] 		exExtendedOpcodeOut = 0;
    logic [0:31] 	exHasExtendedOpcodeOut = 0;
    logic [0:31] 	exOpcodeLengthOut = 0;
@@ -220,13 +333,16 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:3]		wbDestRegOut = 0;
    logic [0:3]		wbDestRegSpecialOut = 0;
    bit	 		wbDestRegSpecialValidOut = 0;
+   /* verilator lint_off UNUSED */
    logic [0:63]		wbAluResultOut = 0;
    logic [0:63]		wbAluResultSpecialOut = 0;
+   /* verilator lint_on UNUSED */
 
    bit			readSuccessfulOut = 0;
+   bit			addressCalculationSuccessfulOut = 0;
+   bit			memorySuccessfulOut = 0;
    bit			executeSuccessfulOut = 0;
    bit			writeBackSuccessfulOut = 0;
-   /* verilator lint_on UNUSED */
 
    bit 			regInUseBitMapOut[16];
    bit 			wbRegInUseBitMapOut[16];
@@ -240,7 +356,9 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    initial begin
       ifidCurrentRip = 0;
       idrdCurrentRip = 0;
-      rdexCurrentRip = 0;
+      rdacCurrentRip = 0;
+      acmemCurrentRip = 0;
+      memexCurrentRip = 0;
       idStallIn = 0;
       for(int k=0; k<16; k=k+1) begin
          regFile[k] = 0;
@@ -393,36 +511,156 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		rdDestRegSpecialValidOut,
 		readSuccessfulOut
 		);
+
+   AddressCalculation addresscalculation(
+		rdacCurrentRip,
+		canAddressCalculate,
+		rdacExtendedOpcode,
+		rdacHasExtendedOpcode,
+		rdacOpcodeLength,
+		rdacOpcodeValid, 
+		rdacOpcode,
+		rdacSourceRegCode1,
+		rdacSourceRegCode2,
+		rdacSourceRegCode1Valid,
+		rdacSourceRegCode2Valid,
+		rdacOperandVal1,
+		rdacOperandVal2,
+		rdacOperandVal1Valid,
+		rdacOperandVal2Valid,   
+		rdacImmLen,
+		rdacDispLen,
+		rdacImm8,
+		rdacImm16,
+		rdacImm32,
+		rdacImm64,
+		rdacDisp8,
+		rdacDisp16,
+		rdacDisp32,
+		rdacDisp64,
+		rdacDestReg,
+		rdacDestRegSpecial,
+		rdacDestRegSpecialValid,
+
+		acCurrentRipOut,
+		acExtendedOpcodeOut,
+		acHasExtendedOpcodeOut,
+		acOpcodeLengthOut,
+		acOpcodeValidOut, 
+		acOpcodeOut,
+		acOperandVal1Out,
+		acOperandVal2Out,
+		acOperandVal1ValidOut,
+		acOperandVal2ValidOut,
+		acSourceRegCode1Out,
+		acSourceRegCode2Out,
+		acSourceRegCode1ValidOut,
+		acSourceRegCode2ValidOut,
+		acImmLenOut,
+		acDispLenOut,
+		acImm8Out,
+		acImm16Out,
+		acImm32Out,
+		acImm64Out,
+		acDisp8Out,
+		acDisp16Out,
+		acDisp32Out,
+		acDisp64Out,
+		acDestRegOut,
+		acDestRegSpecialOut,
+		acDestRegSpecialValidOut,
+		addressCalculationSuccessfulOut
+		);
+
+   Memory memory(
+		acmemCurrentRip,
+		canMemory,
+		acmemExtendedOpcode,
+		acmemHasExtendedOpcode,
+		acmemOpcodeLength,
+		acmemOpcodeValid, 
+		acmemOpcode,
+		acmemSourceRegCode1,
+		acmemSourceRegCode2,
+		acmemSourceRegCode1Valid,
+		acmemSourceRegCode2Valid,
+		acmemOperandVal1,
+		acmemOperandVal2,
+		acmemOperandVal1Valid,
+		acmemOperandVal2Valid,   
+		acmemImmLen,
+		acmemDispLen,
+		acmemImm8,
+		acmemImm16,
+		acmemImm32,
+		acmemImm64,
+		acmemDisp8,
+		acmemDisp16,
+		acmemDisp32,
+		acmemDisp64,
+		acmemDestReg,
+		acmemDestRegSpecial,
+		acmemDestRegSpecialValid,
+
+		memCurrentRipOut,
+		memExtendedOpcodeOut,
+		memHasExtendedOpcodeOut,
+		memOpcodeLengthOut,
+		memOpcodeValidOut, 
+		memOpcodeOut,
+		memOperandVal1Out,
+		memOperandVal2Out,
+		memOperandVal1ValidOut,
+		memOperandVal2ValidOut,
+		memSourceRegCode1Out,
+		memSourceRegCode2Out,
+		memSourceRegCode1ValidOut,
+		memSourceRegCode2ValidOut,
+		memImmLenOut,
+		memDispLenOut,
+		memImm8Out,
+		memImm16Out,
+		memImm32Out,
+		memImm64Out,
+		memDisp8Out,
+		memDisp16Out,
+		memDisp32Out,
+		memDisp64Out,
+		memDestRegOut,
+		memDestRegSpecialOut,
+		memDestRegSpecialValidOut,
+		memorySuccessfulOut
+		);
    
    Execute execute(	       
-		rdexCurrentRip,
+		memexCurrentRip,
 		canExecute,
-		rdexExtendedOpcode,
-		rdexHasExtendedOpcode,
-		rdexOpcodeLength,
-		rdexOpcodeValid, 
-		rdexOpcode,
-		rdexSourceRegCode1,
-		rdexSourceRegCode2,
-		rdexSourceRegCode1Valid,
-		rdexSourceRegCode2Valid,
-		rdexOperandVal1,
-		rdexOperandVal2,
-		rdexOperandVal1Valid,
-		rdexOperandVal2Valid,   
-		rdexImmLen,
-		rdexDispLen,
-		rdexImm8,
-		rdexImm16,
-		rdexImm32,
-		rdexImm64,
-		rdexDisp8,
-		rdexDisp16,
-		rdexDisp32,
-		rdexDisp64,
-		rdexDestReg,
-		rdexDestRegSpecial,
-		rdexDestRegSpecialValid,
+		memexExtendedOpcode,
+		memexHasExtendedOpcode,
+		memexOpcodeLength,
+		memexOpcodeValid, 
+		memexOpcode,
+		memexSourceRegCode1,
+		memexSourceRegCode2,
+		memexSourceRegCode1Valid,
+		memexSourceRegCode2Valid,
+		memexOperandVal1,
+		memexOperandVal2,
+		memexOperandVal1Valid,
+		memexOperandVal2Valid,   
+		memexImmLen,
+		memexDispLen,
+		memexImm8,
+		memexImm16,
+		memexImm32,
+		memexImm64,
+		memexDisp8,
+		memexDisp16,
+		memexDisp32,
+		memexDisp64,
+		memexDestReg,
+		memexDestRegSpecial,
+		memexDestRegSpecialValid,
 
 		exAluResultOut,
 		exAluResultSpecialOut,
@@ -528,7 +766,9 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
         end else begin
            canRead <= 0;
         end
-	canExecute <= readSuccessfulOut;
+	canAddressCalculate <= readSuccessfulOut;
+	canMemory <= addressCalculationSuccessfulOut;
+	canExecute <= memorySuccessfulOut;
 	canWriteBack <= executeSuccessfulOut;
 
 	/* Latch the output values from each stage. */
@@ -557,32 +797,86 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	idrdDestRegSpecial <= idDestRegSpecialOut;
 	idrdDestRegSpecialValid <=  idDestRegSpecialValidOut;
 
-	rdexExtendedOpcode <= rdExtendedOpcodeOut;           
-	rdexHasExtendedOpcode <= rdHasExtendedOpcodeOut;   
-	rdexOpcodeLength <= rdOpcodeLengthOut;        
-	rdexOpcodeValid <= rdOpcodeValidOut;
-	rdexOpcode <= rdOpcodeOut;
-	rdexOperandVal1 <= rdOperandVal1Out;
-	rdexOperandVal2 <= rdOperandVal2Out;
-	rdexOperandVal1Valid <= rdOperandVal1ValidOut;
-	rdexOperandVal2Valid <= rdOperandVal2ValidOut;
-	rdexImmLen <= rdImmLenOut;
-	rdexDispLen <= rdDispLenOut;
-	rdexImm8 <=  rdImm8Out ;
-	rdexImm16 <= rdImm16Out;
-	rdexImm32 <= rdImm32Out;
-	rdexImm64 <= rdImm64Out;
-	rdexDisp8 <= rdDisp8Out;
-	rdexDisp16 <= rdDisp16Out;
-	rdexDisp32 <= rdDisp32Out;
-	rdexDisp64 <= rdDisp64Out;
-	rdexDestReg <= rdDestRegOut;
-	rdexDestRegSpecial <= rdDestRegSpecialOut;
-	rdexDestRegSpecialValid <=  rdDestRegSpecialValidOut;
-	rdexSourceRegCode1 <= rdSourceRegCode1Out;
-	rdexSourceRegCode2 <= rdSourceRegCode2Out;
-	rdexSourceRegCode1Valid <= rdSourceRegCode1ValidOut;
-	rdexSourceRegCode2Valid <= rdSourceRegCode2ValidOut;
+	rdacExtendedOpcode <= rdExtendedOpcodeOut;           
+	rdacHasExtendedOpcode <= rdHasExtendedOpcodeOut;   
+	rdacOpcodeLength <= rdOpcodeLengthOut;        
+	rdacOpcodeValid <= rdOpcodeValidOut;
+	rdacOpcode <= rdOpcodeOut;
+	rdacOperandVal1 <= rdOperandVal1Out;
+	rdacOperandVal2 <= rdOperandVal2Out;
+	rdacOperandVal1Valid <= rdOperandVal1ValidOut;
+	rdacOperandVal2Valid <= rdOperandVal2ValidOut;
+	rdacImmLen <= rdImmLenOut;
+	rdacDispLen <= rdDispLenOut;
+	rdacImm8 <=  rdImm8Out ;
+	rdacImm16 <= rdImm16Out;
+	rdacImm32 <= rdImm32Out;
+	rdacImm64 <= rdImm64Out;
+	rdacDisp8 <= rdDisp8Out;
+	rdacDisp16 <= rdDisp16Out;
+	rdacDisp32 <= rdDisp32Out;
+	rdacDisp64 <= rdDisp64Out;
+	rdacDestReg <= rdDestRegOut;
+	rdacDestRegSpecial <= rdDestRegSpecialOut;
+	rdacDestRegSpecialValid <=  rdDestRegSpecialValidOut;
+	rdacSourceRegCode1 <= rdSourceRegCode1Out;
+	rdacSourceRegCode2 <= rdSourceRegCode2Out;
+	rdacSourceRegCode1Valid <= rdSourceRegCode1ValidOut;
+	rdacSourceRegCode2Valid <= rdSourceRegCode2ValidOut;
+
+	acmemExtendedOpcode <= acExtendedOpcodeOut;
+	acmemHasExtendedOpcode <= acHasExtendedOpcodeOut;
+	acmemOpcodeLength <= acOpcodeLengthOut;
+	acmemOpcodeValid <= acOpcodeValidOut; 
+	acmemOpcode <= acOpcodeOut;
+	acmemOperandVal1 <= acOperandVal1Out;
+	acmemOperandVal2 <= acOperandVal2Out;
+	acmemOperandVal1Valid <= acOperandVal1ValidOut;
+	acmemOperandVal2Valid <= acOperandVal2ValidOut;   
+	acmemSourceRegCode1 <= acSourceRegCode1Out;
+	acmemSourceRegCode2 <= acSourceRegCode2Out;
+	acmemSourceRegCode1Valid <= acSourceRegCode1ValidOut;
+	acmemSourceRegCode2Valid <= acSourceRegCode2ValidOut;   
+	acmemImmLen <= acImmLenOut;
+	acmemDispLen <= acDispLenOut;
+	acmemImm8 <= acImm8Out;
+	acmemImm16 <= acImm16Out;
+	acmemImm32 <= acImm32Out;
+	acmemImm64 <= acImm64Out;
+	acmemDisp8 <= acDisp8Out;
+	acmemDisp16 <= acDisp16Out;
+	acmemDisp32 <= acDisp32Out;
+	acmemDisp64 <= acDisp64Out;
+	acmemDestReg <= acDestRegOut;
+	acmemDestRegSpecial <= acDestRegSpecialOut;
+	acmemDestRegSpecialValid <= acDestRegSpecialValidOut;
+
+	memexExtendedOpcode <= memExtendedOpcodeOut;
+	memexHasExtendedOpcode <= memHasExtendedOpcodeOut;
+	memexOpcodeLength <= memOpcodeLengthOut;
+	memexOpcodeValid <= memOpcodeValidOut; 
+	memexOpcode <= memOpcodeOut;
+	memexOperandVal1 <= memOperandVal1Out;
+	memexOperandVal2 <= memOperandVal2Out;
+	memexOperandVal1Valid <= memOperandVal1ValidOut;
+	memexOperandVal2Valid <= memOperandVal2ValidOut;   
+	memexSourceRegCode1 <= memSourceRegCode1Out;
+	memexSourceRegCode2 <= memSourceRegCode2Out;
+	memexSourceRegCode1Valid <= memSourceRegCode1ValidOut;
+	memexSourceRegCode2Valid <= memSourceRegCode2ValidOut;   
+	memexImmLen <= memImmLenOut;
+	memexDispLen <= memDispLenOut;
+	memexImm8 <= memImm8Out;
+	memexImm16 <= memImm16Out;
+	memexImm32 <= memImm32Out;
+	memexImm64 <= memImm64Out;
+	memexDisp8 <= memDisp8Out;
+	memexDisp16 <= memDisp16Out;
+	memexDisp32 <= memDisp32Out;
+	memexDisp64 <= memDisp64Out;
+	memexDestReg <= memDestRegOut;
+	memexDestRegSpecial <= memDestRegSpecialOut;
+	memexDestRegSpecialValid <= memDestRegSpecialValidOut;
 
 	exwbExtendedOpcode <= exExtendedOpcodeOut;
 	exwbHasExtendedOpcode <= exHasExtendedOpcodeOut;
@@ -614,7 +908,9 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	exwbAluResultSpecial <= exAluResultSpecialOut;
 
 	idrdCurrentRip <= idCurrentRipOut;
-	rdexCurrentRip <= rdCurrentRipOut;
+	rdacCurrentRip <= rdCurrentRipOut;
+	acmemCurrentRip <= acCurrentRipOut;
+	memexCurrentRip <= memCurrentRipOut;
 	exwbCurrentRip <= exCurrentRipOut;
 
         /* verilator lint_off WIDTH */
@@ -630,19 +926,6 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	regFile[wbDestRegOut] <= regFileOut[wbDestRegOut];
 	regFile[wbDestRegSpecialOut] <= regFileOut[wbDestRegSpecialOut];
 
-	/*
-	for(int k =0; k<16; k++) begin
-	   regInUseBitMap[k] <= shadowRegInUseBitMap[k];
-	end
-	 */
-
-	/*
-	regInUseBitMap[wbDestRegOut] <= wbRegInUseBitMapOut[wbDestRegOut];
-	regInUseBitMap[wbDestRegSpecialOut] <= wbRegInUseBitMapOut[wbDestRegSpecialOut];
-	regInUseBitMap[wbSourceRegCode1Out] <= wbRegInUseBitMapOut[wbSourceRegCode1Out];
-	regInUseBitMap[wbSourceRegCode2Out] <= wbRegInUseBitMapOut[wbSourceRegCode2Out];
-
-	 */
      	killLatch <= killOut;
 
 	if (writeBackSuccessfulOut) begin
@@ -676,50 +959,6 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 			regInUseBitMap[idSourceRegCode2Out] <= regInUseBitMapOut[idSourceRegCode2Out];	 
 		end
 	end
-
-//	if (!writeBackSuccessfulOut) begin
-//	   regInUseBitMap[idDestRegOut] <= regInUseBitMapOut[idDestRegOut];
-//	   regInUseBitMap[idDestRegSpecialOut] <= regInUseBitMapOut[idDestRegSpecialOut];
-//	   regInUseBitMap[idSourceRegCode1Out] <= regInUseBitMapOut[idSourceRegCode1Out];
-//	   regInUseBitMap[idSourceRegCode2Out] <= regInUseBitMapOut[idSourceRegCode2Out];
-//	   $display("Copying from writeback");
-//	end else if (bytes_decoded_this_cycle > 0) begin
-////	   $display("0.");
-//	   $display("Copying from decode");
-//	   if ((idDestRegOut != wbDestRegOut)
-//	       && ((idDestRegOut != wbDestRegSpecialOut) || !wbDestRegSpecialValidOut)
-//	       && ((idDestRegOut != wbSourceRegCode1Out) || !wbSourceRegCode1ValidOut)
-//	       && ((idDestRegOut != wbSourceRegCode2Out) || !wbSourceRegCode2ValidOut)) begin
-////	      $display("1.");
-//	      
-//	      regInUseBitMap[idDestRegOut] <= regInUseBitMapOut[idDestRegOut];
-//	   end
-//
-//	   if ((idDestRegSpecialOut != wbDestRegOut)
-//	       && ((idDestRegSpecialOut != wbDestRegSpecialOut) || !wbDestRegSpecialValidOut)
-//	       && ((idDestRegSpecialOut != wbSourceRegCode1Out) || !wbSourceRegCode1ValidOut)
-//	       && ((idDestRegSpecialOut != wbSourceRegCode2Out) || !wbSourceRegCode2ValidOut)) begin
-////	      $display("2.");
-//	      regInUseBitMap[idDestRegSpecialOut] <= regInUseBitMapOut[idDestRegSpecialOut];
-//	   end
-//
-//	   if ((idSourceRegCode1Out != wbDestRegOut)
-//	       && ((idSourceRegCode1Out != wbDestRegSpecialOut) || !wbDestRegSpecialValidOut)
-//	       && ((idSourceRegCode1Out != wbSourceRegCode1Out) || !wbSourceRegCode1ValidOut)
-//	       && ((idSourceRegCode1Out != wbSourceRegCode2Out) || !wbSourceRegCode2ValidOut)) begin
-////	      $display("3.");
-//	      regInUseBitMap[idSourceRegCode1Out] <= regInUseBitMapOut[idSourceRegCode1Out];
-//	   end
-//
-//	   if ((idSourceRegCode2Out != wbDestRegOut)
-//	       && ((idSourceRegCode2Out != wbDestRegSpecialOut) || !wbDestRegSpecialValidOut)
-//	       && ((idSourceRegCode2Out != wbSourceRegCode1Out) || !wbSourceRegCode1ValidOut)
-//	       && ((idSourceRegCode2Out != wbSourceRegCode2Out) || !wbSourceRegCode2ValidOut)) begin
-////	      $display("4.");
-//	      
-//	      regInUseBitMap[idSourceRegCode2Out] <= regInUseBitMapOut[idSourceRegCode2Out];
-//	   end
-//	end
      end
 
    
