@@ -17,6 +17,9 @@ module AddressCalculation (
 		input         operand1ValValidIn,
 		input         operand2ValValidIn,
 		input [0:31]  immLenIn,
+		input	      isMemoryAccessSrc1In,
+		input	      isMemoryAccessSrc2In,
+		input	      isMemoryAccessDestIn,
 		input [0:31]  dispLenIn,
 		input [0:7]   imm8In,
 		input [0:15]  imm16In,
@@ -45,6 +48,9 @@ module AddressCalculation (
 		output        sourceRegCode1ValidOut,
 		output        sourceRegCode2ValidOut,
 		output [0:31] immLenOut,
+		output	      isMemoryAccessSrc1Out,
+		output	      isMemoryAccessSrc2Out,
+		output	      isMemoryAccessDestOut,
 		output [0:31] dispLenOut,
 		output [0:7]  imm8Out,
 		output [0:15] imm16Out,
@@ -57,11 +63,63 @@ module AddressCalculation (
 		output [0:3]  destRegOut,
 		output [0:3]  destRegSpecialOut,
 		output        destRegSpecialValidOut,
+		output [0:63] memoryAddressSrc1Out,
+		output [0:63] memoryAddressSrc2Out,
+		output [0:63] memoryAddressDestOut,
 		output        isAddressCalculationSuccessfulOut
 		);
 
 	always_comb begin
 		if ((opcodeValidIn == 1) && (canAddressCalculationIn == 1)) begin
+
+			if (isMemoryAccessSrc1In == 1) begin
+				/* We are dealing with memory here. Need to calculate address. */
+				if (dispLenIn == 0) begin
+					/* Directly use the value of operand1ValIn as Memory address */
+
+					memoryAddressSrc1Out = operand1ValIn;
+				end else begin
+					/* Decode should have sent us a sign extended 64 bit displacement already */
+
+					/* TODO: What happens if there is an overflow? */
+					memoryAddressSrc1Out = operand1ValIn + disp64In;
+				end
+			end else begin
+				memoryAddressSrc1Out = 0;
+			end
+
+			if (isMemoryAccessSrc2In == 1) begin
+				/* We are dealing with memory here. Need to calculate address. */
+				if (dispLenIn == 0) begin
+					/* Directly use the value of operand1ValIn as Memory address */
+
+					memoryAddressSrc2Out = operand1ValIn;
+				end else begin
+					/* Decode should have sent us a sign extended 64 bit displacement already */
+
+					/* TODO: What happens if there is an overflow? */
+					memoryAddressSrc2Out = operand1ValIn + disp64In;
+				end
+			end else begin
+				memoryAddressSrc2Out = 0;
+			end
+
+			if (isMemoryAccessDestIn == 1) begin
+				/* We are dealing with memory here. Need to calculate address. */
+				if (dispLenIn == 0) begin
+					/* Directly use the value of operand1ValIn as Memory address */
+
+					memoryAddressDestOut = operand1ValIn;
+				end else begin
+					/* Decode should have sent us a sign extended 64 bit displacement already */
+
+					/* TODO: What happens if there is an overflow? */
+					memoryAddressDestOut = operand1ValIn + disp64In;
+				end
+			end else begin
+				memoryAddressDestOut = 0;
+			end
+
 			isAddressCalculationSuccessfulOut = 1;
   		        currentRipOut = currentRipIn;
 		        extendedOpcodeOut = extendedOpcodeIn;
@@ -88,6 +146,9 @@ module AddressCalculation (
 		        sourceRegCode2Out = sourceReg2In;
 		        sourceRegCode1ValidOut = sourceReg1ValidIn;
 		        sourceRegCode2ValidOut = sourceReg2ValidIn;
+		        isMemoryAccessSrc1Out = isMemoryAccessSrc1In;
+		        isMemoryAccessSrc2Out = isMemoryAccessSrc2In;
+		        isMemoryAccessDestOut = isMemoryAccessDestIn;
 
 		end else begin
 			isAddressCalculationSuccessfulOut = 0;

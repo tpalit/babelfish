@@ -15,7 +15,9 @@ module Read (
 	     input [0:0]   opcodeValidIn, 
 	     input [0:7]   opcodeIn,
 	     input [0:31]  immLenIn,
-	     /* verilator lint_off UNUSED */ /* verilator lint_off UNDRIVEN */ input 	   isMemoryAccessIn /* verilator lint_on UNDRIVEN */ /* verilator lint_on UNUSED */,
+	     input 	   isMemoryAccessSrc1In,
+	     input 	   isMemoryAccessSrc2In,
+	     input 	   isMemoryAccessDestIn,
 	     input [0:31]  dispLenIn,
 	     input [0:7]   imm8In,
 	     input [0:15]  imm16In,
@@ -45,6 +47,9 @@ module Read (
 	     output [0:0]  opcodeValidOut, 
 	     output [0:7]  opcodeOut,
 	     output [0:31] immLenOut,
+	     output 	   isMemoryAccessSrc1Out,
+	     output 	   isMemoryAccessSrc2Out,
+	     output 	   isMemoryAccessDestOut,
 	     output [0:31] dispLenOut,
 	     output [0:7]  imm8Out,
 	     output [0:15] imm16Out,
@@ -97,6 +102,10 @@ module Read (
 	 sourceRegCode2Out = sourceReg2In;
 	 sourceRegCode1ValidOut = sourceReg1ValidIn;
 	 sourceRegCode2ValidOut = sourceReg2ValidIn;
+
+	 isMemoryAccessSrc1Out = isMemoryAccessSrc1In;
+	 isMemoryAccessSrc2Out = isMemoryAccessSrc2In;
+	 isMemoryAccessDestOut = isMemoryAccessDestIn;
 
 	 isReadSuccessfulOut = 1;
       end else begin

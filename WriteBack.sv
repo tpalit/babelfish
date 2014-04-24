@@ -17,6 +17,12 @@ module WriteBack (
 		input [0:3]   destRegIn,
 		input [0:3]   destRegSpecialIn,
 		input 	      destRegSpecialValidIn,
+		input         isMemoryAccessSrc1In,
+		input         isMemoryAccessSrc2In,
+		input         isMemoryAccessDestIn,
+		input [0:63]  memoryAddressSrc1In,
+		input [0:63]  memoryAddressSrc2In,
+		input [0:63]  memoryAddressDestIn,
 		input [0:63]  aluResultIn,
 		input [0:63]  aluResultSpecialIn,
 
@@ -35,16 +41,18 @@ module WriteBack (
 		output 	      regInUseBitMapOut[16],
 		  /* verilator lint_on UNDRIVEN */ /* verilator lint_on UNUSED */
    		output [63:0] regFileOut[16],
+		output        isMemoryAccessSrc1Out,
+		output        isMemoryAccessSrc2Out,
+		output        isMemoryAccessDestOut,
+		output [0:63] memoryAddressSrc1Out,
+		output [0:63] memoryAddressSrc2Out,
+		output [0:63] memoryAddressDestOut,
 		output 	      writeBackSuccessfulOut,
 		output 	      killOut
 		);
 
 	always_comb begin
 		if (canWriteBackIn == 1 && killIn == 0) begin
-//             		if (killIn) begin
-//               			$finish;
-//             		end
-             
 			/* Check regInUseBitMapIn, and set all sources and dest as unused. */
 
 			if (sourceReg1ValidIn == 1) begin
@@ -82,6 +90,13 @@ module WriteBack (
 		        destRegSpecialValidOut = destRegSpecialValidIn;
 			aluResultOut = aluResultIn;
 			aluResultSpecialOut = aluResultSpecialIn;
+
+		        isMemoryAccessSrc1Out = isMemoryAccessSrc1In;
+		        isMemoryAccessSrc2Out = isMemoryAccessSrc2In;
+		        isMemoryAccessDestOut = isMemoryAccessDestIn;
+			memoryAddressSrc1Out = memoryAddressSrc1In;
+			memoryAddressSrc2Out = memoryAddressSrc2In;
+			memoryAddressDestOut = memoryAddressDestIn;
 
 			killOut = killIn;
 			writeBackSuccessfulOut = 1;

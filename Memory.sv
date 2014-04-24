@@ -29,6 +29,12 @@ module Memory (
 		input [0:3]   destRegIn,
 		input [0:3]   destRegSpecialIn,
 		input         destRegSpecialValidIn,
+		input         isMemoryAccessSrc1In,
+		input         isMemoryAccessSrc2In,
+		input         isMemoryAccessDestIn,
+		input [0:63]  memoryAddressSrc1In,
+		input [0:63]  memoryAddressSrc2In,
+		input [0:63]  memoryAddressDestIn,
 
 		output [0:63] currentRipOut,
 		output [0:2]  extendedOpcodeOut,
@@ -57,6 +63,12 @@ module Memory (
 		output [0:3]  destRegOut,
 		output [0:3]  destRegSpecialOut,
 		output        destRegSpecialValidOut,
+		output        isMemoryAccessSrc1Out,
+		output        isMemoryAccessSrc2Out,
+		output        isMemoryAccessDestOut,
+		output [0:63] memoryAddressSrc1Out,
+		output [0:63] memoryAddressSrc2Out,
+		output [0:63] memoryAddressDestOut,
 		output        isMemorySuccessfulOut
 		);
 
@@ -88,6 +100,12 @@ module Memory (
 		        sourceRegCode2Out = sourceReg2In;
 		        sourceRegCode1ValidOut = sourceReg1ValidIn;
 		        sourceRegCode2ValidOut = sourceReg2ValidIn;
+		        isMemoryAccessSrc1Out = isMemoryAccessSrc1In;
+		        isMemoryAccessSrc2Out = isMemoryAccessSrc2In;
+		        isMemoryAccessDestOut = isMemoryAccessDestIn;
+			memoryAddressSrc1Out = memoryAddressSrc1In;
+			memoryAddressSrc2Out = memoryAddressSrc2In;
+			memoryAddressDestOut = memoryAddressDestIn;
 
 		end else begin
 			isMemorySuccessfulOut = 0;
