@@ -1,6 +1,9 @@
 /* Copyright Tapti Palit, Amitav Paul, Sonam Mandal, 2014, All rights reserved. */
 
 module Memory (
+		/* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */
+		CacheCoreInterface dCacheCoreBus,
+		/* verilator lint_on UNDRIVEN */ /* verilator lint_on UNUSED */
 		input [0:63]  currentRipIn,
 		input         canMemoryIn,
 		input [0:2]   extendedOpcodeIn,
@@ -69,20 +72,31 @@ module Memory (
 		output [0:63] memoryAddressSrc1Out,
 		output [0:63] memoryAddressSrc2Out,
 		output [0:63] memoryAddressDestOut,
+		output [0:63] memoryDataOut,
+		output	      stallOnMemoryOut,
 		output        isMemorySuccessfulOut
 		);
 
+	enum { memory_access_idle, memory_access_active } memory_access_state;
+
 	always_comb begin
 		if ((opcodeValidIn == 1) && (canMemoryIn == 1)) begin
-			isMemorySuccessfulOut = 1;
+			assert(!(isMemoryAccessSrc1In == 1 && isMemoryAccessSrc2In == 1)) else $fatal("\nBoth source operands access Memory!\n");
+
+			if (isMemoryAccessSrc1In == 0 && isMemoryAccessSrc2In == 0) begin
+				isMemorySuccessfulOut = 1;
+			end else if (memory_access_state == memory_access_active && dCacheCoreBus.respcyc == 1) begin
+				isMemorySuccessfulOut = 1;
+			end else begin
+				isMemorySuccessfulOut = 0;
+			end
+
   		        currentRipOut = currentRipIn;
 		        extendedOpcodeOut = extendedOpcodeIn;
 		        hasExtendedOpcodeOut = hasExtendedOpcodeIn;
 		        opcodeLengthOut = opcodeLengthIn;
 		        opcodeValidOut = opcodeValidIn;
 		        opcodeOut = opcodeIn;
-		        operand1ValOut = operand1ValIn;
-		        operand2ValOut = operand2ValIn;
 		        immLenOut = immLenIn;
 		        dispLenOut = dispLenIn;
 		        imm8Out = imm8In;
@@ -106,6 +120,8 @@ module Memory (
 			memoryAddressSrc1Out = memoryAddressSrc1In;
 			memoryAddressSrc2Out = memoryAddressSrc2In;
 			memoryAddressDestOut = memoryAddressDestIn;
+        		operand1ValOut = operand1ValIn;
+        		operand2ValOut = operand2ValIn;
 
 		end else begin
 			isMemorySuccessfulOut = 0;
@@ -113,4 +129,49 @@ module Memory (
 	        operand1ValValidOut = operand1ValValidIn;
 	        operand2ValValidOut = operand2ValValidIn;
 	end
+
+	always @ (posedge dCacheCoreBus.clk)
+
+		if (dCacheCoreBus.reset) begin
+			memory_access_state <= memory_access_idle;
+		end else begin
+			if ((opcodeValidIn == 1) && (canMemoryIn == 1)) begin
+				if (memory_access_state == memory_access_idle) begin
+
+					if (isMemoryAccessSrc1In == 0 && isMemoryAccessSrc2In == 0) begin
+						/* Nothing to read from Memory. */
+			        		memoryDataOut <= 0;
+					end else if (isMemoryAccessSrc1In == 1) begin
+						/* Send request for Src1 to Memory */
+
+						dCacheCoreBus.reqcyc <= 1;
+						dCacheCoreBus.req <= memoryAddressSrc1In;
+						dCacheCoreBus.reqtag <= { dCacheCoreBus.READ, dCacheCoreBus.MEMORY, dCacheCoreBus.DATA, 7'b0 };
+						memory_access_state <= memory_access_active;
+						stallOnMemoryOut <= 1;
+					end else if (isMemoryAccessSrc2In == 1) begin
+						/* Send request for Src2 to Memory */
+
+						dCacheCoreBus.reqcyc <= 1;
+						dCacheCoreBus.req <= memoryAddressSrc2In;
+						dCacheCoreBus.reqtag <= { dCacheCoreBus.READ, dCacheCoreBus.MEMORY, dCacheCoreBus.DATA, 7'b0 };
+						memory_access_state <= memory_access_active;
+						stallOnMemoryOut <= 1;
+					end
+	
+				end else if (memory_access_state == memory_access_active) begin
+					if (dCacheCoreBus.reqack == 1) begin
+						dCacheCoreBus.reqcyc <= 0;
+					end
+
+					if (dCacheCoreBus.respcyc == 1) begin
+						memoryDataOut <= dCacheCoreBus.resp;
+						dCacheCoreBus.respack <= 1;
+						memory_access_state <= memory_access_idle;
+						stallOnMemoryOut <= 0;
+					end
+				end
+			end
+		end
+
 endmodule

@@ -336,6 +336,10 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:63]         memMemoryAddressSrc1Out = 0;
    logic [0:63]         memMemoryAddressSrc2Out = 0;
    logic [0:63]         memMemoryAddressDestOut = 0;
+   bit	 		memStallOnMemoryOut = 0;
+   /* verilator lint_off UNUSED */
+   logic [0:63]         memMemoryDataOut = 0;
+   /* verilator lint_on UNUSED */
 
    logic [0:2] 		exExtendedOpcodeOut = 0;
    logic [0:31] 	exHasExtendedOpcodeOut = 0;
@@ -446,8 +450,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    ArbiterCacheInterface #(DATA_WIDTH, TAG_WIDTH) instrArbiterCacheInf(reset, clk);
    ArbiterCacheInterface #(DATA_WIDTH, TAG_WIDTH) dataArbiterCacheInf(reset, clk);
 
-   DMCache #(DATA_WIDTH, 64, 9, 3) instrCache(instrCacheCoreInf.CachePorts, instrArbiterCacheInf.CachePorts);
-   DMCache #(DATA_WIDTH, 64, 9, 3) dataCache(dataCacheCoreInf.CachePorts, dataArbiterCacheInf.CachePorts);
+   DMCache #(DATA_WIDTH, 64, 9, 3, 0) instrCache(instrCacheCoreInf.CachePorts, instrArbiterCacheInf.CachePorts);
+   DMCache #(DATA_WIDTH, 64, 9, 3, 1) dataCache(dataCacheCoreInf.CachePorts, dataArbiterCacheInf.CachePorts);
 
    Arbiter #(DATA_WIDTH, TAG_WIDTH) cacheArbiter(bus.Top, dataArbiterCacheInf.ArbiterPorts, instrArbiterCacheInf.ArbiterPorts);
 
@@ -641,6 +645,9 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		);
 
    Memory memory(
+		/* verilator lint_off UNDRIVEN */
+		dataCacheCoreInf.CorePorts,
+		/* verilator lint_on UNDRIVEN */
 		acmemCurrentRip,
 		canMemory,
 		acmemExtendedOpcode,
@@ -709,6 +716,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		memMemoryAddressSrc1Out,
 		memMemoryAddressSrc2Out,
 		memMemoryAddressDestOut,
+		memMemoryDataOut,
+		memStallOnMemoryOut,
 		memorySuccessfulOut
 		);
    
@@ -864,14 +873,22 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		$finish;
 	end
 
-        decode_offset <= decode_offset + { 3'b0, bytes_decoded_this_cycle };
-        if (bytes_decoded_this_cycle > 0) begin
-           canRead <= 1;
-        end else begin
-           canRead <= 0;
-        end
-	canAddressCalculate <= readSuccessfulOut;
-	canMemory <= addressCalculationSuccessfulOut;
+	if (memStallOnMemoryOut == 0) begin
+	        decode_offset <= decode_offset + { 3'b0, bytes_decoded_this_cycle };
+	        if (bytes_decoded_this_cycle > 0) begin
+	           canRead <= 1;
+	        end else begin
+	           canRead <= 0;
+	        end
+		canAddressCalculate <= readSuccessfulOut;
+		canMemory <= addressCalculationSuccessfulOut;
+	end else begin
+	        decode_offset <= decode_offset;
+	        canRead <= 0;
+		canAddressCalculate <= 0;
+		canMemory <= 1;
+	end
+
 	canExecute <= memorySuccessfulOut;
 	canWriteBack <= executeSuccessfulOut;
 

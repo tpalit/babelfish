@@ -93,12 +93,12 @@ module AddressCalculation (
 				if (dispLenIn == 0) begin
 					/* Directly use the value of operand1ValIn as Memory address */
 
-					memoryAddressSrc2Out = operand1ValIn;
+					memoryAddressSrc2Out = operand2ValIn;
 				end else begin
 					/* Decode should have sent us a sign extended 64 bit displacement already */
 
 					/* TODO: What happens if there is an overflow? */
-					memoryAddressSrc2Out = operand1ValIn + disp64In;
+					memoryAddressSrc2Out = operand2ValIn + disp64In;
 				end
 			end else begin
 				memoryAddressSrc2Out = 0;

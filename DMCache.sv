@@ -157,10 +157,10 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3, CAC
      if (CACHE_TYPE == 0) begin
         if ((cacheCoreBus.reqcyc == 1) && (cache_state == cache_idle)) begin
 	      cacheCoreBus.reqack <= 1;
-           cacheCoreBus.respcyc <= 0;           
+              cacheCoreBus.respcyc <= 0;           
 	      // Check the state, if the index is valid, go to SRAM to get tags.
 	      // Else, directly go to memory, 
-	      if (state[reqAddrIndex][0] == 1) begin
+	      if (state[reqAddrIndex][0] == 0) begin
 	         cache_state <= cache_waiting_sram;
 	         waitCounter <= delay;
 	      end else begin
@@ -170,7 +170,7 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3, CAC
 	         arbiterCacheBus.req <= cacheCoreBus.req;
 	         arbiterCacheBus.reqtag <= cacheCoreBus.reqtag;
 	      end
-           // reset read_count
+              // reset read_count
 	      read_count <= 0;
         end else if ((cache_state == cache_waiting_sram)) begin
 	      cacheCoreBus.reqack <= 0;
@@ -179,14 +179,14 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3, CAC
 	         // If the tag is the same, then use the data in the cache
 	         // else make a memory request.
 	         if (readDataTag == reqAddrTag) begin
-                 if (read_count <= 7) begin
-	               cacheCoreBus.respcyc <= 1;
-	               cacheCoreBus.resp <= readDataCacheLine[read_count*WORDSIZE+:WORDSIZE];
-                    read_count <= read_count+1;
-	               /* NOTE, TODO - For writes, set the write enable bit here. */
-                 end else begin
-                    cache_state <= cache_idle;
-                 end
+	                 if (read_count <= 7) begin
+		               cacheCoreBus.respcyc <= 1;
+		               cacheCoreBus.resp <= readDataCacheLine[read_count*WORDSIZE+:WORDSIZE];
+	                       read_count <= read_count+1;
+	           	       /* NOTE, TODO - For writes, set the write enable bit here. */
+	                 end else begin
+	                       cache_state <= cache_idle;
+	                 end
 	         end else begin
 	            cache_state <= cache_waiting_memory;
 	            // reset read_count
@@ -225,13 +225,9 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3, CAC
 	            writeEnableTag <= 1;
 	            writeDataTag <= reqAddrTag;
 
-                 //	      $write("\nAddress: %h, address index: %h", {reqAddrTag, reqAddrIndex, reqAddrOffset}, reqAddrIndex);
 	            for(int j=0; j < 8; j=j+1) begin
 		          writeEnable[j] <= 1;
-                    //		 $write("\nWRITING offset %d: %h", j, writeDataCacheLine[j*WORDSIZE+:WORDSIZE]);
 	            end
-
-                 //	      $write("\n");
 
 	         end
 	      end else begin 
@@ -250,20 +246,21 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3, CAC
 	         end
 	      end
         end
+
      end else if (CACHE_TYPE == 1) begin // if (CACHE_TYPE == 0)
         if ((cacheCoreBus.reqcyc == 1) && (cache_state == cache_idle)) begin
 	      cacheCoreBus.reqack <= 1;
-           cacheCoreBus.respcyc <= 0;
+	      cacheCoreBus.respcyc <= 0;
 	      // Check the state, if the index is valid, go to SRAM to get tags.
 	      // Else, directly go to memory, 
-	      if (state[reqAddrIndex][0] == 1) begin
+	      if (state[reqAddrIndex][0] == 0) begin
 	         cache_state <= cache_waiting_sram;
 	         waitCounter <= delay;
 	      end else begin
 	         cache_state <= cache_waiting_memory;
 	         // Send the request to the Arbiter
 	         arbiterCacheBus.reqcyc <= 1;
-	         arbiterCacheBus.req <= cacheCoreBus.req;
+	         arbiterCacheBus.req <= cacheCoreBus.req & ~63;
 	         arbiterCacheBus.reqtag <= cacheCoreBus.reqtag;
 	      end
            // reset read_count
@@ -277,22 +274,22 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3, CAC
 	         if (readDataTag == reqAddrTag) begin
 	            cacheCoreBus.respcyc <= 1;
 	            cacheCoreBus.resp <= readDataCacheLine[reqAddrOffset*WORDSIZE+:WORDSIZE];
-                 read_count <= read_count+1;
+                    read_count <= read_count+1;
 	            /* NOTE, TODO - For writes, set the write enable bit here. */
-                 cache_state <= cache_idle;
+                    cache_state <= cache_idle;
 	         end else begin
 	            cache_state <= cache_waiting_memory;
 	            // reset read_count
 	            read_count <= 0;
 	            // Send the request to the Arbiter
 	            arbiterCacheBus.reqcyc <= 1;
-	            arbiterCacheBus.req <= cacheCoreBus.req;
+	            arbiterCacheBus.req <= cacheCoreBus.req & ~63;
 	            arbiterCacheBus.reqtag <= cacheCoreBus.reqtag;
 	            state[reqAddrIndex][0] <= 1; // Mark the entry as invalid
 	         end
 	      end else begin // if (waitCounter == 0)
               waitCounter <= waitCounter-1;
-           end
+              end
         end else if (cache_state == cache_waiting_memory) begin
 	      if (arbiterCacheBus.reqack == 1) begin
 		    arbiterCacheBus.reqcyc <= 0;
@@ -319,17 +316,14 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3, CAC
 	            writeEnableTag <= 1;
 	            writeDataTag <= reqAddrTag;
 
-                 //	      $write("\nAddress: %h, address index: %h", {reqAddrTag, reqAddrIndex, reqAddrOffset}, reqAddrIndex);
 	            for(int j=0; j < 8; j=j+1) begin
 		          writeEnable[j] <= 1;
-                    //		 $write("\nWRITING offset %d: %h", j, writeDataCacheLine[j*WORDSIZE+:WORDSIZE]);
 	            end
                  
                  cacheCoreBus.resp <= writeDataCacheLine[reqAddrOffset*WORDSIZE+:WORDSIZE];
                  cacheCoreBus.resptag <= arbiterCacheBus.resptag;
                  cacheCoreBus.respcyc <= 1;
                  cache_state <= cache_idle;
-                 //	      $write("\n");
 	         end
 	      end else begin 
 	         if (read_count >= 7) begin
