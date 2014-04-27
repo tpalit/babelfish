@@ -122,7 +122,11 @@ module Memory (
 			memoryAddressDestOut = memoryAddressDestIn;
         		operand1ValOut = operand1ValIn;
         		operand2ValOut = operand2ValIn;
-
+		        if (memory_access_state == memory_access_idle && (isMemoryAccessSrc1In || isMemoryAccessSrc2In)) begin
+			   stallOnMemoryOut = 1;
+			end else if (memory_access_state == memory_access_state && dCacheCoreBus.respcyc == 1) begin
+			   stallOnMemoryOut = 0;
+			end
 		end else begin
 			isMemorySuccessfulOut = 0;
 		end
@@ -148,7 +152,6 @@ module Memory (
 						dCacheCoreBus.req <= memoryAddressSrc1In;
 						dCacheCoreBus.reqtag <= { dCacheCoreBus.READ, dCacheCoreBus.MEMORY, dCacheCoreBus.DATA, 7'b0 };
 						memory_access_state <= memory_access_active;
-						stallOnMemoryOut <= 1;
 					end else if (isMemoryAccessSrc2In == 1) begin
 						/* Send request for Src2 to Memory */
 
@@ -156,7 +159,6 @@ module Memory (
 						dCacheCoreBus.req <= memoryAddressSrc2In;
 						dCacheCoreBus.reqtag <= { dCacheCoreBus.READ, dCacheCoreBus.MEMORY, dCacheCoreBus.DATA, 7'b0 };
 						memory_access_state <= memory_access_active;
-						stallOnMemoryOut <= 1;
 					end
 	
 				end else if (memory_access_state == memory_access_active) begin
@@ -168,7 +170,6 @@ module Memory (
 						memoryDataOut <= dCacheCoreBus.resp;
 						dCacheCoreBus.respack <= 1;
 						memory_access_state <= memory_access_idle;
-						stallOnMemoryOut <= 0;
 					end
 				end
 			end
