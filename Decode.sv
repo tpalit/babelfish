@@ -782,6 +782,7 @@ module Decode (
 	 destRegSpecialOut = 0;
 	 destRegSpecialValidOut = 0;
 	 isMemoryAccessSrc1Out = 0;
+	 isMemoryAccessSrc2Out = 0;
 	 isMemoryAccessDestOut = 0;
 	 
 	 
