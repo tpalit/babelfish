@@ -41,7 +41,10 @@ module Arbiter #(WIDTH = 64, TAG_WIDTH = 13) (
    end
 
    always @ (posedge bus.clk)
-     if (arbiter_state == arbiter_idle) begin
+      if (arbiter_state == arbiter_idle) begin
+	dcache_interface.resp <= '1;
+	icache_interface.resp <= '1;
+	 
 	// The icache has priority.
 	// Send the requests on the 
 	if (icache_interface.reqcyc) begin
@@ -59,7 +62,9 @@ module Arbiter #(WIDTH = 64, TAG_WIDTH = 13) (
 	   arbiter_state <= arbiter_data;
 	   d_read_count <= 0;
 	end
-     end else if (arbiter_state == arbiter_data) begin
+      end else if (arbiter_state == arbiter_data) begin 
+	icache_interface.resp <= '1;
+	 
 	// We're in the middle of servicing a memory request from the data cache.
 	// Check to see if the DRAM has set the respcyc to show it has started sending the data
 	// Else, just set the respcyc as 0, indicating to the cache that the transfer is over
@@ -78,13 +83,15 @@ module Arbiter #(WIDTH = 64, TAG_WIDTH = 13) (
 
 	   d_read_count <= d_read_count + 1;
 	end else begin
+	   dcache_interface.resp <= '1;
            if (d_read_count >= 7) begin
 	   	dcache_interface.respcyc <= 0;
 	   	arbiter_state <= arbiter_idle;
 		bus.respack <= 0;
 	   end
 	end
-     end else if (arbiter_state == arbiter_instn) begin
+     end else if (arbiter_state == arbiter_instn) begin // if (arbiter_state == arbiter_data)
+	dcache_interface.resp <= '1;
 	// Do the same for the instruction cache
 	if (bus.reqack == 1) begin
 		bus.reqcyc <= 0;
@@ -100,6 +107,8 @@ module Arbiter #(WIDTH = 64, TAG_WIDTH = 13) (
 
 	   i_read_count <= i_read_count + 1;
 	end else begin
+	   icache_interface.resp <= 64'1;
+	   
 	   if (i_read_count >= 7) begin
 	   	icache_interface.respcyc <= 0;
 	   	arbiter_state <= arbiter_idle;
