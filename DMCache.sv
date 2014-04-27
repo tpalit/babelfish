@@ -295,6 +295,11 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3, CAC
 		    arbiterCacheBus.reqcyc <= 0;
 	      end
 
+	      if (cacheCoreBus.respack == 1) begin
+	            cacheCoreBus.respcyc <= 0;
+		    cache_state <= cache_idle;
+	      end
+           
 	      cacheCoreBus.reqack <= 0;
 	      if (arbiterCacheBus.respcyc) begin
 	         // acknowledge
@@ -323,7 +328,7 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3, CAC
                  cacheCoreBus.resp <= writeDataCacheLine[reqAddrOffset*WORDSIZE+:WORDSIZE];
                  cacheCoreBus.resptag <= arbiterCacheBus.resptag;
                  cacheCoreBus.respcyc <= 1;
-                 cache_state <= cache_idle;
+//               cache_state <= cache_idle;
 	         end
 	      end else begin 
 	         if (read_count >= 7) begin
