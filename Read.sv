@@ -67,49 +67,51 @@ module Read (
 
    always_comb begin
       if (canReadIn && !stallIn) begin
-	 if (sourceReg1ValidIn) begin
-	    operandVal1Out = registerFileIn[sourceReg1In];
-	    operandVal1ValidOut = 1;
-	 end
+	    if (sourceReg1ValidIn) begin
+	       operandVal1Out = registerFileIn[sourceReg1In];
+	       operandVal1ValidOut = 1;
+	    end
 
-	 if (sourceReg2ValidIn) begin
-	    operandVal2Out = registerFileIn[sourceReg2In];
-	    operandVal2ValidOut = 1;
-	 end
+	    if (sourceReg2ValidIn) begin
+	       operandVal2Out = registerFileIn[sourceReg2In];
+	       operandVal2ValidOut = 1;
+	    end
 
-	 currentRipOut = currentRipIn;
+	    currentRipOut = currentRipIn;
 
-	 extendedOpcodeOut = extendedOpcodeIn;
-	 hasExtendedOpcodeOut = hasExtendedOpcodeIn;
-	 opcodeLengthOut = opcodeLengthIn;
-	 opcodeValidOut = opcodeValidIn;
-	 opcodeOut = opcodeIn;
-	 immLenOut = immLenIn;
-	 dispLenOut = dispLenIn;
-	 imm8Out = imm8In;
-	 imm16Out = imm16In;
-	 imm32Out = imm32In;
-	 imm64Out = imm64In;
-	 disp8Out = disp8In;
-	 disp16Out = disp16In;
-	 disp32Out = disp32In;
-	 disp64Out = disp64In;
-	 destRegOut = destRegIn;
-	 destRegisterSpecialOut = destRegisterSpecialIn;
-	 destRegisterSpecialValidOut = destRegisterSpecialValidIn;
+	    extendedOpcodeOut = extendedOpcodeIn;
+	    hasExtendedOpcodeOut = hasExtendedOpcodeIn;
+	    opcodeLengthOut = opcodeLengthIn;
+	    opcodeValidOut = opcodeValidIn;
+	    opcodeOut = opcodeIn;
+	    immLenOut = immLenIn;
+	    dispLenOut = dispLenIn;
+	    imm8Out = imm8In;
+	    imm16Out = imm16In;
+	    imm32Out = imm32In;
+	    imm64Out = imm64In;
+	    disp8Out = disp8In;
+	    disp16Out = disp16In;
+	    disp32Out = disp32In;
+	    disp64Out = disp64In;
+	    destRegOut = destRegIn;
+	    destRegisterSpecialOut = destRegisterSpecialIn;
+	    destRegisterSpecialValidOut = destRegisterSpecialValidIn;
 
-	 sourceRegCode1Out = sourceReg1In;
-	 sourceRegCode2Out = sourceReg2In;
-	 sourceRegCode1ValidOut = sourceReg1ValidIn;
-	 sourceRegCode2ValidOut = sourceReg2ValidIn;
+	    sourceRegCode1Out = sourceReg1In;
+	    sourceRegCode2Out = sourceReg2In;
+	    sourceRegCode1ValidOut = sourceReg1ValidIn;
+	    sourceRegCode2ValidOut = sourceReg2ValidIn;
 
-	 isMemoryAccessSrc1Out = isMemoryAccessSrc1In;
-	 isMemoryAccessSrc2Out = isMemoryAccessSrc2In;
-	 isMemoryAccessDestOut = isMemoryAccessDestIn;
+	    isMemoryAccessSrc1Out = isMemoryAccessSrc1In;
+	    isMemoryAccessSrc2Out = isMemoryAccessSrc2In;
+	    isMemoryAccessDestOut = isMemoryAccessDestIn;
 
-	 isReadSuccessfulOut = 1;
-      end else begin
-	 isReadSuccessfulOut = 0;
+	    isReadSuccessfulOut = 1;
+      end else begin // if (canReadIn && !stallIn)
+         if (!stallIn) begin
+	       isReadSuccessfulOut = 0;
+         end
       end
    end	   
 endmodule

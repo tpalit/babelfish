@@ -3,6 +3,7 @@
 module AddressCalculation (
 		input [0:63]  currentRipIn,
 		input         canAddressCalculationIn,
+          input         stallIn,
 		input [0:2]   extendedOpcodeIn,
 		input [0:31]  hasExtendedOpcodeIn,
 		input [0:31]  opcodeLengthIn,
@@ -17,9 +18,9 @@ module AddressCalculation (
 		input         operand1ValValidIn,
 		input         operand2ValValidIn,
 		input [0:31]  immLenIn,
-		input	      isMemoryAccessSrc1In,
-		input	      isMemoryAccessSrc2In,
-		input	      isMemoryAccessDestIn,
+		input         isMemoryAccessSrc1In,
+		input         isMemoryAccessSrc2In,
+		input         isMemoryAccessDestIn,
 		input [0:31]  dispLenIn,
 		input [0:7]   imm8In,
 		input [0:15]  imm16In,
@@ -48,9 +49,9 @@ module AddressCalculation (
 		output        sourceRegCode1ValidOut,
 		output        sourceRegCode2ValidOut,
 		output [0:31] immLenOut,
-		output	      isMemoryAccessSrc1Out,
-		output	      isMemoryAccessSrc2Out,
-		output	      isMemoryAccessDestOut,
+		output        isMemoryAccessSrc1Out,
+		output        isMemoryAccessSrc2Out,
+		output        isMemoryAccessDestOut,
 		output [0:31] dispLenOut,
 		output [0:7]  imm8Out,
 		output [0:15] imm16Out,
@@ -70,7 +71,7 @@ module AddressCalculation (
 		);
 
 	always_comb begin
-		if ((opcodeValidIn == 1) && (canAddressCalculationIn == 1)) begin
+		if ((opcodeValidIn == 1) && (canAddressCalculationIn == 1) && !stallIn) begin
 
 			if (isMemoryAccessSrc1In == 1) begin
 				/* We are dealing with memory here. Need to calculate address. */
@@ -150,8 +151,10 @@ module AddressCalculation (
 		        isMemoryAccessSrc2Out = isMemoryAccessSrc2In;
 		        isMemoryAccessDestOut = isMemoryAccessDestIn;
 
-		end else begin
-			isAddressCalculationSuccessfulOut = 0;
+		end else begin 
+               if (!stallIn) begin
+			   isAddressCalculationSuccessfulOut = 0;
+               end
 		end
 	        operand1ValValidOut = operand1ValValidIn;
 	        operand2ValValidOut = operand2ValValidIn;

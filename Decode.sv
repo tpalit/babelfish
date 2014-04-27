@@ -729,8 +729,8 @@ module Decode (
    endfunction
 
    always_comb begin
-      //if (canDecodeIn && !stallIn) begin : decode_block
-      if (canDecodeIn) begin : decode_block
+      if (canDecodeIn && !stallIn) begin : decode_block
+//      if (canDecodeIn) begin : decode_block
          int instr_count = 0;
          int opcode_start_index = 0; // the index of the first byte of the opcode
          int opcode_end_index = 0; // the index of the last byte of the opcode.

@@ -200,7 +200,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
    bit 			regInUseBitMap[16];
    
-   logic 		idStallIn;
+//   logic 		idStallIn;
 
    /******** Wires ********/
 
@@ -408,6 +408,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    bit              killOut;
    bit              killOutWb;
    bit              killLatch;
+
+   bit              memStall;
    
    initial begin
       ifidCurrentRip = 0;
@@ -415,7 +417,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
       rdacCurrentRip = 0;
       acmemCurrentRip = 0;
       memexCurrentRip = 0;
-      idStallIn = 0;
+      //      idStallIn = 0;
       for(int k=0; k<16; k=k+1) begin
          regFile[k] = 0;
 	 regInUseBitMap[k] = 0;
@@ -476,7 +478,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    /* Initialize the Decode module */
    Decode decode(	       
 		decode_bytes,
-		idStallIn,
+		memStall,
 		regInUseBitMap,     
 		ifidCurrentRip,
 		can_decode,
@@ -513,7 +515,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
    Read read(
 		canRead,
-		idStallIn, /* Use the idStallIn to drive Decode and Read stage. */
+		memStall,
 		idrdSourceRegCode1,
 		idrdSourceRegCode2,
 		idrdSourceRegCode1Valid,
@@ -578,6 +580,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    AddressCalculation addresscalculation(
 		rdacCurrentRip,
 		canAddressCalculate,
+          memStall,
 		rdacExtendedOpcode,
 		rdacHasExtendedOpcode,
 		rdacOpcodeLength,
@@ -873,6 +876,21 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		$finish;
 	end
 
+     decode_offset <= decode_offset + { 3'b0, bytes_decoded_this_cycle };
+        if (bytes_decoded_this_cycle > 0) begin
+	      canRead <= 1;
+	end else begin
+	   canRead <= 0;
+	end
+	canAddressCalculate <= readSuccessfulOut;
+	canMemory <= addressCalculationSuccessfulOut;
+
+     if (memStallOnMemoryOut == 1) begin
+        memStall <= 1;
+     end else begin
+        memStall <= 0;
+     end
+     /*
 	if (memStallOnMemoryOut == 0) begin
 	        decode_offset <= decode_offset + { 3'b0, bytes_decoded_this_cycle };
 	        if (bytes_decoded_this_cycle > 0) begin
@@ -888,6 +906,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		canAddressCalculate <= 0;
 		canMemory <= 1;
 	end
+     */
 
 	canExecute <= memorySuccessfulOut;
 	canWriteBack <= executeSuccessfulOut;
@@ -1067,7 +1086,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
         end
         /* verilator lint_on WIDTH */
 
-	idStallIn <= idStallOut;
+//	idStallIn <= idStallOut;
 
 	regFile[wbDestRegOut] <= regFileOut[wbDestRegOut];
 	regFile[wbDestRegSpecialOut] <= regFileOut[wbDestRegSpecialOut];
