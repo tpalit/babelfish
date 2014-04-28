@@ -60,7 +60,8 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3, CAC
    bit                                                        writeEnableTag;
    int                                                        waitCounter;
    int                                                        read_count;
-
+   int                                                        write_count;
+   
    bit                                                        isWrite;
 
    /* The parts of the original address requested */
@@ -88,6 +89,8 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3, CAC
 	    state[i][0] = 1;
 	    state[i][1] = 0;
       end
+      read_count = 0;
+      write_count = 0;
       readDataTag = 0;
       writeDataTag = 0;
       readDataCacheLine = 0;
@@ -185,7 +188,8 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3, CAC
                   end
                   writeDataCacheLine[reqAddrOffset*WORDSIZE+:WORDSIZE] <= cacheCoreBus.reqdata;
 
-                  // Initialize the memory write                   
+                  // Initialize the memory write
+                  write_count <= 0;
                   cache_state <= cache_writing_memory;
 	             arbiterCacheBus.reqcyc <= 1;
 	             arbiterCacheBus.req <= cacheCoreBus.req & ~((1<<LOGLINEOFFSET)-1);
@@ -264,7 +268,8 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3, CAC
 	             cache_state <= cache_idle;
                end else begin
                   // Go to the Memory write stage.
-                  // Initialize the memory write                   
+                  // Initialize the memory write
+                  write_count <= 0;
                   cache_state <= cache_writing_memory;
 	             arbiterCacheBus.reqcyc <= 1;
 	             arbiterCacheBus.req <= cacheCoreBus.req & ~((1<<LOGLINEOFFSET)-1);
@@ -273,8 +278,19 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3, CAC
                
 	       end
 	    end
-      end else if (cache_state == cache_writing_memory) begin
-         
+      end else if (cache_state == cache_writing_memory) begin // if (cache_state == cache_waiting_memory)
+         if (write_count >= 7) begin
+            if (arbiterCacheBus.reqack == 1) begin
+               // Send next request
+	          arbiterCacheBus.req <= writeDataCacheLine[write_count*WORDSIZE+:WORDSIZE];            
+               write_count <= write_count+1;
+	          arbiterCacheBus.reqcyc <= 1;
+            end
+         end else begin
+            arbiterCacheBus.reqcyc <= 0;
+            arbiterCacheBus.respack <= 0;
+            cache_state <= cache_idle;
+         end
       end
    endfunction
    
