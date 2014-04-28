@@ -437,6 +437,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
       opcode_inside = (value >= low && value <= high);
    endfunction
 
+   assign memStall = memStallOnMemoryOut;
    
    logic [3:0]                 bytes_decoded_this_cycle;
 
@@ -885,11 +886,13 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	canAddressCalculate <= readSuccessfulOut;
 	canMemory <= addressCalculationSuccessfulOut;
 
+     /*
      if (memStallOnMemoryOut == 1) begin
         memStall <= 1;
      end else begin
         memStall <= 0;
      end
+     */
      /*
 	if (memStallOnMemoryOut == 0) begin
 	        decode_offset <= decode_offset + { 3'b0, bytes_decoded_this_cycle };

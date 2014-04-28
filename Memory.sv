@@ -141,7 +141,7 @@ module Memory (
 		end else begin
 			if ((opcodeValidIn == 1) && (canMemoryIn == 1)) begin
 				if (memory_access_state == memory_access_idle) begin
-
+                        dCacheCoreBus.respack <= 0;
 					if (isMemoryAccessSrc1In == 0 && isMemoryAccessSrc2In == 0) begin
 						/* Nothing to read from Memory. */
 			        		memoryDataOut <= 0;
