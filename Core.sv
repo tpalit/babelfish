@@ -160,6 +160,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:63]         memexMemoryAddressSrc1 = 0;
    logic [0:63]         memexMemoryAddressSrc2 = 0;
    logic [0:63]         memexMemoryAddressDest = 0;
+   logic [0:63]         memexMemoryData = 0;
 
    /* verilator lint_off UNUSED */
    logic [0:2] 		exwbExtendedOpcode = 0;
@@ -760,6 +761,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		memexMemoryAddressSrc1,
 		memexMemoryAddressSrc2,
 		memexMemoryAddressDest,
+		memexMemoryData,
 
 		exAluResultOut,
 		exAluResultSpecialOut,
@@ -848,6 +850,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		writeBackSuccessfulOut,
 		killOutWb
 		);
+
+   assign memexMemoryData = memMemoryDataOut;
 
    always @ (posedge bus.clk)
      if (bus.reset) begin
