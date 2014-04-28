@@ -2,7 +2,7 @@
         .text
 
 _start:
-        mov    $0x42, %rax
+        mov    $0x8000e0, %rax
         mov    (%rax), %rbx
         mov    $0x56, %rcx
         mov    (%rcx), %rdx

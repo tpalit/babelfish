@@ -149,7 +149,7 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3, CAC
 	       cache_state <= cache_waiting_memory;
 	       // Send the request to the Arbiter
 	       arbiterCacheBus.reqcyc <= 1;
-	       arbiterCacheBus.req <= cacheCoreBus.req & ~63;
+	       arbiterCacheBus.req <= cacheCoreBus.req & ~7;
 	       arbiterCacheBus.reqtag <= cacheCoreBus.reqtag;
 	    end
          // reset read_count
@@ -172,7 +172,7 @@ module DMCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3, CAC
 	          read_count <= 0;
 	          // Send the request to the Arbiter
 	          arbiterCacheBus.reqcyc <= 1;
-	          arbiterCacheBus.req <= cacheCoreBus.req & ~63;
+	          arbiterCacheBus.req <= cacheCoreBus.req & ~7;
 	          arbiterCacheBus.reqtag <= cacheCoreBus.reqtag;
 	          state[reqAddrIndex][0] <= 1; // Mark the entry as invalid
 	       end
