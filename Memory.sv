@@ -122,11 +122,13 @@ module Memory (
 			memoryAddressDestOut = memoryAddressDestIn;
         		operand1ValOut = operand1ValIn;
         		operand2ValOut = operand2ValIn;
+
 		        if (memory_access_state == memory_access_idle && (isMemoryAccessSrc1In || isMemoryAccessSrc2In)) begin
 			   stallOnMemoryOut = 1;
 			end else if (memory_access_state == memory_access_state && dCacheCoreBus.respcyc == 1) begin
 			   stallOnMemoryOut = 0;
 			end
+
 		end else begin
 			isMemorySuccessfulOut = 0;
 		end

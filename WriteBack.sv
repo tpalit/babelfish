@@ -3,7 +3,7 @@
 module WriteBack (
 		input 	      canWriteBackIn,
 		input 	      killIn,
-			      /* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */ CacheCoreInterface iCacheCoreBus /* verilator lint_on UNUSED */ /* verilator lint_on UNDRIVEN */,
+			      /* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */ CacheCoreInterface dCacheCoreBus /* verilator lint_on UNUSED */ /* verilator lint_on UNDRIVEN */,
 		  /* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */
 		input 	      regInUseBitMapIn[16],
 		  /* verilator lint_on UNDRIVEN */ /* verilator lint_on UNUSED */
@@ -48,8 +48,13 @@ module WriteBack (
 		output [0:63] memoryAddressSrc2Out,
 		output [0:63] memoryAddressDestOut,
 		output 	      writeBackSuccessfulOut,
+		output	      stallOnMemoryWrOut,
 		output 	      killOut
 		);
+
+	bit memoryWriteDone = 0;
+
+	enum { memory_write_idle, memory_write_active } memory_write_state;
 
 	always_comb begin
 		if (canWriteBackIn == 1 && killIn == 0) begin
@@ -75,10 +80,26 @@ module WriteBack (
 				regFileOut[destRegSpecialIn] = regFileIn[destRegSpecialIn];
 			end
 
+			if (isMemoryAccessDestIn == 0) begin
+				writeBackSuccessfulOut = 1;
+			end else if (memoryWriteDone == 1) begin
+				writeBackSuccessfulOut = 1;
+			end else begin
+				writeBackSuccessfulOut = 0;
+			end
+
+			/* TODO: Check if this logic is correct. We need to exit out after we get a reqack. */
+		        if (memory_write_state == memory_write_idle && (isMemoryAccessDestIn == 1)) begin
+			   stallOnMemoryWrOut = 1;
+			end else if (memory_write_state == memory_write_state && dCacheCoreBus.reqack == 1) begin
+			   stallOnMemoryWrOut = 0;
+			end
+
 			regInUseBitMapOut[destRegIn] = 0;
-//		   $display("here");
-		   
-			regFileOut[destRegIn] = aluResultIn;
+
+			if (isMemoryAccessDestIn == 0) begin
+				regFileOut[destRegIn] = aluResultIn;
+			end
 
   		        currentRipOut = currentRipIn;
 		        sourceRegCode1Out = sourceReg1In;
@@ -99,7 +120,7 @@ module WriteBack (
 			memoryAddressDestOut = memoryAddressDestIn;
 
 			killOut = killIn;
-			writeBackSuccessfulOut = 1;
+			//writeBackSuccessfulOut = 1;
 		end else if (canWriteBackIn == 1 && killIn == 1) begin
 			killOut = killIn;
 			writeBackSuccessfulOut = 0;
@@ -107,4 +128,41 @@ module WriteBack (
 			writeBackSuccessfulOut = 0;
 		end
 	end
+
+
+	always @ (posedge dCacheCoreBus.clk) begin
+		if (dCacheCoreBus.reset) begin
+			memory_write_state <= memory_write_idle;
+			memoryWriteDone <= 0;
+		end else begin
+			if (canWriteBackIn == 1 && killIn == 0) begin
+				if (memory_write_state == memory_write_idle) begin
+
+					if (isMemoryAccessDestIn == 0) begin
+						/* Not writing to memory */
+
+						memoryWriteDone <= 1;
+					end else begin
+						/* Send request for Dest to Memory */
+
+						dCacheCoreBus.reqcyc <= 1;
+						dCacheCoreBus.req <= memoryAddressDestIn;
+						dCacheCoreBus.reqdata <= aluResultIn;
+						dCacheCoreBus.reqtag <= { dCacheCoreBus.WRITE, dCacheCoreBus.MEMORY, dCacheCoreBus.DATA, 7'b0 };
+						memory_write_state <= memory_write_active;
+						memoryWriteDone <= 0;
+					end
+				end else if (memory_write_state == memory_write_active) begin
+
+					if (dCacheCoreBus.reqack == 1) begin
+						dCacheCoreBus.reqcyc <= 0;
+						memory_write_state <= memory_write_idle;
+						memoryWriteDone <= 1;
+					end
+
+				end
+			end
+		end
+	end
+
 endmodule

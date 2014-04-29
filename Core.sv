@@ -393,6 +393,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:63]         wbMemoryAddressSrc1Out = 0;
    logic [0:63]         wbMemoryAddressSrc2Out = 0;
    logic [0:63]         wbMemoryAddressDestOut = 0;
+   bit			wbStallOnMemoryWrOut = 0;
    /* verilator lint_on UNUSED */
 
    bit			readSuccessfulOut = 0;
@@ -448,16 +449,21 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
    CacheCoreInterface #(DATA_WIDTH, TAG_WIDTH) instrCacheCoreInf(reset, clk);
 
-   CacheCoreInterface #(DATA_WIDTH, TAG_WIDTH) dataCacheCoreInf(reset, clk);
+   CacheCoreInterface #(DATA_WIDTH, TAG_WIDTH) memoryCacheCoreInf(reset, clk);
 
+   CacheCoreInterface #(DATA_WIDTH, TAG_WIDTH) writebackCacheCoreInf(reset, clk);
+
+   RWArbiterCacheInterface #(DATA_WIDTH, TAG_WIDTH) rwArbiterCacheInf(reset, clk);
 
    ArbiterCacheInterface #(DATA_WIDTH, TAG_WIDTH) instrArbiterCacheInf(reset, clk);
    ArbiterCacheInterface #(DATA_WIDTH, TAG_WIDTH) dataArbiterCacheInf(reset, clk);
 
-   DMCache #(DATA_WIDTH, 64, 9, 3, 0) instrCache(instrCacheCoreInf.CachePorts, instrArbiterCacheInf.CachePorts);
-   DMCache #(DATA_WIDTH, 64, 9, 3, 1) dataCache(dataCacheCoreInf.CachePorts, dataArbiterCacheInf.CachePorts);
+   DMInstructionCache #(DATA_WIDTH, 64, 9, 3) instrCache(instrCacheCoreInf.CachePorts, instrArbiterCacheInf.CachePorts);
+   DMDataCache #(DATA_WIDTH, 64, 9, 3) dataCache(rwArbiterCacheInf.CachePorts, dataArbiterCacheInf.CachePorts);
 
    Arbiter #(DATA_WIDTH, TAG_WIDTH) cacheArbiter(bus.Top, dataArbiterCacheInf.ArbiterPorts, instrArbiterCacheInf.ArbiterPorts);
+
+   ReadWriteArbiter #(DATA_WIDTH, TAG_WIDTH) rwArbiter(memoryCacheCoreInf.CachePorts, writebackCacheCoreInf.CachePorts, rwArbiterCacheInf.ArbiterPorts);
 
    Fetch fetch(
 		entry,
@@ -651,7 +657,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
    Memory memory(
 		/* verilator lint_off UNDRIVEN */
-		dataCacheCoreInf.CorePorts,
+		memoryCacheCoreInf.CorePorts,
 		/* verilator lint_on UNDRIVEN */
 		acmemCurrentRip,
 		canMemory,
@@ -807,7 +813,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
           	killLatch,	
 	/* verilator lint_off UNDRIVEN */
 	/* verilator lint_off UNUSED */
-		dataCacheCoreInf.CorePorts,
+		writebackCacheCoreInf.CorePorts,
 	/* verilator lint_on UNUSED */
 	/* verilator lint_on UNDRIVEN */
 			       
@@ -848,6 +854,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		wbMemoryAddressSrc2Out,
 		wbMemoryAddressDestOut,
 		writeBackSuccessfulOut,
+		wbStallOnMemoryWrOut,
 		killOutWb
 		);
 
