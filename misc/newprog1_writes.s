@@ -3,9 +3,13 @@
 
 _start:
         mov    $0x7000c0, %rax
-        mov    $0xBBBBBB, %rbx
-        mov    %rbx, (%rax)
-        mov    (%rax), %rdx
+        mov    $0x6000c0, %rbx
+        mov    $0xBBBBBB, %r8
+        mov    $0xCCCCCC, %r9
+        mov    %r8, (%rax)
+        mov    %r9, (%rbx)
+        mov    (%rax), %r10
+        mov    (%rbx), %r11
         and    %rax, %rax
         and    %rax, %rax
         and    %rax, %rax
