@@ -30,6 +30,40 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    /* verilator lint_on UNDRIVEN */
    /* verilator lint_on UNUSED */
 
+   /* 
+    * This state will be set by the Decode stage and unset (cleared) by the Memory and Writeback stages.
+    * Decode stage will set this depending on what kind of memory access will happen for this 
+    * instruction. 
+    * Read this in comb-blocks, write to this in ff-blocks and life is easy!
+    * Assumption - no two stages write to this at the same clock edge. Else life isn't so easy!
+    */
+   
+   int core_memaccess_inprogress;
+
+
+   always @ (posedge bus.clk) begin
+      if (bytes_decoded_this_cycle > 0) begin
+	 if (idIsMemoryAccessDestOut) begin
+	    core_memaccess_inprogress <= 2; // write_memory_access
+	 end else if (idIsMemoryAccessSrc1Out || idIsMemoryAccessSrc2Out) begin
+	    core_memaccess_inprogress <= 1; // read_memory_access
+	 end else begin
+	    core_memaccess_inprogress <= 0; // no_memory_access
+	 end
+      end
+
+      if (core_memaccess_inprogress == 2) begin
+	 if (wbWroteToMemory) begin
+	    // Check when an actual writeback happened.
+	    core_memaccess_inprogress <= 0;
+	 end
+      end else if (core_memaccess_inprogress == 1) begin
+	 if (memReadFromMemory) begin
+	    core_memaccess_inprogress <= 0;
+	 end
+      end
+   end
+   
    /******** Latches ********/
 
    logic [63:0] 	ifidCurrentRip;
@@ -201,12 +235,15 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:63]         exwbMemoryAddressSrc2 = 0;
    logic [0:63]         exwbMemoryAddressDest = 0;
    logic [0:63]         exwbDestRegValue = 0;
-   /* verilator lint_on UNUSED */
+
+   logic [0:7] 		wbOpcodeOut = 0;
+
 
    bit 			regInUseBitMap[16];
    
-//   logic 		idStallIn;
+   logic 		idStallLatch;
 
+   /* verilator lint_on UNUSED */
    /******** Wires ********/
 
    /* TODO: Change this to 64 bits */
@@ -348,6 +385,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    /* verilator lint_off UNUSED */
    logic [0:63]         memMemoryDataOut = 0;
    /* verilator lint_on UNUSED */
+   bit 			memReadFromMemory = 0; // goes high, if a memory read happened in prev clock cycle.
+   
 
    logic [0:2] 		exExtendedOpcodeOut = 0;
    logic [0:31] 	exHasExtendedOpcodeOut = 0;
@@ -403,6 +442,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:63]         wbMemoryAddressDestOut = 0;
    bit			wbStallOnMemoryWrOut = 0;
    /* verilator lint_on UNUSED */
+   bit 			wbWroteToMemory = 0; // Goes high if wrote to memory in the previous clock cycle.
 
    bit			readSuccessfulOut = 0;
    bit			addressCalculationSuccessfulOut = 0;
@@ -428,7 +468,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
       rdacCurrentRip = 0;
       acmemCurrentRip = 0;
       memexCurrentRip = 0;
-      //      idStallIn = 0;
+      idStallLatch = 0;
       for(int k=0; k<16; k=k+1) begin
          regFile[k] = 0;
 	 regInUseBitMap[k] = 0;
@@ -529,6 +569,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		idDestRegOut,
 		idDestRegSpecialOut,
 		idDestRegSpecialValidOut,
+		core_memaccess_inprogress,
 		bytes_decoded_this_cycle
 		);
 
@@ -748,7 +789,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		memMemoryAddressDestOut,
 		memMemoryDataOut,
 		memStallOnMemoryOut,
-		memorySuccessfulOut
+		memorySuccessfulOut,
+		memReadFromMemory
 		);
    
    Execute execute(	       
@@ -838,7 +880,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		writebackCacheCoreInf.CorePorts,
 	/* verilator lint_on UNUSED */
 	/* verilator lint_on UNDRIVEN */
-			       
+		exwbOpcode,	       
 		regInUseBitMap,
 		regFile,
 		exwbCurrentRip,
@@ -858,6 +900,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		exwbAluResult,
 		exwbAluResultSpecial,
 		wbCurrentRipOut,
+		wbOpcodeOut,
 		wbSourceRegCode1Out,
 		wbSourceRegCode2Out,
 		wbSourceRegCode1ValidOut,
@@ -877,7 +920,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		wbMemoryAddressDestOut,
 		writeBackSuccessfulOut,
 		wbStallOnMemoryWrOut,
-		killOutWb
+		killOutWb,
+		wbWroteToMemory
 		);
 
    assign memexMemoryData = memMemoryDataOut;
@@ -1128,7 +1172,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
         end
         /* verilator lint_on WIDTH */
 
-//	idStallIn <= idStallOut;
+	idStallLatch <= idStallOut;
 
 	regFile[wbDestRegOut] <= regFileOut[wbDestRegOut];
 	regFile[wbDestRegSpecialOut] <= regFileOut[wbDestRegSpecialOut];

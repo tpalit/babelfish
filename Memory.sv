@@ -77,7 +77,8 @@ module Memory (
 		output [0:63] memoryAddressDestOut,
 		output [0:63] memoryDataOut,
 		output	      stallOnMemoryOut,
-		output        isMemorySuccessfulOut
+		output        isMemorySuccessfulOut,
+	        output        readFromMemory
 		);
 
 	enum { memory_access_idle, memory_access_active } memory_access_state;
@@ -132,7 +133,13 @@ module Memory (
 			end else if (memory_access_state == memory_access_state && dCacheCoreBus.respcyc == 1) begin
 			   stallOnMemoryOut = 0;
 			end
-
+		        if ((isMemoryAccessSrc1In || isMemoryAccessSrc2In) 
+			    && memory_access_state == memory_access_state
+			    && dCacheCoreBus.respcyc == 1) begin
+			   readFromMemory = 1;
+			end else begin
+			   readFromMemory = 0;
+			end
 		end else begin
 			isMemorySuccessfulOut = 0;
 		end
@@ -141,10 +148,21 @@ module Memory (
 	end
 
 	always @ (posedge dCacheCoreBus.clk)
-
 		if (dCacheCoreBus.reset) begin
 			memory_access_state <= memory_access_idle;
 		end else begin
+		   // If there's a memory access in progress, continue it even if canMemoryIn is low.
+		   if (memory_access_state == memory_access_active) begin
+		      if (dCacheCoreBus.reqack == 1) begin
+			 dCacheCoreBus.reqcyc <= 0;
+		      end
+
+		      if (dCacheCoreBus.respcyc == 1) begin
+			 memoryDataOut <= dCacheCoreBus.resp;
+			 dCacheCoreBus.respack <= 1;
+			 memory_access_state <= memory_access_idle;
+		      end
+		   end
 			if ((opcodeValidIn == 1) && (canMemoryIn == 1)) begin
 				if (memory_access_state == memory_access_idle) begin
                         dCacheCoreBus.respack <= 0;
@@ -167,18 +185,7 @@ module Memory (
 						memory_access_state <= memory_access_active;
 					end
 	
-				end else if (memory_access_state == memory_access_active) begin
-					if (dCacheCoreBus.reqack == 1) begin
-						dCacheCoreBus.reqcyc <= 0;
-					end
-
-					if (dCacheCoreBus.respcyc == 1) begin
-						memoryDataOut <= dCacheCoreBus.resp;
-						dCacheCoreBus.respack <= 1;
-						memory_access_state <= memory_access_idle;
-					end
-				end
 			end
 		end
-
+             end
 endmodule

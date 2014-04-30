@@ -5,6 +5,7 @@ module WriteBack (
 		input 	      killIn,
 			      /* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */ CacheCoreInterface dCacheCoreBus /* verilator lint_on UNUSED */ /* verilator lint_on UNDRIVEN */,
 		  /* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */
+		input [0:7]   opcodeIn,
 		input 	      regInUseBitMapIn[16],
 		  /* verilator lint_on UNDRIVEN */ /* verilator lint_on UNUSED */
    		input [63:0]  regFileIn[16],
@@ -17,9 +18,9 @@ module WriteBack (
 		input [0:3]   destRegIn,
 		input [0:3]   destRegSpecialIn,
 		input 	      destRegSpecialValidIn,
-		input         isMemoryAccessSrc1In,
-		input         isMemoryAccessSrc2In,
-		input         isMemoryAccessDestIn,
+		input 	      isMemoryAccessSrc1In,
+		input 	      isMemoryAccessSrc2In,
+		input 	      isMemoryAccessDestIn,
 		input [0:63]  memoryAddressSrc1In,
 		input [0:63]  memoryAddressSrc2In,
 		input [0:63]  memoryAddressDestIn,
@@ -27,6 +28,7 @@ module WriteBack (
 		input [0:63]  aluResultSpecialIn,
 
 		output [0:63] currentRipOut,
+		output [0:7]  opcodeOut, 
 		output [0:3]  sourceRegCode1Out,
 		output [0:3]  sourceRegCode2Out,
 		output 	      sourceRegCode1ValidOut,
@@ -41,15 +43,16 @@ module WriteBack (
 		output 	      regInUseBitMapOut[16],
 		  /* verilator lint_on UNDRIVEN */ /* verilator lint_on UNUSED */
    		output [63:0] regFileOut[16],
-		output        isMemoryAccessSrc1Out,
-		output        isMemoryAccessSrc2Out,
-		output        isMemoryAccessDestOut,
+		output 	      isMemoryAccessSrc1Out,
+		output 	      isMemoryAccessSrc2Out,
+		output 	      isMemoryAccessDestOut,
 		output [0:63] memoryAddressSrc1Out,
 		output [0:63] memoryAddressSrc2Out,
 		output [0:63] memoryAddressDestOut,
 		output 	      writeBackSuccessfulOut,
-		output	      stallOnMemoryWrOut,
-		output 	      killOut
+		output 	      stallOnMemoryWrOut,
+		output 	      killOut,
+		output 	      wroteToMemory
 		);
 
 	/* verilator lint_off UNUSED */
@@ -115,7 +118,7 @@ module WriteBack (
 		        destRegSpecialValidOut = destRegSpecialValidIn;
 			aluResultOut = aluResultIn;
 			aluResultSpecialOut = aluResultSpecialIn;
-
+		        opcodeOut = opcodeIn;
 		        isMemoryAccessSrc1Out = isMemoryAccessSrc1In;
 		        isMemoryAccessSrc2Out = isMemoryAccessSrc2In;
 		        isMemoryAccessDestOut = isMemoryAccessDestIn;
@@ -134,40 +137,46 @@ module WriteBack (
 	end
 
 
-	always @ (posedge dCacheCoreBus.clk) begin
-		memoryWriteDone <= 0;
-		if (dCacheCoreBus.reset) begin
-			memory_write_state <= memory_write_idle;
-			memoryWriteDone <= 0;
-		end else begin
-			if (canWriteBackIn == 1 && killIn == 0) begin
-				if (memory_write_state == memory_write_idle) begin
+   always @ (posedge dCacheCoreBus.clk) begin
+      memoryWriteDone <= 0;
+      if (dCacheCoreBus.reset) begin
+	 memory_write_state <= memory_write_idle;
+	 memoryWriteDone <= 0;
+	 wroteToMemory <= 0;
+      end else begin
+	 // If a memory write is in progress, continue it even if canWriteBackIn goes low.
+   	 if (memory_write_state == memory_write_active) begin
+	    if (dCacheCoreBus.reqack) begin
+	       dCacheCoreBus.reqcyc <= 0; // turn off the reqcyc immediately after receiving the reqack
+	    end
+	    if (dCacheCoreBus.writeack == 1) begin
+	       // Change the state only when the writeack is received
+	       memory_write_state <= memory_write_idle;
+	       memoryWriteDone <= 1;
+	       wroteToMemory <= 1;			 
+	    end
+	 end else if (memory_write_state == memory_write_idle) begin
+	    wroteToMemory <= 0;
+	 end		   
+	 if (canWriteBackIn == 1 && killIn == 0) begin
+	    if (memory_write_state == memory_write_idle) begin
+ 	       wroteToMemory <= 0;
+	       if (isMemoryAccessDestIn == 0) begin
+		  /* Not writing to memory */
 
-					if (isMemoryAccessDestIn == 0) begin
-						/* Not writing to memory */
+		  memoryWriteDone <= 1;
+	       end else begin
+		  /* Send request for Dest to Memory */
 
-						memoryWriteDone <= 1;
-					end else begin
-						/* Send request for Dest to Memory */
-
-						dCacheCoreBus.reqcyc <= 1;
-						dCacheCoreBus.req <= memoryAddressDestIn;
-						dCacheCoreBus.reqdata <= aluResultIn;
-						dCacheCoreBus.reqtag <= { dCacheCoreBus.WRITE, dCacheCoreBus.MEMORY, dCacheCoreBus.DATA, 7'b0 };
-						memory_write_state <= memory_write_active;
-						memoryWriteDone <= 0;
-					end
-				end else if (memory_write_state == memory_write_active) begin
-
-					if (dCacheCoreBus.reqack == 1) begin
-						dCacheCoreBus.reqcyc <= 0;
-						memory_write_state <= memory_write_idle;
-						memoryWriteDone <= 1;
-					end
-
-				end
-			end
-		end
-	end
-
+		  dCacheCoreBus.reqcyc <= 1;
+		  dCacheCoreBus.req <= memoryAddressDestIn;
+		  dCacheCoreBus.reqdata <= aluResultIn;
+		  dCacheCoreBus.reqtag <= { dCacheCoreBus.WRITE, dCacheCoreBus.MEMORY, dCacheCoreBus.DATA, 7'b0 };
+		  memory_write_state <= memory_write_active;
+		  memoryWriteDone <= 0;//TODO - What's this signal for?
+	       end
+	    end
+	 end
+      end
+   end
 endmodule

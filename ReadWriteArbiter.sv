@@ -22,6 +22,8 @@ module ReadWriteArbiter #(WIDTH = 64, TAG_WIDTH = 13) (
 					                              /* verilator lint_on UNDRIVEN */
 					                              );
 
+   assign dcache_writeback_interface.writeack = rw_arbitercache_bus.writeack;
+   
    /**
     * The possible states of the rw_arbiter.
     * rw_arbiter_idle: The rw_arbiter is idle.
@@ -63,8 +65,9 @@ module ReadWriteArbiter #(WIDTH = 64, TAG_WIDTH = 13) (
 
      end else if (rw_arbiter_state == rw_arbiter_writeback) begin 
             
-           if (rw_arbitercache_bus.writeack == 1) begin
+           if (rw_arbitercache_bus.reqack == 1) begin
            	rw_arbitercache_bus.reqcyc <= 0;
+	   end if (rw_arbitercache_bus.writeack) begin
            	rw_arbiter_state <= rw_arbiter_idle;
            end
         

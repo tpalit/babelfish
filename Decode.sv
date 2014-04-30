@@ -6,11 +6,11 @@ module Decode (
 	       input 		stallIn,
 	       input 		wbStallIn,
 		/* verilator lint_on UNUSED */
-	       input		regInUseBitMapIn[16],
+	       input 		regInUseBitMapIn[16],
 	       input [0:63] 	currentRipIn,
 	       input 		canDecodeIn,
 	       output 		stallOut,
-	       output		regInUseBitMapOut[16],
+	       output 		regInUseBitMapOut[16],
 	       output [0:63] 	currentRipOut,
 	       output [0:2] 	extendedOpcodeOut,
 	       output [0:31] 	hasExtendedOpcodeOut,
@@ -22,9 +22,9 @@ module Decode (
 	       output 		sourceRegCode1ValidOut,
 	       output 		sourceRegCode2ValidOut,
 	       output [0:31] 	immLenOut,
-	       output		isMemoryAccessSrc1Out,	// Tells us whether it is a memory access or register access for Src1 r/m operand
-	       output		isMemoryAccessSrc2Out,	// Tells us whether it is a memory access or register access for Src2 r/m operand
-	       output		isMemoryAccessDestOut,	// Tells us whether it is a memory access or register access for Dest operand
+	       output 		isMemoryAccessSrc1Out, // Tells us whether it is a memory access or register access for Src1 r/m operand
+	       output 		isMemoryAccessSrc2Out, // Tells us whether it is a memory access or register access for Src2 r/m operand
+	       output 		isMemoryAccessDestOut, // Tells us whether it is a memory access or register access for Dest operand
 	       output [0:31] 	dispLenOut,
 	       output [0:7] 	imm8Out,
 	       output [0:15] 	imm16Out,
@@ -37,6 +37,7 @@ module Decode (
                output [0:3] 	destRegOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
                output [0:3] 	destRegSpecialOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
                output 		destRegSpecialValidOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
+	       input [0:31] 	core_memaccess_inprogress,
 	       output [0:3] 	bytesDecodedThisCycleOut 	
 	       );
    
@@ -726,9 +727,15 @@ module Decode (
 	 return 1;
       end
 
+      // Check if there's an ongoing memory access
+      if (core_memaccess_inprogress != 0) begin
+	 return 1;
+      end
+      
       return 0;
    endfunction
 
+   
    always_comb begin
       if (canDecodeIn && !stallIn && !wbStallIn) begin : decode_block
 //      if (canDecodeIn) begin : decode_block

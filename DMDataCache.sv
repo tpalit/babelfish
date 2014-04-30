@@ -146,12 +146,13 @@ module DMDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3)
    function void doDataCacheStuff();
       if ((rwArbiterCacheBus.reqcyc == 1) && (cache_state == cache_idle)) begin
          // Don't acknowledge here, wait for writeconfirm to go high -- for WRITE
-         if (!isWrite) begin
+/*         if (!isWrite) begin
 	       rwArbiterCacheBus.reqack <= 1;
          end else begin
             rwArbiterCacheBus.reqack <= 0;
          end
-
+*/
+	 	       rwArbiterCacheBus.reqack <= 1;
 	    rwArbiterCacheBus.respcyc <= 0;
 	    // Check the state, if the index is valid, go to SRAM to get tags.
 	    // Else, directly go to memory, 
