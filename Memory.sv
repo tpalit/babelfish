@@ -6,6 +6,7 @@ module Memory (
 		/* verilator lint_on UNDRIVEN */ /* verilator lint_on UNUSED */
 		input [0:63]  currentRipIn,
 		input         canMemoryIn,
+		input         wbStallIn,
 		input [0:2]   extendedOpcodeIn,
 		input [0:31]  hasExtendedOpcodeIn,
 		input [0:31]  opcodeLengthIn,
@@ -30,6 +31,7 @@ module Memory (
 		input [0:31]  disp32In,
 		input [0:63]  disp64In,
 		input [0:3]   destRegIn,
+		input [0:63]  destRegValueIn,
 		input [0:3]   destRegSpecialIn,
 		input         destRegSpecialValidIn,
 		input         isMemoryAccessSrc1In,
@@ -64,6 +66,7 @@ module Memory (
 		output [0:31] disp32Out,
 		output [0:63] disp64Out,
 		output [0:3]  destRegOut,
+		output [0:63] destRegValueOut,
 		output [0:3]  destRegSpecialOut,
 		output        destRegSpecialValidOut,
 		output        isMemoryAccessSrc1Out,
@@ -80,7 +83,7 @@ module Memory (
 	enum { memory_access_idle, memory_access_active } memory_access_state;
 
 	always_comb begin
-		if ((opcodeValidIn == 1) && (canMemoryIn == 1)) begin
+		if ((opcodeValidIn == 1) && (canMemoryIn == 1) && !wbStallIn) begin
 			assert(!(isMemoryAccessSrc1In == 1 && isMemoryAccessSrc2In == 1)) else $fatal("\nBoth source operands access Memory!\n");
 
 			if (isMemoryAccessSrc1In == 0 && isMemoryAccessSrc2In == 0) begin
@@ -122,6 +125,7 @@ module Memory (
 			memoryAddressDestOut = memoryAddressDestIn;
         		operand1ValOut = operand1ValIn;
         		operand2ValOut = operand2ValIn;
+			destRegValueOut = destRegValueIn;
 
 		        if (memory_access_state == memory_access_idle && (isMemoryAccessSrc1In || isMemoryAccessSrc2In)) begin
 			   stallOnMemoryOut = 1;

@@ -94,6 +94,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:3]		rdacDestReg = 0;
    logic [0:3]		rdacDestRegSpecial = 0;
    bit	 		rdacDestRegSpecialValid = 0;
+   logic [0:63]		rdacDestRegValue = 0;
 
    logic [0:2] 		acmemExtendedOpcode = 0;
    logic [0:31] 	acmemHasExtendedOpcode = 0;
@@ -122,6 +123,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:31] 	acmemDisp32 = 0;
    logic [0:63] 	acmemDisp64 = 0;
    logic [0:3]		acmemDestReg = 0;
+   logic [0:63]		acmemDestRegValue = 0;
    logic [0:3]		acmemDestRegSpecial = 0;
    bit	 		acmemDestRegSpecialValid = 0;
    logic [0:63]         acmemMemoryAddressSrc1 = 0;
@@ -155,6 +157,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:31] 	memexDisp32 = 0;
    logic [0:63] 	memexDisp64 = 0;
    logic [0:3]		memexDestReg = 0;
+   logic [0:63]		memexDestRegValue = 0;
    logic [0:3]		memexDestRegSpecial = 0;
    bit	 		memexDestRegSpecialValid = 0;
    logic [0:63]         memexMemoryAddressSrc1 = 0;
@@ -197,6 +200,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:63]         exwbMemoryAddressSrc1 = 0;
    logic [0:63]         exwbMemoryAddressSrc2 = 0;
    logic [0:63]         exwbMemoryAddressDest = 0;
+   logic [0:63]         exwbDestRegValue = 0;
    /* verilator lint_on UNUSED */
 
    bit 			regInUseBitMap[16];
@@ -271,6 +275,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:3]		rdDestRegOut = 0;
    logic [0:3]		rdDestRegSpecialOut = 0;
    bit	 		rdDestRegSpecialValidOut = 0;
+   logic [0:63]		rdDestRegValueOut = 0;
 
    logic [0:2] 		acExtendedOpcodeOut = 0;
    logic [0:31] 	acHasExtendedOpcodeOut = 0;
@@ -304,6 +309,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:63]         acMemoryAddressSrc1Out = 0;
    logic [0:63]         acMemoryAddressSrc2Out = 0;
    logic [0:63]         acMemoryAddressDestOut = 0;
+   logic [0:63]		acDestRegValueOut = 0;
 
    logic [0:2] 		memExtendedOpcodeOut = 0;
    logic [0:31] 	memHasExtendedOpcodeOut = 0;
@@ -338,6 +344,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:63]         memMemoryAddressSrc2Out = 0;
    logic [0:63]         memMemoryAddressDestOut = 0;
    bit	 		memStallOnMemoryOut = 0;
+   logic [0:63]		memDestRegValueOut = 0;
    /* verilator lint_off UNUSED */
    logic [0:63]         memMemoryDataOut = 0;
    /* verilator lint_on UNUSED */
@@ -376,6 +383,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:63]         exMemoryAddressSrc1Out = 0;
    logic [0:63]         exMemoryAddressSrc2Out = 0;
    logic [0:63]         exMemoryAddressDestOut = 0;
+   logic [0:63]		exDestRegValueOut = 0;
 
    logic [0:3] 		wbSourceRegCode1Out = 0;
    logic [0:3] 		wbSourceRegCode2Out = 0;
@@ -412,6 +420,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    bit              killLatch;
 
    bit              memStall;
+   bit              wbStall;
    
    initial begin
       ifidCurrentRip = 0;
@@ -440,6 +449,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    endfunction
 
    assign memStall = memStallOnMemoryOut;
+   assign wbStall = wbStallOnMemoryWrOut;
    
    logic [3:0]                 bytes_decoded_this_cycle;
 
@@ -487,6 +497,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    Decode decode(	       
 		decode_bytes,
 		memStall,
+		wbStall,
 		regInUseBitMap,     
 		ifidCurrentRip,
 		can_decode,
@@ -524,6 +535,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    Read read(
 		canRead,
 		memStall,
+		wbStall,
 		idrdSourceRegCode1,
 		idrdSourceRegCode2,
 		idrdSourceRegCode1Valid,
@@ -580,6 +592,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		rdDisp32Out,
 		rdDisp64Out,
 		rdDestRegOut,
+		rdDestRegValueOut,
 		rdDestRegSpecialOut,
 		rdDestRegSpecialValidOut,
 		readSuccessfulOut
@@ -588,7 +601,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    AddressCalculation addresscalculation(
 		rdacCurrentRip,
 		canAddressCalculate,
-          memStall,
+		memStall,
+		wbStall,
 		rdacExtendedOpcode,
 		rdacHasExtendedOpcode,
 		rdacOpcodeLength,
@@ -616,6 +630,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		rdacDisp32,
 		rdacDisp64,
 		rdacDestReg,
+		rdacDestRegValue,
 		rdacDestRegSpecial,
 		rdacDestRegSpecialValid,
 
@@ -647,6 +662,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		acDisp32Out,
 		acDisp64Out,
 		acDestRegOut,
+		acDestRegValueOut,
 		acDestRegSpecialOut,
 		acDestRegSpecialValidOut,
 		acMemoryAddressSrc1Out,
@@ -661,6 +677,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		/* verilator lint_on UNDRIVEN */
 		acmemCurrentRip,
 		canMemory,
+		wbStall,
 		acmemExtendedOpcode,
 		acmemHasExtendedOpcode,
 		acmemOpcodeLength,
@@ -685,6 +702,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		acmemDisp32,
 		acmemDisp64,
 		acmemDestReg,
+		acmemDestRegValue,
 		acmemDestRegSpecial,
 		acmemDestRegSpecialValid,
 		acmemIsMemoryAccessSrc1,
@@ -719,6 +737,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		memDisp32Out,
 		memDisp64Out,
 		memDestRegOut,
+		memDestRegValueOut,
 		memDestRegSpecialOut,
 		memDestRegSpecialValidOut,
    		memIsMemoryAccessSrc1Out,
@@ -735,6 +754,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    Execute execute(	       
 		memexCurrentRip,
 		canExecute,
+		wbStall,
 		memexExtendedOpcode,
 		memexHasExtendedOpcode,
 		memexOpcodeLength,
@@ -759,6 +779,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		memexDisp32,
 		memexDisp64,
 		memexDestReg,
+		memexDestRegValue,
 		memexDestRegSpecial,
 		memexDestRegSpecialValid,
 		memexIsMemoryAccessSrc1,
@@ -796,6 +817,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		exDisp32Out,
 		exDisp64Out,
 		exDestRegOut,
+		exDestRegValueOut,
 		exDestRegSpecialOut,
 		exDestRegSpecialValidOut,
    		exIsMemoryAccessSrc1Out,
@@ -888,7 +910,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		$finish;
 	end
 
-     decode_offset <= decode_offset + { 3'b0, bytes_decoded_this_cycle };
+        decode_offset <= decode_offset + { 3'b0, bytes_decoded_this_cycle };
         if (bytes_decoded_this_cycle > 0) begin
 	      canRead <= 1;
 	end else begin
@@ -927,7 +949,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
 	/* Latch the output values from each stage. */
 	
-	if (memStallOnMemoryOut == 0) begin
+	if (memStallOnMemoryOut == 0 || wbStallOnMemoryWrOut == 0) begin
 		idrdExtendedOpcode <= idExtendedOpcodeOut;           
 		idrdHasExtendedOpcode <= idHasExtendedOpcodeOut;   
 		idrdOpcodeLength <= idOpcodeLengthOut;        
@@ -977,6 +999,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		rdacDisp32 <= rdDisp32Out;
 		rdacDisp64 <= rdDisp64Out;
 		rdacDestReg <= rdDestRegOut;
+		rdacDestRegValue <= rdDestRegValueOut;
 		rdacDestRegSpecial <= rdDestRegSpecialOut;
 		rdacDestRegSpecialValid <=  rdDestRegSpecialValidOut;
 		rdacSourceRegCode1 <= rdSourceRegCode1Out;
@@ -1008,6 +1031,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		acmemDisp32 <= acDisp32Out;
 		acmemDisp64 <= acDisp64Out;
 		acmemDestReg <= acDestRegOut;
+		acmemDestRegValue <= acDestRegValueOut;
 		acmemDestRegSpecial <= acDestRegSpecialOut;
 		acmemDestRegSpecialValid <= acDestRegSpecialValidOut;
 		acmemIsMemoryAccessSrc1 <= acIsMemoryAccessSrc1Out;
@@ -1041,6 +1065,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		memexDisp32 <= memDisp32Out;
 		memexDisp64 <= memDisp64Out;
 		memexDestReg <= memDestRegOut;
+		memexDestRegValue <= memDestRegValueOut;
 		memexDestRegSpecial <= memDestRegSpecialOut;
 		memexDestRegSpecialValid <= memDestRegSpecialValidOut;
 		memexIsMemoryAccessSrc1 <= memIsMemoryAccessSrc1Out;
@@ -1051,40 +1076,43 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		memexMemoryAddressDest <= memMemoryAddressDestOut;
 	end
 
-	exwbExtendedOpcode <= exExtendedOpcodeOut;
-	exwbHasExtendedOpcode <= exHasExtendedOpcodeOut;
-	exwbOpcodeLength <= exOpcodeLengthOut;
-	exwbOpcodeValid <= exOpcodeValidOut; 
-	exwbOpcode <= exOpcodeOut;
-	exwbOperandVal1 <= exOperandVal1Out;
-	exwbOperandVal2 <= exOperandVal2Out;
-	exwbOperandVal1Valid <= exOperandVal1ValidOut;
-	exwbOperandVal2Valid <= exOperandVal2ValidOut;   
-	exwbSourceRegCode1 <= exSourceRegCode1Out;
-	exwbSourceRegCode2 <= exSourceRegCode2Out;
-	exwbSourceRegCode1Valid <= exSourceRegCode1ValidOut;
-	exwbSourceRegCode2Valid <= exSourceRegCode2ValidOut;   
-	exwbImmLen <= exImmLenOut;
-	exwbDispLen <= exDispLenOut;
-	exwbImm8 <= exImm8Out;
-	exwbImm16 <= exImm16Out;
-	exwbImm32 <= exImm32Out;
-	exwbImm64 <= exImm64Out;
-	exwbDisp8 <= exDisp8Out;
-	exwbDisp16 <= exDisp16Out;
-	exwbDisp32 <= exDisp32Out;
-	exwbDisp64 <= exDisp64Out;
-	exwbDestReg <= exDestRegOut;
-	exwbDestRegSpecial <= exDestRegSpecialOut;
-	exwbDestRegSpecialValid <= exDestRegSpecialValidOut;
-	exwbAluResult <= exAluResultOut;
-	exwbAluResultSpecial <= exAluResultSpecialOut;
-	exwbIsMemoryAccessSrc1 <= exIsMemoryAccessSrc1Out;
-	exwbIsMemoryAccessSrc2 <= exIsMemoryAccessSrc2Out;
-	exwbIsMemoryAccessDest <= exIsMemoryAccessDestOut;
-	exwbMemoryAddressSrc1 <= exMemoryAddressSrc1Out;
-	exwbMemoryAddressSrc2 <= exMemoryAddressSrc2Out;
-	exwbMemoryAddressDest <= exMemoryAddressDestOut;
+	if (wbStallOnMemoryWrOut == 0) begin
+		exwbExtendedOpcode <= exExtendedOpcodeOut;
+		exwbHasExtendedOpcode <= exHasExtendedOpcodeOut;
+		exwbOpcodeLength <= exOpcodeLengthOut;
+		exwbOpcodeValid <= exOpcodeValidOut; 
+		exwbOpcode <= exOpcodeOut;
+		exwbOperandVal1 <= exOperandVal1Out;
+		exwbOperandVal2 <= exOperandVal2Out;
+		exwbOperandVal1Valid <= exOperandVal1ValidOut;
+		exwbOperandVal2Valid <= exOperandVal2ValidOut;   
+		exwbSourceRegCode1 <= exSourceRegCode1Out;
+		exwbSourceRegCode2 <= exSourceRegCode2Out;
+		exwbSourceRegCode1Valid <= exSourceRegCode1ValidOut;
+		exwbSourceRegCode2Valid <= exSourceRegCode2ValidOut;   
+		exwbImmLen <= exImmLenOut;
+		exwbDispLen <= exDispLenOut;
+		exwbImm8 <= exImm8Out;
+		exwbImm16 <= exImm16Out;
+		exwbImm32 <= exImm32Out;
+		exwbImm64 <= exImm64Out;
+		exwbDisp8 <= exDisp8Out;
+		exwbDisp16 <= exDisp16Out;
+		exwbDisp32 <= exDisp32Out;
+		exwbDisp64 <= exDisp64Out;
+		exwbDestReg <= exDestRegOut;
+		exwbDestRegValue <= exDestRegValueOut;
+		exwbDestRegSpecial <= exDestRegSpecialOut;
+		exwbDestRegSpecialValid <= exDestRegSpecialValidOut;
+		exwbAluResult <= exAluResultOut;
+		exwbAluResultSpecial <= exAluResultSpecialOut;
+		exwbIsMemoryAccessSrc1 <= exIsMemoryAccessSrc1Out;
+		exwbIsMemoryAccessSrc2 <= exIsMemoryAccessSrc2Out;
+		exwbIsMemoryAccessDest <= exIsMemoryAccessDestOut;
+		exwbMemoryAddressSrc1 <= exMemoryAddressSrc1Out;
+		exwbMemoryAddressSrc2 <= exMemoryAddressSrc2Out;
+		exwbMemoryAddressDest <= exMemoryAddressDestOut;
+	end
 
 	idrdCurrentRip <= idCurrentRipOut;
 	rdacCurrentRip <= rdCurrentRipOut;

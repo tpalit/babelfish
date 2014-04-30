@@ -3,6 +3,7 @@
 module Execute (
 		input [0:63]  currentRipIn,
 		input         canExecuteIn,
+		input         wbStallIn,
 		input [0:2]   extendedOpcodeIn,
 		input [0:31]  hasExtendedOpcodeIn,
 		input [0:31]  opcodeLengthIn,
@@ -27,6 +28,7 @@ module Execute (
 		input [0:31]  disp32In,
 		input [0:63]  disp64In,
 		input [0:3]   destRegIn,
+		input [0:63]  destRegValueIn,
 		input [0:3]   destRegSpecialIn,
 		input         destRegSpecialValidIn,
 		input         isMemoryAccessSrc1In,
@@ -65,6 +67,7 @@ module Execute (
 		output [0:31] disp32Out,
 		output [0:63] disp64Out,
 		output [0:3]  destRegOut,
+		output [0:63] destRegValueOut,
 		output [0:3]  destRegSpecialOut,
 		output        destRegSpecialValidOut,
 		output        isMemoryAccessSrc1Out,
@@ -81,7 +84,7 @@ module Execute (
 	logic [0:63] operandValue2 = 0;
 
 	always_comb begin
-		if ((opcodeValidIn == 1) && (canExecuteIn == 1)) begin
+		if ((opcodeValidIn == 1) && (canExecuteIn == 1) && !wbStallIn) begin
 
 			logic [0:63] temp_var = 0;
 			logic [0:127] mul_temp_var = 0;
@@ -408,9 +411,12 @@ module Execute (
 			memoryAddressSrc1Out = memoryAddressSrc1In;
 			memoryAddressSrc2Out = memoryAddressSrc2In;
 			memoryAddressDestOut = memoryAddressDestIn;
+			destRegValueOut = destRegValueIn;
 
-		end else begin// if ((opcodeValidIn == 1) && (canExecuteIn == 1))
+		end else begin // if ((opcodeValidIn == 1) && (canExecuteIn == 1) && !wbStallIn)
+             if (!wbStallIn) begin
 			isExecuteSuccessfulOut = 0;
+             end
 		end
 	        operand1ValValidOut = operand1ValValidIn;
 	        operand2ValValidOut = operand2ValValidIn;

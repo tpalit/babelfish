@@ -31,20 +31,30 @@ module Arbiter #(WIDTH = 64, TAG_WIDTH = 13) (
     */
    enum 									  { arbiter_idle, arbiter_data, arbiter_instn } arbiter_state;
 
+   // Details about writeack signal --
+   // We want to get the sysbus's reqack all the way through the top of the system (the caches and the core).
+   // Only when this reqack is high, will all the arbiters and caches in the path be allowed to change state to idle (or whatever).
+   // We need to do this ONLY for writes.
+   // However, we will do an "assign" here and we'll assume that when the system is doing a write then no read will interleave.
+   // That is, we're assuming that we'll never receive a reqack for a READ, while the cache/arbiter is in a WRITE state. That would screw up things.
+
+   
    int i_read_count;
    int d_read_count;
+   int d_write_count;
 
    initial begin
       arbiter_state = arbiter_idle;
       i_read_count = 0;
       d_read_count = 0;
+      d_write_count = 0;
    end
 
    always @ (posedge bus.clk)
       if (arbiter_state == arbiter_idle) begin
 	dcache_interface.resp <= '1;
 	icache_interface.resp <= '1;
-	 
+	dcache_interface.writeack <= 0;
 	// The icache has priority.
 	// Send the requests on the 
 	if (icache_interface.reqcyc) begin
@@ -61,6 +71,7 @@ module Arbiter #(WIDTH = 64, TAG_WIDTH = 13) (
 	   bus.reqcyc <= dcache_interface.reqcyc;
 	   arbiter_state <= arbiter_data;
 	   d_read_count <= 0;
+	   d_write_count <= 0;
 	end
       end else if (arbiter_state == arbiter_data) begin 
 	icache_interface.resp <= '1;
@@ -69,12 +80,26 @@ module Arbiter #(WIDTH = 64, TAG_WIDTH = 13) (
 	// Check to see if the DRAM has set the respcyc to show it has started sending the data
 	// Else, just set the respcyc as 0, indicating to the cache that the transfer is over
 	if (bus.reqack == 1) begin
-		bus.reqcyc <= 0;
+		if (dcache_interface.reqtag[12] & dcache_interface.READ) begin
+			bus.reqcyc <= 0;
+	                dcache_interface.reqack <= 0;
+		end else begin
+			if (dcache_interface.reqcyc && d_write_count <= 7) begin
+	   			dcache_interface.reqack <= 1;
+				bus.req <= dcache_interface.req;
+				bus.reqtag <= dcache_interface.reqtag;
+				bus.reqcyc <= dcache_interface.reqcyc;
+				d_write_count <= d_write_count + 1;   
+			end
+		end
 	end
-
-	dcache_interface.reqack <= 0;
-
-	dcache_interface.reqack <= 0;
+     if (d_write_count > 7) begin
+	   dcache_interface.reqack <= 0;
+        dcache_interface.writeack <= 1; // Set the writeack now. For details see the comment at the toppish-middle of the file.
+	   arbiter_state <= arbiter_idle;
+	   bus.reqcyc <= 0;
+	   d_write_count <= 0;
+	end
 	if (bus.respcyc) begin
 	   bus.respack <= 1;
 	   dcache_interface.respcyc <= 1;

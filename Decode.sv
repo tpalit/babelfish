@@ -4,6 +4,7 @@ module Decode (
 	       input [0:15*8-1] decode_bytes,
 		/* verilator lint_off UNUSED */
 	       input 		stallIn,
+	       input 		wbStallIn,
 		/* verilator lint_on UNUSED */
 	       input		regInUseBitMapIn[16],
 	       input [0:63] 	currentRipIn,
@@ -729,7 +730,7 @@ module Decode (
    endfunction
 
    always_comb begin
-      if (canDecodeIn && !stallIn) begin : decode_block
+      if (canDecodeIn && !stallIn && !wbStallIn) begin : decode_block
 //      if (canDecodeIn) begin : decode_block
          int instr_count = 0;
          int opcode_start_index = 0; // the index of the first byte of the opcode

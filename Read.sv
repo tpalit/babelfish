@@ -1,6 +1,7 @@
 module Read (
 	     input 	   canReadIn,
 	     input 	   stallIn,
+	     input 	   wbStallIn,
 	     input [0:3]   sourceReg1In,
 	     input [0:3]   sourceReg2In,
 	     input 	   sourceReg1ValidIn,
@@ -60,13 +61,14 @@ module Read (
 	     output [0:31] disp32Out,
 	     output [0:63] disp64Out,
 	     output [0:3]  destRegOut,
+	     output [63:0] destRegValOut,
              output [0:3]  destRegisterSpecialOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
              output 	   destRegisterSpecialValidOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
 	     output	   isReadSuccessfulOut
 	     );
 
    always_comb begin
-      if (canReadIn && !stallIn) begin
+      if (canReadIn && !stallIn && !wbStallIn) begin
 	    if (sourceReg1ValidIn) begin
 	       operandVal1Out = registerFileIn[sourceReg1In];
 	       operandVal1ValidOut = 1;
@@ -76,6 +78,8 @@ module Read (
 	       operandVal2Out = registerFileIn[sourceReg2In];
 	       operandVal2ValidOut = 1;
 	    end
+
+	    destRegValOut = registerFileIn[destRegIn];
 
 	    currentRipOut = currentRipIn;
 
@@ -109,7 +113,7 @@ module Read (
 
 	    isReadSuccessfulOut = 1;
       end else begin // if (canReadIn && !stallIn)
-         if (!stallIn) begin
+         if (!stallIn && !wbStallIn) begin
 	       isReadSuccessfulOut = 0;
          end
       end

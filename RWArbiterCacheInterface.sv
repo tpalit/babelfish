@@ -18,7 +18,8 @@ wire reqcyc;
 wire respcyc;
 wire reqack;
 wire respack;
-
+wire writeack;
+   
 parameter
 	READ	/* verilator public */ = 1'b1,
 	WRITE	/* verilator public */ = 1'b0,
@@ -39,7 +40,8 @@ modport CachePorts (
 	input reqcyc,
 	output respcyc,
 	output reqack,
-	input respack
+	input respack,
+     output writeack
 );
 
 modport ArbiterPorts (
@@ -52,7 +54,8 @@ modport ArbiterPorts (
 	output reqcyc,
 	input respcyc,
 	input reqack,
-	output respack
+	output respack,
+     output writeack
 );
 
 endinterface

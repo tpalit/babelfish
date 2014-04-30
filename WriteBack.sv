@@ -52,12 +52,15 @@ module WriteBack (
 		output 	      killOut
 		);
 
+	/* verilator lint_off UNUSED */
 	bit memoryWriteDone = 0;
+	/* verilator lint_on UNUSED */
 
 	enum { memory_write_idle, memory_write_active } memory_write_state;
 
 	always_comb begin
-		if (canWriteBackIn == 1 && killIn == 0) begin
+		//if (canWriteBackIn == 1 && killIn == 0) begin
+		if (canWriteBackIn == 1) begin
 			/* Check regInUseBitMapIn, and set all sources and dest as unused. */
 
 			if (sourceReg1ValidIn == 1) begin
@@ -82,7 +85,8 @@ module WriteBack (
 
 			if (isMemoryAccessDestIn == 0) begin
 				writeBackSuccessfulOut = 1;
-			end else if (memoryWriteDone == 1) begin
+			//end else if (memoryWriteDone == 1) begin
+			end else if (memory_write_state == memory_write_active && dCacheCoreBus.reqack == 1) begin
 				writeBackSuccessfulOut = 1;
 			end else begin
 				writeBackSuccessfulOut = 0;
@@ -91,13 +95,13 @@ module WriteBack (
 			/* TODO: Check if this logic is correct. We need to exit out after we get a reqack. */
 		        if (memory_write_state == memory_write_idle && (isMemoryAccessDestIn == 1)) begin
 			   stallOnMemoryWrOut = 1;
-			end else if (memory_write_state == memory_write_state && dCacheCoreBus.reqack == 1) begin
+			end else if (memory_write_state == memory_write_active && dCacheCoreBus.reqack == 1) begin
 			   stallOnMemoryWrOut = 0;
 			end
 
 			regInUseBitMapOut[destRegIn] = 0;
 
-			if (isMemoryAccessDestIn == 0) begin
+			if (isMemoryAccessDestIn == 0 && killIn == 0) begin
 				regFileOut[destRegIn] = aluResultIn;
 			end
 
@@ -131,6 +135,7 @@ module WriteBack (
 
 
 	always @ (posedge dCacheCoreBus.clk) begin
+		memoryWriteDone <= 0;
 		if (dCacheCoreBus.reset) begin
 			memory_write_state <= memory_write_idle;
 			memoryWriteDone <= 0;

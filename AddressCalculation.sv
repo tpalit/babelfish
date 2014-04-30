@@ -3,7 +3,8 @@
 module AddressCalculation (
 		input [0:63]  currentRipIn,
 		input         canAddressCalculationIn,
-          input         stallIn,
+		input         stallIn,
+		input         wbStallIn,
 		input [0:2]   extendedOpcodeIn,
 		input [0:31]  hasExtendedOpcodeIn,
 		input [0:31]  opcodeLengthIn,
@@ -31,6 +32,7 @@ module AddressCalculation (
 		input [0:31]  disp32In,
 		input [0:63]  disp64In,
 		input [0:3]   destRegIn,
+		input [0:63]  destRegValueIn,
 		input [0:3]   destRegSpecialIn,
 		input         destRegSpecialValidIn,
 
@@ -62,6 +64,7 @@ module AddressCalculation (
 		output [0:31] disp32Out,
 		output [0:63] disp64Out,
 		output [0:3]  destRegOut,
+		output [0:63] destRegValueOut,
 		output [0:3]  destRegSpecialOut,
 		output        destRegSpecialValidOut,
 		output [0:63] memoryAddressSrc1Out,
@@ -71,7 +74,7 @@ module AddressCalculation (
 		);
 
 	always_comb begin
-		if ((opcodeValidIn == 1) && (canAddressCalculationIn == 1) && !stallIn) begin
+		if ((opcodeValidIn == 1) && (canAddressCalculationIn == 1) && !stallIn && !wbStallIn) begin
 
 			if (isMemoryAccessSrc1In == 1) begin
 				/* We are dealing with memory here. Need to calculate address. */
@@ -110,12 +113,12 @@ module AddressCalculation (
 				if (dispLenIn == 0) begin
 					/* Directly use the value of operand1ValIn as Memory address */
 
-					memoryAddressDestOut = operand1ValIn;
+					memoryAddressDestOut = destRegValueIn;
 				end else begin
 					/* Decode should have sent us a sign extended 64 bit displacement already */
 
 					/* TODO: What happens if there is an overflow? */
-					memoryAddressDestOut = operand1ValIn + disp64In;
+					memoryAddressDestOut = destRegValueIn + disp64In;
 				end
 			end else begin
 				memoryAddressDestOut = 0;
@@ -150,9 +153,10 @@ module AddressCalculation (
 		        isMemoryAccessSrc1Out = isMemoryAccessSrc1In;
 		        isMemoryAccessSrc2Out = isMemoryAccessSrc2In;
 		        isMemoryAccessDestOut = isMemoryAccessDestIn;
+			destRegValueOut = destRegValueIn;
 
 		end else begin 
-               if (!stallIn) begin
+               if (!stallIn && !wbStallIn) begin
 			   isAddressCalculationSuccessfulOut = 0;
                end
 		end
