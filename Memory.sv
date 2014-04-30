@@ -78,7 +78,9 @@ module Memory (
 		output [0:63] memoryDataOut,
 		output	      stallOnMemoryOut,
 		output        isMemorySuccessfulOut,
-	        output        readFromMemory
+	        output didMemoryReadOut, // To indicate we completed a memory read this cycle.
+		input [0:31]  core_memaccess_inprogress_in,	       
+	        output [0:31] core_memaccess_inprogress_out
 		);
 
 	enum { memory_access_idle, memory_access_active } memory_access_state;
@@ -136,12 +138,15 @@ module Memory (
 		        if ((isMemoryAccessSrc1In || isMemoryAccessSrc2In) 
 			    && memory_access_state == memory_access_state
 			    && dCacheCoreBus.respcyc == 1) begin
-			   readFromMemory = 1;
+			   core_memaccess_inprogress_out = 0; // Completed the read access
+			   didMemoryReadOut = 1;
 			end else begin
-			   readFromMemory = 0;
+			   core_memaccess_inprogress_out = core_memaccess_inprogress_in;
+			   didMemoryReadOut = 0;
 			end
 		end else begin
 			isMemorySuccessfulOut = 0;
+		        didMemoryReadOut = 0;
 		end
 	        operand1ValValidOut = operand1ValValidIn;
 	        operand2ValValidOut = operand2ValValidIn;

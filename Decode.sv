@@ -37,7 +37,8 @@ module Decode (
                output [0:3] 	destRegOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
                output [0:3] 	destRegSpecialOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
                output 		destRegSpecialValidOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
-	       input [0:31] 	core_memaccess_inprogress,
+	       input [0:31] 	core_memaccess_inprogress_in,
+	       output [0:31]    core_memaccess_inprogress_out,
 	       output [0:3] 	bytesDecodedThisCycleOut 	
 	       );
    
@@ -728,7 +729,7 @@ module Decode (
       end
 
       // Check if there's an ongoing memory access
-      if (core_memaccess_inprogress != 0) begin
+      if (core_memaccess_inprogress_in != 0) begin
 	 return 1;
       end
       
@@ -3584,11 +3585,24 @@ module Decode (
             regInUseBitMapOut[destRegOut] = 1;
          
             stallOut = 0;
+	    // Are we going to do a memory access for this instruction?
+	    // If yes, then note that.
+
+	    if (isMemoryAccessDestOut) begin
+	       core_memaccess_inprogress_out = 2; // write_memory_access
+	    end else if (isMemoryAccessSrc1Out || isMemoryAccessSrc2Out) begin
+	       core_memaccess_inprogress_out = 1; // read_memory_access
+	    end else begin
+	       core_memaccess_inprogress_out = 0; // no_memory_access
+	    end
+	    
          end else begin
             stallOut = 1;
             bytesDecodedThisCycleOut = 0;
+	    core_memaccess_inprogress_out = core_memaccess_inprogress_in;
          end
 
+      
          //if (decode_bytes == 0 && fetch_state == fetch_idle) $finish;
       end else begin
          bytesDecodedThisCycleOut = 0;

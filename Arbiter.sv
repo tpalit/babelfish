@@ -43,6 +43,9 @@ module Arbiter #(WIDTH = 64, TAG_WIDTH = 13) (
    int d_read_count;
    int d_write_count;
 
+   always_comb begin
+         $display("Arbiter state = %d",arbiter_state);
+   end
    initial begin
       arbiter_state = arbiter_idle;
       i_read_count = 0;
@@ -51,6 +54,8 @@ module Arbiter #(WIDTH = 64, TAG_WIDTH = 13) (
    end
 
    always @ (posedge bus.clk)
+
+   
       if (arbiter_state == arbiter_idle) begin
 	dcache_interface.resp <= '1;
 	icache_interface.resp <= '1;
@@ -81,6 +86,7 @@ module Arbiter #(WIDTH = 64, TAG_WIDTH = 13) (
 	// Else, just set the respcyc as 0, indicating to the cache that the transfer is over
 	if (bus.reqack == 1) begin
 		if (dcache_interface.reqtag[12] & dcache_interface.READ) begin
+		        // Doing the read before the write
 			bus.reqcyc <= 0;
 	                dcache_interface.reqack <= 0;
 		end else begin
@@ -140,5 +146,6 @@ module Arbiter #(WIDTH = 64, TAG_WIDTH = 13) (
 		bus.respack <= 0;
 	   end
 	end
-     end
+     end // if (arbiter_state == arbiter_instn)
+
 endmodule

@@ -122,6 +122,9 @@ void System::tick(int clk) {
 	if (!clk) {
 		if (top->reqcyc) {
 			top->reqack = dramsim->willAcceptTransaction(); // hack: blocks ACK if /any/ memory channel can't accept transaction
+			if(! (!rx_count || top->reqack)) {
+				cout<<"RX_COUNT = "<<rx_count<<endl;
+			}
 			assert(!rx_count || top->reqack); // if trnasfer is in progress, can't change mind about willAcceptTransaction()
 		}
 		return;

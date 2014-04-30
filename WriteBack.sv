@@ -52,7 +52,9 @@ module WriteBack (
 		output 	      writeBackSuccessfulOut,
 		output 	      stallOnMemoryWrOut,
 		output 	      killOut,
-		output 	      wroteToMemory
+		output 	      didMemoryWriteOut, // To indicate we completed a memory write this cycle
+		input [0:31]  core_memaccess_inprogress_in,
+		output [0:31] core_memaccess_inprogress_out
 		);
 
 	/* verilator lint_off UNUSED */
@@ -142,7 +144,6 @@ module WriteBack (
       if (dCacheCoreBus.reset) begin
 	 memory_write_state <= memory_write_idle;
 	 memoryWriteDone <= 0;
-	 wroteToMemory <= 0;
       end else begin
 	 // If a memory write is in progress, continue it even if canWriteBackIn goes low.
    	 if (memory_write_state == memory_write_active) begin
@@ -153,18 +154,23 @@ module WriteBack (
 	       // Change the state only when the writeack is received
 	       memory_write_state <= memory_write_idle;
 	       memoryWriteDone <= 1;
-	       wroteToMemory <= 1;			 
+	       core_memaccess_inprogress_out <= 0; // Completed the write access
+	       didMemoryWriteOut <= 1;
+	    end else begin
+	       core_memaccess_inprogress_out <= core_memaccess_inprogress_in;
+	       didMemoryWriteOut <= 0;
 	    end
-	 end else if (memory_write_state == memory_write_idle) begin
-	    wroteToMemory <= 0;
 	 end		   
 	 if (canWriteBackIn == 1 && killIn == 0) begin
+	    didMemoryWriteOut <= 0;
 	    if (memory_write_state == memory_write_idle) begin
- 	       wroteToMemory <= 0;
 	       if (isMemoryAccessDestIn == 0) begin
 		  /* Not writing to memory */
 
 		  memoryWriteDone <= 1;
+		  didMemoryWriteOut <= 0;
+		  core_memaccess_inprogress_out <= core_memaccess_inprogress_in;
+		  
 	       end else begin
 		  /* Send request for Dest to Memory */
 
@@ -175,6 +181,11 @@ module WriteBack (
 		  memory_write_state <= memory_write_active;
 		  memoryWriteDone <= 0;//TODO - What's this signal for?
 	       end
+	    end
+	 end else begin // if (canWriteBackIn == 1 && killIn == 0)
+	    if (memory_write_state != memory_write_active) begin
+	       didMemoryWriteOut <= 0;
+	       core_memaccess_inprogress_out <= core_memaccess_inprogress_in;
 	    end
 	 end
       end

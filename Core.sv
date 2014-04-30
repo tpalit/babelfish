@@ -30,39 +30,53 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    /* verilator lint_on UNDRIVEN */
    /* verilator lint_on UNUSED */
 
-   /* 
-    * This state will be set by the Decode stage and unset (cleared) by the Memory and Writeback stages.
-    * Decode stage will set this depending on what kind of memory access will happen for this 
-    * instruction. 
-    * Read this in comb-blocks, write to this in ff-blocks and life is easy!
-    * Assumption - no two stages write to this at the same clock edge. Else life isn't so easy!
-    */
-   
-   int core_memaccess_inprogress;
 
+   /**
+    * These will be set by the Decode stage and cleared by the Memory and Writeback stages. 
+    * The setting and clearing will be done in comb blocks inside the modules for these stages.
+    * The Decode stage will have to read the latched value (that is, value in the previous cycle) 
+    * to decide whether it needs to stall or not in the current cycle. 
+    * So we need a latch to store the value from the previous cycle. Decode will have this latched
+    * value as an input signal.
+    * 
+    * Note - Using an int instead of a enum because I can't figure out how to pass enum values into 
+    * a module. Anyway the values are thus --
+    * 0: No memory access in progress.
+    * 1: Read memory access in progress.
+    * 2: Write memory access in progress.
+    * 
+    */
+   int id_core_memaccess_inprogress = 0;
+   int mem_core_memaccess_inprogress = 0;
+   int wb_core_memaccess_inprogress = 0;
+   int core_memaccess_inprogress_latch = 0;
 
    always @ (posedge bus.clk) begin
-      if (bytes_decoded_this_cycle > 0) begin
-	 if (idIsMemoryAccessDestOut) begin
-	    core_memaccess_inprogress <= 2; // write_memory_access
-	 end else if (idIsMemoryAccessSrc1Out || idIsMemoryAccessSrc2Out) begin
-	    core_memaccess_inprogress <= 1; // read_memory_access
-	 end else begin
-	    core_memaccess_inprogress <= 0; // no_memory_access
-	 end
-      end
+      // TODO - Handle instructions where input/output are both memory operands.
+      if (wbDidMemoryWrite) begin
+	 core_memaccess_inprogress_latch <= wb_core_memaccess_inprogress;
+      end else if (memDidMemoryRead) begin
+	 core_memaccess_inprogress_latch <= mem_core_memaccess_inprogress;
+      end else
+	 core_memaccess_inprogress_latch <= id_core_memaccess_inprogress;
+   end
 
-      if (core_memaccess_inprogress == 2) begin
-	 if (wbWroteToMemory) begin
-	    // Check when an actual writeback happened.
-	    core_memaccess_inprogress <= 0;
+   /*
+    always @ (posedge bus.clk) begin
+    if (bytes_decoded_this_cycle > 0) begin
+
+    if (core_memaccess_inprogress == 2) begin
+    if (wbWroteToMemory) begin
+    // Check when an actual writeback happened.
+    core_memaccess_inprogress <= 0;
 	 end
       end else if (core_memaccess_inprogress == 1) begin
-	 if (memReadFromMemory) begin
-	    core_memaccess_inprogress <= 0;
+    if (memReadFromMemory) begin
+    core_memaccess_inprogress <= 0;
 	 end
       end
    end
+    */
    
    /******** Latches ********/
 
@@ -385,8 +399,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    /* verilator lint_off UNUSED */
    logic [0:63]         memMemoryDataOut = 0;
    /* verilator lint_on UNUSED */
-   bit 			memReadFromMemory = 0; // goes high, if a memory read happened in prev clock cycle.
-   
+   bit 			memDidMemoryRead = 0;
 
    logic [0:2] 		exExtendedOpcodeOut = 0;
    logic [0:31] 	exHasExtendedOpcodeOut = 0;
@@ -441,8 +454,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:63]         wbMemoryAddressSrc2Out = 0;
    logic [0:63]         wbMemoryAddressDestOut = 0;
    bit			wbStallOnMemoryWrOut = 0;
+   bit 			wbDidMemoryWrite = 0;
    /* verilator lint_on UNUSED */
-   bit 			wbWroteToMemory = 0; // Goes high if wrote to memory in the previous clock cycle.
 
    bit			readSuccessfulOut = 0;
    bit			addressCalculationSuccessfulOut = 0;
@@ -569,7 +582,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		idDestRegOut,
 		idDestRegSpecialOut,
 		idDestRegSpecialValidOut,
-		core_memaccess_inprogress,
+		core_memaccess_inprogress_latch,
+		id_core_memaccess_inprogress,
 		bytes_decoded_this_cycle
 		);
 
@@ -790,7 +804,9 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		memMemoryDataOut,
 		memStallOnMemoryOut,
 		memorySuccessfulOut,
-		memReadFromMemory
+		memDidMemoryRead,
+		core_memaccess_inprogress_latch,
+		mem_core_memaccess_inprogress
 		);
    
    Execute execute(	       
@@ -921,7 +937,9 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		writeBackSuccessfulOut,
 		wbStallOnMemoryWrOut,
 		killOutWb,
-		wbWroteToMemory
+		wbDidMemoryWrite,
+		core_memaccess_inprogress_latch,
+		wb_core_memaccess_inprogress			       
 		);
 
    assign memexMemoryData = memMemoryDataOut;
@@ -993,7 +1011,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
 	/* Latch the output values from each stage. */
 	
-	if (memStallOnMemoryOut == 0 || wbStallOnMemoryWrOut == 0) begin
+//	if (memStallOnMemoryOut == 0 || wbStallOnMemoryWrOut == 0) begin
 		idrdExtendedOpcode <= idExtendedOpcodeOut;           
 		idrdHasExtendedOpcode <= idHasExtendedOpcodeOut;   
 		idrdOpcodeLength <= idOpcodeLengthOut;        
@@ -1118,9 +1136,9 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		memexMemoryAddressSrc1 <= memMemoryAddressSrc1Out;
 		memexMemoryAddressSrc2 <= memMemoryAddressSrc2Out;
 		memexMemoryAddressDest <= memMemoryAddressDestOut;
-	end
+//	end
 
-	if (wbStallOnMemoryWrOut == 0) begin
+//	if (wbStallOnMemoryWrOut == 0) begin
 		exwbExtendedOpcode <= exExtendedOpcodeOut;
 		exwbHasExtendedOpcode <= exHasExtendedOpcodeOut;
 		exwbOpcodeLength <= exOpcodeLengthOut;
@@ -1156,7 +1174,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		exwbMemoryAddressSrc1 <= exMemoryAddressSrc1Out;
 		exwbMemoryAddressSrc2 <= exMemoryAddressSrc2Out;
 		exwbMemoryAddressDest <= exMemoryAddressDestOut;
-	end
+//	end
 
 	idrdCurrentRip <= idCurrentRipOut;
 	rdacCurrentRip <= rdCurrentRipOut;

@@ -35,14 +35,14 @@
  */
 
 module DMDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3) (
-									                                     /* verilator lint_off UNDRIVEN */
-									                                     /* verilator lint_off UNUSED */
-									                                     
-									                                     RWArbiterCacheInterface rwArbiterCacheBus,
-									                                     ArbiterCacheInterface arbiterCacheBus
-									                                     /* verilator lint_on UNUSED */
-									                                     /* verilator lint_on UNDRIVEN */
-							                                               );
+									          /* verilator lint_off UNDRIVEN */
+									          /* verilator lint_off UNUSED */
+									          
+									          RWArbiterCacheInterface rwArbiterCacheBus,
+									          ArbiterCacheInterface arbiterCacheBus
+									          /* verilator lint_on UNUSED */
+									          /* verilator lint_on UNDRIVEN */
+							                          );
 
    parameter ports=1, delay=(LOGDEPTH-8>0?LOGDEPTH-8:1)*(ports>1?(ports>2?(ports>3?100:20):14):10)/10-1;
 
@@ -52,31 +52,31 @@ module DMDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3)
     * DIRTY BIT: 0 - clean, 1 - dirty
     */
    logic [1:0] 									  state[(1<<LOGDEPTH)-1:0];
-   logic [WORDSIZE-LOGDEPTH-LOGLINEOFFSET-1:0]                readDataTag;
-   logic [WORDSIZE-LOGDEPTH-LOGLINEOFFSET-1:0]                writeDataTag;
-   logic [(WIDTH * (1<<LOGLINEOFFSET))-1:0]                   readDataCacheLine;
-   logic [(WIDTH * (1<<LOGLINEOFFSET))-1:0]                   writeDataCacheLine;
-   logic [(1<<LOGLINEOFFSET)-1:0]                             writeEnable;
-   bit                                                        writeEnableTag;
-   int                                                        waitCounter;
-   int                                                        read_count;
-   int                                                        write_count;
+   logic [WORDSIZE-LOGDEPTH-LOGLINEOFFSET-1:0] 					  readDataTag;
+   logic [WORDSIZE-LOGDEPTH-LOGLINEOFFSET-1:0] 					  writeDataTag;
+   logic [(WIDTH * (1<<LOGLINEOFFSET))-1:0] 					  readDataCacheLine;
+   logic [(WIDTH * (1<<LOGLINEOFFSET))-1:0] 					  writeDataCacheLine;
+   logic [(1<<LOGLINEOFFSET)-1:0] 						  writeEnable;
+   bit 										  writeEnableTag;
+   int 										  waitCounter;
+   int 										  read_count;
+   int 										  write_count;
    
-   bit                                                        isWrite;
+   bit 										  isWrite;
 
    /* The parts of the original address requested */
-   logic [0:WORDSIZE-LOGLINEOFFSET-LOGDEPTH-1]                reqAddrTag;
-   logic [0:LOGDEPTH-1]                                       reqAddrIndex;
+   logic [0:WORDSIZE-LOGLINEOFFSET-LOGDEPTH-1] 					  reqAddrTag;
+   logic [0:LOGDEPTH-1] 							  reqAddrIndex;
 
    /* verilator lint_off UNDRIVEN */
    /* verilator lint_off UNUSED */
 
-   logic [0:LOGLINEOFFSET-1]                                  reqAddrOffset;
+   logic [0:LOGLINEOFFSET-1] 							  reqAddrOffset;
    /* verilator lint_on UNDRIVEN */
    /* verilator lint_on UNUSED */
 
 
-   enum                                                       { cache_idle, cache_waiting_sram, cache_waiting_memory, cache_writing_memory } cache_state;
+   enum 									  { cache_idle, cache_waiting_sram, cache_waiting_memory, cache_writing_memory } cache_state;
    
    /*
     * cache_idle - Cache idle.
@@ -86,8 +86,8 @@ module DMDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3)
    
    initial begin
       for(int i=0; i<(1<<LOGDEPTH); i=i+1) begin
-	    state[i][0] = 1;
-	    state[i][1] = 0;
+	 state[i][0] = 1;
+	 state[i][1] = 0;
       end
       read_count = 0;
       write_count = 0;
@@ -109,23 +109,23 @@ module DMDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3)
    end
 
    SRAM #(WIDTH * (1<<LOGLINEOFFSET), LOGDEPTH, 64) sram_cache(
-									                  rwArbiterCacheBus.clk,
-									                  rwArbiterCacheBus.req[LOGLINEOFFSET+:LOGDEPTH], /* readAddr */
-									                  readDataCacheLine, /* out */
-									                  rwArbiterCacheBus.req[LOGLINEOFFSET+:LOGDEPTH], /* writeAddr */
-									                  writeDataCacheLine, /* in */
-									                  writeEnable
-									                  );
+							       rwArbiterCacheBus.clk,
+							       rwArbiterCacheBus.req[LOGLINEOFFSET+:LOGDEPTH], /* readAddr */
+							       readDataCacheLine, /* out */
+							       rwArbiterCacheBus.req[LOGLINEOFFSET+:LOGDEPTH], /* writeAddr */
+							       writeDataCacheLine, /* in */
+							       writeEnable
+							       );
 
 
    SRAM #(WIDTH-LOGDEPTH-LOGLINEOFFSET, LOGDEPTH, WIDTH-LOGDEPTH-LOGLINEOFFSET) sram_tags(
-							                                                       rwArbiterCacheBus.clk,
-							                                                       rwArbiterCacheBus.req[LOGLINEOFFSET+:LOGDEPTH], /* readAddr */
-							                                                       readDataTag, /* out */
-							                                                       rwArbiterCacheBus.req[LOGLINEOFFSET+:LOGDEPTH], /* writeAddr */
-							                                                       writeDataTag, /* in */
-							                                                       writeEnableTag
-							                                                       );
+							                                  rwArbiterCacheBus.clk,
+							                                  rwArbiterCacheBus.req[LOGLINEOFFSET+:LOGDEPTH], /* readAddr */
+							                                  readDataTag, /* out */
+							                                  rwArbiterCacheBus.req[LOGLINEOFFSET+:LOGDEPTH], /* writeAddr */
+							                                  writeDataTag, /* in */
+							                                  writeEnableTag
+							                                  );
 
    always_comb begin
       /* Separate out the parts of the address for easier handling later. */
@@ -146,42 +146,42 @@ module DMDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3)
    function void doDataCacheStuff();
       if ((rwArbiterCacheBus.reqcyc == 1) && (cache_state == cache_idle)) begin
          // Don't acknowledge here, wait for writeconfirm to go high -- for WRITE
-/*         if (!isWrite) begin
-	       rwArbiterCacheBus.reqack <= 1;
+	 /*         if (!isWrite) begin
+	  rwArbiterCacheBus.reqack <= 1;
          end else begin
-            rwArbiterCacheBus.reqack <= 0;
+          rwArbiterCacheBus.reqack <= 0;
          end
-*/
-	 	       rwArbiterCacheBus.reqack <= 1;
-	    rwArbiterCacheBus.respcyc <= 0;
-	    // Check the state, if the index is valid, go to SRAM to get tags.
-	    // Else, directly go to memory, 
-	    if (state[reqAddrIndex][0] == 0) begin
-	       cache_state <= cache_waiting_sram;
-	       waitCounter <= delay;
-	    end else begin
-	       cache_state <= cache_waiting_memory;
-	       // Send the request to the Arbiter
-	       arbiterCacheBus.reqcyc <= 1;
-	       arbiterCacheBus.req <= rwArbiterCacheBus.req & ~63;
-	       if (!isWrite) begin
-	          arbiterCacheBus.reqtag <= rwArbiterCacheBus.reqtag;
+	  */
+	 rwArbiterCacheBus.reqack <= 1;
+	 rwArbiterCacheBus.respcyc <= 0;
+	 // Check the state, if the index is valid, go to SRAM to get tags.
+	 // Else, directly go to memory, 
+	 if (state[reqAddrIndex][0] == 0) begin
+	    cache_state <= cache_waiting_sram;
+	    waitCounter <= delay;
+	 end else begin
+	    cache_state <= cache_waiting_memory;
+	    // Send the request to the Arbiter
+	    arbiterCacheBus.reqcyc <= 1;
+	    arbiterCacheBus.req <= rwArbiterCacheBus.req & ~63;
+	    if (!isWrite) begin
+	       arbiterCacheBus.reqtag <= rwArbiterCacheBus.reqtag;
             end else begin
-		     arbiterCacheBus.reqtag <= { rwArbiterCacheBus.READ, rwArbiterCacheBus.reqtag[11:0] };
-	       end
+	       arbiterCacheBus.reqtag <= { rwArbiterCacheBus.READ, rwArbiterCacheBus.reqtag[11:0] };
 	    end
+	 end
          // reset read_count
-	    read_count <= 0;
+	 read_count <= 0;
       end else if ((cache_state == cache_waiting_sram)) begin
-	    rwArbiterCacheBus.reqack <= 0;
-	    if (waitCounter == 0) begin
-	       // Can read tags now. So read tags and do comparison
-	       // If the tag is the same, then use the data in the cache
-	       // else make a memory request.
-	       if (readDataTag == reqAddrTag) begin
+	 rwArbiterCacheBus.reqack <= 0;
+	 if (waitCounter == 0) begin
+	    // Can read tags now. So read tags and do comparison
+	    // If the tag is the same, then use the data in the cache
+	    // else make a memory request.
+	    if (readDataTag == reqAddrTag) begin
                if(!isWrite) begin
-	             rwArbiterCacheBus.respcyc <= 1;
-	             rwArbiterCacheBus.resp <= readDataCacheLine[reqAddrOffset*WORDSIZE+:WORDSIZE];
+	          rwArbiterCacheBus.respcyc <= 1;
+	          rwArbiterCacheBus.resp <= readDataCacheLine[reqAddrOffset*WORDSIZE+:WORDSIZE];
                end else begin
                   logic[0:LOGLINEOFFSET-1] i=0;
                   // We'll not set respcyc to high now. Set it only when the data is sent off to the memory.
@@ -208,63 +208,67 @@ module DMDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3)
                   // Initialize the memory write
                   write_count <= 0;
                   cache_state <= cache_writing_memory;
-	             arbiterCacheBus.reqcyc <= 1;
-	             arbiterCacheBus.req <= rwArbiterCacheBus.req & ~63;
-	             //   arbiterCacheBus.reqtag <= rwArbiterCacheBus.reqtag;
-	             if (!isWrite) begin
-	                arbiterCacheBus.reqtag <= rwArbiterCacheBus.reqtag;
-                  end else begin
-		           arbiterCacheBus.reqtag <= { rwArbiterCacheBus.READ, rwArbiterCacheBus.reqtag[11:0] };
-	             end
-               end
-               cache_state <= cache_idle;
-	       end else begin
-	          cache_state <= cache_waiting_memory;
-	          // reset read_count
-	          read_count <= 0;
-	          // Send the request to the Arbiter
 	          arbiterCacheBus.reqcyc <= 1;
 	          arbiterCacheBus.req <= rwArbiterCacheBus.req & ~63;
+	          //   arbiterCacheBus.reqtag <= rwArbiterCacheBus.reqtag;
+	          if (!isWrite) begin
+	             arbiterCacheBus.reqtag <= rwArbiterCacheBus.reqtag;
+                  end else begin
+		     arbiterCacheBus.reqtag <= { rwArbiterCacheBus.READ, rwArbiterCacheBus.reqtag[11:0] };
+	          end
+               end
+//               cache_state <= cache_idle;
+	    end else begin
+	       cache_state <= cache_waiting_memory;
+	       // reset read_count
+	       read_count <= 0;
+	       // Send the request to the Arbiter
+	       arbiterCacheBus.reqcyc <= 1;
+	       arbiterCacheBus.req <= rwArbiterCacheBus.req & ~63;
+	       if (!isWrite) begin
 	          arbiterCacheBus.reqtag <= rwArbiterCacheBus.reqtag;
-	          state[reqAddrIndex][0] <= 1; // Mark the entry as invalid
+               end else begin
+		  arbiterCacheBus.reqtag <= { rwArbiterCacheBus.READ, rwArbiterCacheBus.reqtag[11:0] };
 	       end
-	    end else begin // if (waitCounter == 0)
+	       state[reqAddrIndex][0] <= 1; // Mark the entry as invalid
+	    end
+	 end else begin // if (waitCounter == 0)
             waitCounter <= waitCounter-1;
          end
       end else if (cache_state == cache_waiting_memory) begin
-	    if (arbiterCacheBus.reqack == 1) begin
-		  arbiterCacheBus.reqcyc <= 0;
-	    end
+	 if (arbiterCacheBus.reqack == 1) begin
+	    arbiterCacheBus.reqcyc <= 0;
+	 end
 
-	    if (rwArbiterCacheBus.respack == 1) begin
-	       rwArbiterCacheBus.respcyc <= 0;
-		  cache_state <= cache_idle;
-	    end
+	 if (rwArbiterCacheBus.respack == 1) begin
+	    rwArbiterCacheBus.respcyc <= 0;
+	    cache_state <= cache_idle;
+	 end
          
-	    rwArbiterCacheBus.reqack <= 0;
-	    if (arbiterCacheBus.respcyc) begin
-	       // acknowledge
-	       arbiterCacheBus.respack <= 1;
-	       //rwArbiterCacheBus.respcyc <= 1;
+	 rwArbiterCacheBus.reqack <= 0;
+	 if (arbiterCacheBus.respcyc) begin
+	    // acknowledge
+	    arbiterCacheBus.respack <= 1;
+	    //rwArbiterCacheBus.respcyc <= 1;
 
-	       read_count <= read_count+1;
-	       //rwArbiterCacheBus.resp <= arbiterCacheBus.resp;
-	       //rwArbiterCacheBus.resptag <= arbiterCacheBus.resptag;
+	    read_count <= read_count+1;
+	    //rwArbiterCacheBus.resp <= arbiterCacheBus.resp;
+	    //rwArbiterCacheBus.resptag <= arbiterCacheBus.resptag;
 
-	       /* TODO - Do cachey stuff to update the data in the cache. */
-	       if (read_count < 8) begin
-	   	     writeDataCacheLine[read_count*WORDSIZE+:WORDSIZE] <= arbiterCacheBus.resp;
+	    /* TODO - Do cachey stuff to update the data in the cache. */
+	    if (read_count < 8) begin
+	       writeDataCacheLine[read_count*WORDSIZE+:WORDSIZE] <= arbiterCacheBus.resp;
+	    end
+
+	    if (read_count >= 7) begin
+	       state[reqAddrIndex][0] <= 0; // Mark the cache entry as valid
+	       // Write to the tag.
+	       writeEnableTag <= 1;
+	       writeDataTag <= reqAddrTag;
+
+	       for(int j=0; j < 8; j=j+1) begin
+		  writeEnable[j] <= 1;
 	       end
-
-	       if (read_count >= 7) begin
-	          state[reqAddrIndex][0] <= 0; // Mark the cache entry as valid
-	          // Write to the tag.
-	          writeEnableTag <= 1;
-	          writeDataTag <= reqAddrTag;
-
-	          for(int j=0; j < 8; j=j+1) begin
-		        writeEnable[j] <= 1;
-	          end
 
                if (!isWrite) begin
                   rwArbiterCacheBus.resp <= writeDataCacheLine[reqAddrOffset*WORDSIZE+:WORDSIZE];
@@ -273,40 +277,40 @@ module DMDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3)
                end else begin
                   writeDataCacheLine[reqAddrOffset*WORDSIZE+:WORDSIZE] <= rwArbiterCacheBus.reqdata;
                end
-	       end
-	    end else begin 
-	       if (read_count >= 7) begin
+	    end
+	 end else begin 
+	    if (read_count >= 7) begin
                arbiterCacheBus.respack <= 0;
-	          writeEnableTag <= 0;
+	       writeEnableTag <= 0;
 
                for(int j=0; j < 8; j=j+1) begin
                   writeEnable[j] <= 0;
                end
                
-	          read_count <= 0;
+	       read_count <= 0;
                
                if (!isWrite) begin
-	             rwArbiterCacheBus.respcyc <= 0;
-	             cache_state <= cache_idle;
+	          rwArbiterCacheBus.respcyc <= 0;
+	          cache_state <= cache_idle;
                end else begin
                   // Go to the Memory write stage.
                   // Initialize the memory write
                   write_count <= 0;
                   cache_state <= cache_writing_memory;
-	             arbiterCacheBus.reqcyc <= 1;
-	             arbiterCacheBus.req <= rwArbiterCacheBus.req & ~63;
-	             arbiterCacheBus.reqtag <= rwArbiterCacheBus.reqtag;
+	          arbiterCacheBus.reqcyc <= 1;
+	          arbiterCacheBus.req <= rwArbiterCacheBus.req & ~63;
+	          arbiterCacheBus.reqtag <= rwArbiterCacheBus.reqtag;
                end
                
-	       end
 	    end
+	 end
       end else if (cache_state == cache_writing_memory) begin // if (cache_state == cache_waiting_memory)
          if (write_count <= 7) begin
             if (arbiterCacheBus.reqack == 1) begin
                // Send next request
-	          arbiterCacheBus.req <= writeDataCacheLine[write_count*WORDSIZE+:WORDSIZE];            
+	       arbiterCacheBus.req <= writeDataCacheLine[write_count*WORDSIZE+:WORDSIZE];            
                write_count <= write_count+1;
-	          arbiterCacheBus.reqcyc <= 1;
+	       arbiterCacheBus.reqcyc <= 1;
             end
          end else begin
             arbiterCacheBus.reqcyc <= 0;
