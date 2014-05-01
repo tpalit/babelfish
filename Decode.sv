@@ -34,7 +34,8 @@ module Decode (
 	       output [0:15] 	disp16Out,
 	       output [0:31] 	disp32Out,
 	       output [0:63] 	disp64Out,
-               output [0:3] 	destRegOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
+               output [0:3] 	destRegOut,
+               output 		destRegValidOut,
                output [0:3] 	destRegSpecialOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
                output 		destRegSpecialValidOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
 	       input [0:31] 	core_memaccess_inprogress_in,
@@ -709,8 +710,8 @@ module Decode (
       endcase
    endfunction
 
-   function bit toStallOrNotToStall(logic[0:3] src1, bit src1Valid, logic[0:3] src2, bit src2Valid, logic[0:3] dest, logic[0:3] destSpecial, bit destSpecialValid, bit regInUseBM[16]);
-      /* That's the question! */
+   function bit toStallOrNotToStall(logic[0:3] src1, bit src1Valid, logic[0:3] src2, bit src2Valid, logic[0:3] dest, bit destValid, logic[0:3] destSpecial, bit destSpecialValid, bit regInUseBM[16]);
+      /* That is the question! */
 
       if (src1Valid == 1 && regInUseBM[src1] == 1) begin
 	 return 1;
@@ -724,7 +725,7 @@ module Decode (
 	 return 1;
       end
 
-      if (regInUseBM[dest] == 1) begin
+      if (destValid == 1 && regInUseBM[dest] == 1) begin
 	 return 1;
       end
 
@@ -788,6 +789,7 @@ module Decode (
          disp32Out = 0;
          disp64Out = 0;
 	 destRegOut = 0;
+	 destRegValidOut = 0;
 	 destRegSpecialOut = 0;
 	 destRegSpecialValidOut = 0;
 	 isMemoryAccessSrc1Out = 0;
@@ -1024,6 +1026,7 @@ module Decode (
 		sourceRegCode1ValidOut = 0;
 		sourceRegCode2ValidOut = 0;
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
                 imm64Out = sign_extend_32_to_64(imm32);
                 immLenOut = 8;
 		extendedOpcodeOut = 3'b000;
@@ -1072,6 +1075,7 @@ module Decode (
 		sourceRegCode1ValidOut = 0;
 		sourceRegCode2ValidOut = 1;
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		immLenOut = 0;
 		extendedOpcodeOut = 0;
 		hasExtendedOpcodeOut = 0;
@@ -1119,6 +1123,7 @@ module Decode (
 		sourceRegCode1ValidOut = 0;
 		sourceRegCode2ValidOut = 1;
 		destRegOut = { rex_field[5], reg_field }; // write operand
+		destRegValidOut = 1;
 		immLenOut = 0;
 		extendedOpcodeOut = 0;
 		hasExtendedOpcodeOut = 0;
@@ -1174,6 +1179,7 @@ module Decode (
 	       sourceRegCode1ValidOut = 0;
 	       sourceRegCode2ValidOut = 0;
                destRegOut = { rex_field[7], oi_reg[5:7] }; //write operand
+		destRegValidOut = 1;
                imm64Out = imm64;
                immLenOut = 8;
                dispLenOut = 0;
@@ -1193,6 +1199,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 0;
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		imm64Out = sign_extend_8_to_64(imm8);
 		immLenOut = 8;
 		extendedOpcodeOut = 3'b110;
@@ -1241,6 +1248,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 0;
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		imm64Out = sign_extend_32_to_64(imm32);
 		immLenOut = 8;
 		extendedOpcodeOut = 3'b110;
@@ -1289,6 +1297,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 1;
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		immLenOut = 0;
 		extendedOpcodeOut = 0;
 		hasExtendedOpcodeOut = 0;
@@ -1336,6 +1345,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 1;
 		destRegOut = { rex_field[5], reg_field }; // write operand
+		destRegValidOut = 1;
 		immLenOut = 0;
 		extendedOpcodeOut = 0;
 		hasExtendedOpcodeOut = 0;
@@ -1383,6 +1393,7 @@ module Decode (
 	       sourceRegCode1ValidOut = 1;
 	       sourceRegCode2ValidOut = 0;
 	       destRegOut = 4'b0000; // write operand
+		destRegValidOut = 1;
                imm64Out = sign_extend_32_to_64(imm32);
                immLenOut = 8;
                dispLenOut = 0;
@@ -1402,6 +1413,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 0;
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		imm64Out = sign_extend_8_to_64(imm8);
 		immLenOut = 8;
 		extendedOpcodeOut = 3'b100;
@@ -1450,6 +1462,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 0;		  
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		imm64Out = sign_extend_32_to_64(imm32);
 		immLenOut = 8;
 		extendedOpcodeOut = 3'b100;
@@ -1498,6 +1511,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 1;
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		immLenOut = 0;
 		extendedOpcodeOut = 0;
 		hasExtendedOpcodeOut = 0;
@@ -1545,6 +1559,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 1;		  
 		destRegOut = { rex_field[5], reg_field }; // write operand
+		destRegValidOut = 1;
 		immLenOut = 0;
 		extendedOpcodeOut = 0;
 		hasExtendedOpcodeOut = 0;
@@ -1592,6 +1607,7 @@ module Decode (
 	       sourceRegCode1ValidOut = 1;
 	       sourceRegCode2ValidOut = 0;
 	       destRegOut = 4'b0000; // write operand
+		destRegValidOut = 1;
                imm64Out = sign_extend_32_to_64(imm32);
                immLenOut = 8;
                dispLenOut = 0;
@@ -1611,6 +1627,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 0;
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		imm64Out = sign_extend_8_to_64(imm8);
 		immLenOut = 8;
 		extendedOpcodeOut = 3'b000;
@@ -1659,6 +1676,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 0;		  
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		imm64Out = sign_extend_32_to_64(imm32);
 		immLenOut = 8;
 		extendedOpcodeOut = 3'b000;
@@ -1707,6 +1725,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 1;
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		immLenOut = 0;
 		extendedOpcodeOut = 0;
 		hasExtendedOpcodeOut = 0;
@@ -1754,6 +1773,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 1;
 		destRegOut = { rex_field[5], reg_field }; // write operand
+		destRegValidOut = 1;
 		immLenOut = 0;
 		extendedOpcodeOut = 0;
 		hasExtendedOpcodeOut = 0;
@@ -1801,6 +1821,7 @@ module Decode (
 	       sourceRegCode1ValidOut = 1;
 	       sourceRegCode2ValidOut = 0;	       
 	       destRegOut = 4'b0000; // write operand
+		destRegValidOut = 1;
                imm64Out = sign_extend_32_to_64(imm32);
                immLenOut = 8;
                dispLenOut = 0;
@@ -1820,6 +1841,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 0;	       
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		imm64Out = sign_extend_8_to_64(imm8);
 		immLenOut = 8;
 		extendedOpcodeOut = 3'b010;
@@ -1868,6 +1890,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 0;	       
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		imm64Out = sign_extend_32_to_64(imm32);
 		immLenOut = 8;
 		extendedOpcodeOut = 3'b010;
@@ -1916,6 +1939,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 1;	       
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		immLenOut = 0;
 		extendedOpcodeOut = 0;
 		hasExtendedOpcodeOut = 0;
@@ -1963,6 +1987,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 1;	       
 		destRegOut = { rex_field[5], reg_field }; // write operand
+		destRegValidOut = 1;
 		immLenOut = 0;
 		extendedOpcodeOut = 0;
 		hasExtendedOpcodeOut = 0;
@@ -2010,6 +2035,7 @@ module Decode (
 	       sourceRegCode1ValidOut = 1;
 	       sourceRegCode2ValidOut = 0;	       
 	       destRegOut = 4'b0000; // write operand
+		destRegValidOut = 1;
                imm64Out = sign_extend_32_to_64(imm32);
                immLenOut = 8;
                dispLenOut = 0;
@@ -2029,6 +2055,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 0;	       
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		imm64Out = sign_extend_8_to_64(imm8);
 		immLenOut = 8;
 		extendedOpcodeOut = 3'b001;
@@ -2077,6 +2104,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 0;	       
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		imm64Out = sign_extend_32_to_64(imm32);
 		immLenOut = 8;
 		extendedOpcodeOut = 3'b001;
@@ -2125,6 +2153,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 1;	       
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		immLenOut = 0;
 		extendedOpcodeOut = 0;
 		hasExtendedOpcodeOut = 0;
@@ -2172,6 +2201,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 1;	       
 		destRegOut = { rex_field[5], reg_field }; // write operand
+		destRegValidOut = 1;
 		immLenOut = 0;
 		extendedOpcodeOut = 0;
 		hasExtendedOpcodeOut = 0;
@@ -2219,6 +2249,7 @@ module Decode (
 	       sourceRegCode1ValidOut = 1;
 	       sourceRegCode2ValidOut = 0;	       
 	       destRegOut = 4'b0000; // write operand
+		destRegValidOut = 1;
                imm64Out = sign_extend_32_to_64(imm32);
                immLenOut = 8;
                dispLenOut = 0;
@@ -2238,6 +2269,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 0;	       
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		imm64Out = sign_extend_8_to_64(imm8);
 		immLenOut = 8;
 		extendedOpcodeOut = 3'b011;
@@ -2286,6 +2318,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 0;	       
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		imm64Out = sign_extend_32_to_64(imm32);
 		immLenOut = 8;
 		extendedOpcodeOut = 3'b011;
@@ -2334,6 +2367,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 1;	       
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		immLenOut = 0;
 		extendedOpcodeOut = 0;
 		hasExtendedOpcodeOut = 0;
@@ -2381,6 +2415,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 1;	       
 		destRegOut = { rex_field[5], reg_field }; // write operand
+		destRegValidOut = 1;
 		immLenOut = 0;
 		extendedOpcodeOut = 0;
 		hasExtendedOpcodeOut = 0;
@@ -2428,6 +2463,7 @@ module Decode (
 	       sourceRegCode1ValidOut = 1;
 	       sourceRegCode2ValidOut = 0;	       
 	       destRegOut = 4'b0000; // write operand
+		destRegValidOut = 1;
                imm64Out = sign_extend_32_to_64(imm32);
                immLenOut = 8;
                dispLenOut = 0;
@@ -2447,6 +2483,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 0;	       		  
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		imm64Out = sign_extend_8_to_64(imm8);
 		immLenOut = 8;
 		extendedOpcodeOut = 3'b101;
@@ -2495,6 +2532,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 0;	       
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		imm64Out = sign_extend_32_to_64(imm32);
 		immLenOut = 8;
 		extendedOpcodeOut = 3'b101;
@@ -2543,6 +2581,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 1;	       		  
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		immLenOut = 0;
 		extendedOpcodeOut = 0;
 		hasExtendedOpcodeOut = 0;
@@ -2590,6 +2629,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 1;	       
 		destRegOut = { rex_field[5], reg_field }; // write operand
+		destRegValidOut = 1;
 		immLenOut = 0;
 		extendedOpcodeOut = 0;
 		hasExtendedOpcodeOut = 0;
@@ -2637,6 +2677,7 @@ module Decode (
 	       sourceRegCode1ValidOut = 1;
 	       sourceRegCode2ValidOut = 0;	       
 	       destRegOut = 4'b0000; // write operand
+		destRegValidOut = 1;
                imm64Out = sign_extend_32_to_64(imm32);
                immLenOut = 8;
                dispLenOut = 0;
@@ -2657,6 +2698,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 0;	       
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		imm64Out = sign_extend_8_to_64(imm8);
 		immLenOut = 8;
 		extendedOpcodeOut = 3'b111;
@@ -2705,6 +2747,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 0;	       
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		imm64Out = sign_extend_32_to_64(imm32);
 		immLenOut = 8;
 		extendedOpcodeOut = 3'b111;
@@ -2753,6 +2796,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 1;	       
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		immLenOut = 0;
 		extendedOpcodeOut = 0;
 		hasExtendedOpcodeOut = 0;
@@ -2800,6 +2844,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 1;	       		  
 		destRegOut = { rex_field[5], reg_field }; // write operand
+		destRegValidOut = 1;
 		immLenOut = 0;
 		extendedOpcodeOut = 0;
 		hasExtendedOpcodeOut = 0;
@@ -2847,6 +2892,7 @@ module Decode (
 	       sourceRegCode1ValidOut = 1;
 	       sourceRegCode2ValidOut = 0;	       	       
 	       destRegOut = 4'b0000; // write operand
+		destRegValidOut = 1;
                imm64Out = sign_extend_32_to_64(imm32);
                immLenOut = 8;
                dispLenOut = 0;
@@ -2940,6 +2986,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 1;	       
 		destRegOut = 4'b0000; // write operand RDX:RAX (TODO: special case)
+		destRegValidOut = 1;
 		destRegSpecialOut = 4'b0010; // write operand RDX:RAX (TODO: special case)
 		destRegSpecialValidOut = 1;
 		immLenOut = 0;
@@ -2990,6 +3037,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 1;	       		  
 		destRegOut = 4'b0000; // write operand RDX:RAX (TODO: special case)
+		destRegValidOut = 1;
 		destRegSpecialOut = 4'b0010; // write operand RDX:RAX (TODO: special case)
 		destRegSpecialValidOut = 1;
 		immLenOut = 0;
@@ -3040,6 +3088,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 1;	       
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		immLenOut = 0;
 		extendedOpcodeOut = 3'b011;
 		hasExtendedOpcodeOut = 1;
@@ -3088,6 +3137,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 1;	       		  
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		immLenOut = 0;
 		extendedOpcodeOut = 3'b010;
 		hasExtendedOpcodeOut = 1;
@@ -3139,6 +3189,7 @@ module Decode (
 		sourceRegCode1ValidOut = 0;
 		sourceRegCode2ValidOut = 1;	       		  
 		destRegOut = { rex_field[5], reg_field }; // write operand
+		destRegValidOut = 1;
 		imm64Out = sign_extend_32_to_64(imm32);
 		immLenOut = 8;
 		hasExtendedOpcodeOut = 0;
@@ -3187,6 +3238,7 @@ module Decode (
 		sourceRegCode1ValidOut = 0;
 		sourceRegCode2ValidOut = 1;	       		  
 		destRegOut = { rex_field[5], reg_field };  // write operand
+		destRegValidOut = 1;
 		imm64Out = sign_extend_8_to_64(imm8);
 		immLenOut = 8;
 		hasExtendedOpcodeOut = 0;
@@ -3269,6 +3321,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 0;	       
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		immLenOut = 0;
 		extendedOpcodeOut = 3'b000;
 		hasExtendedOpcodeOut = 1;
@@ -3317,6 +3370,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 0;	       		  
 		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
 		immLenOut = 0;
 		extendedOpcodeOut = 3'b001;
 		hasExtendedOpcodeOut = 1;
@@ -3452,6 +3506,7 @@ module Decode (
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 1;	       		  
 		destRegOut = { rex_field[5], reg_field }; // write operand
+		destRegValidOut = 1;
 		immLenOut = 0;
 		hasExtendedOpcodeOut = 0;
 		opcodeValidOut = 1;
@@ -3562,7 +3617,7 @@ module Decode (
             opcodeValidOut = 1;
          end
 
-         if (!toStallOrNotToStall(sourceRegCode1Out, sourceRegCode1ValidOut, sourceRegCode2Out, sourceRegCode2ValidOut, destRegOut, destRegSpecialOut, destRegSpecialValidOut, regInUseBitMapIn)) begin
+         if (!toStallOrNotToStall(sourceRegCode1Out, sourceRegCode1ValidOut, sourceRegCode2Out, sourceRegCode2ValidOut, destRegOut, destRegValidOut, destRegSpecialOut, destRegSpecialValidOut, regInUseBitMapIn)) begin
 
             if (sourceRegCode1ValidOut) begin
                regInUseBitMapOut[sourceRegCode1Out] = 1;
@@ -3581,8 +3636,12 @@ module Decode (
             end else begin
 	       regInUseBitMapOut[destRegSpecialOut] = regInUseBitMapIn[destRegSpecialOut];
 	    end
-         
-            regInUseBitMapOut[destRegOut] = 1;
+        
+	    if (destRegValidOut) begin 
+               regInUseBitMapOut[destRegOut] = 1;
+	    end else begin
+	       regInUseBitMapOut[destRegOut] = regInUseBitMapIn[destRegOut];
+	    end
          
             stallOut = 0;
 	    // Are we going to do a memory access for this instruction?

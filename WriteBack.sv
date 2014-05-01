@@ -16,6 +16,7 @@ module WriteBack (
 		input 	      sourceReg1ValidIn,
 		input 	      sourceReg2ValidIn,
 		input [0:3]   destRegIn,
+		input         destRegValidIn,
 		input [0:3]   destRegSpecialIn,
 		input 	      destRegSpecialValidIn,
 		input 	      isMemoryAccessSrc1In,
@@ -34,6 +35,7 @@ module WriteBack (
 		output 	      sourceRegCode1ValidOut,
 		output 	      sourceRegCode2ValidOut,
 		output [0:3]  destRegOut,
+		output        destRegValidOut,
 		output [0:3]  destRegSpecialOut,
 		output 	      destRegSpecialValidOut,
 		output [0:63] aluResultOut,
@@ -104,10 +106,12 @@ module WriteBack (
 			   stallOnMemoryWrOut = 0;
 			end
 
-			regInUseBitMapOut[destRegIn] = 0;
+			if (destRegValidIn == 1) begin
+			   regInUseBitMapOut[destRegIn] = 0;
 
-			if (isMemoryAccessDestIn == 0 && killIn == 0) begin
+  			   if (isMemoryAccessDestIn == 0 && killIn == 0) begin
 				regFileOut[destRegIn] = aluResultIn;
+			   end
 			end
 
   		        currentRipOut = currentRipIn;
@@ -116,6 +120,7 @@ module WriteBack (
 		        sourceRegCode1ValidOut = sourceReg1ValidIn;
 		        sourceRegCode2ValidOut = sourceReg2ValidIn;
 			destRegOut = destRegIn;
+			destRegValidOut = destRegValidIn;
 		        destRegSpecialOut = destRegSpecialIn;
 		        destRegSpecialValidOut = destRegSpecialValidIn;
 			aluResultOut = aluResultIn;

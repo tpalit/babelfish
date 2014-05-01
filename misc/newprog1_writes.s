@@ -9,7 +9,7 @@ _start:
         mov    %r8, (%rax)
 	mov    %r9, (%rbx)
 	mov    (%rax), %r10
-	mov    (%rbx), %r10
+	mov    (%rbx), %r11
 	add    $10, (%rax)
 //        mov    %r8, (%rbx)
 /*        sub    $3, %rdx

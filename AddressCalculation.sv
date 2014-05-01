@@ -32,6 +32,7 @@ module AddressCalculation (
 		input [0:31]  disp32In,
 		input [0:63]  disp64In,
 		input [0:3]   destRegIn,
+		input         destRegValidIn,
 		input [0:63]  destRegValueIn,
 		input [0:3]   destRegSpecialIn,
 		input         destRegSpecialValidIn,
@@ -64,6 +65,7 @@ module AddressCalculation (
 		output [0:31] disp32Out,
 		output [0:63] disp64Out,
 		output [0:3]  destRegOut,
+		output        destRegValidOut,
 		output [0:63] destRegValueOut,
 		output [0:3]  destRegSpecialOut,
 		output        destRegSpecialValidOut,
@@ -144,6 +146,7 @@ module AddressCalculation (
 		        disp32Out = disp32In;
 		        disp64Out = disp64In;
 		        destRegOut = destRegIn;
+		        destRegValidOut = destRegValidIn;
 		        destRegSpecialOut = destRegSpecialIn;
 		        destRegSpecialValidOut = destRegSpecialValidIn;
 		        sourceRegCode1Out = sourceReg1In;

@@ -111,6 +111,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:31] 	idrdDisp32 = 0;
    logic [0:63] 	idrdDisp64 = 0;
    logic [0:3]		idrdDestReg = 0;
+   bit			idrdDestRegValid = 0;
    logic [0:3]		idrdDestRegSpecial = 0;
    bit	 		idrdDestRegSpecialValid = 0;
    
@@ -141,6 +142,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:31] 	rdacDisp32 = 0;
    logic [0:63] 	rdacDisp64 = 0;
    logic [0:3]		rdacDestReg = 0;
+   bit			rdacDestRegValid = 0;
    logic [0:3]		rdacDestRegSpecial = 0;
    bit	 		rdacDestRegSpecialValid = 0;
    logic [0:63]		rdacDestRegValue = 0;
@@ -172,6 +174,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:31] 	acmemDisp32 = 0;
    logic [0:63] 	acmemDisp64 = 0;
    logic [0:3]		acmemDestReg = 0;
+   bit			acmemDestRegValid = 0;
    logic [0:63]		acmemDestRegValue = 0;
    logic [0:3]		acmemDestRegSpecial = 0;
    bit	 		acmemDestRegSpecialValid = 0;
@@ -206,6 +209,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:31] 	memexDisp32 = 0;
    logic [0:63] 	memexDisp64 = 0;
    logic [0:3]		memexDestReg = 0;
+   bit			memexDestRegValid = 0;
    logic [0:63]		memexDestRegValue = 0;
    logic [0:3]		memexDestRegSpecial = 0;
    bit	 		memexDestRegSpecialValid = 0;
@@ -242,6 +246,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:31] 	exwbDisp32 = 0;
    logic [0:63] 	exwbDisp64 = 0;
    logic [0:3]		exwbDestReg = 0;
+   bit			exwbDestRegValid = 0;
    logic [0:3]		exwbDestRegSpecial = 0;
    bit	 		exwbDestRegSpecialValid = 0;
    logic [0:63]		exwbAluResult = 0;
@@ -295,6 +300,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:31] 	idDisp32Out = 0;
    logic [0:63] 	idDisp64Out = 0;
    logic [0:3]		idDestRegOut = 0;
+   bit			idDestRegValidOut = 0;
    logic [0:3]		idDestRegSpecialOut = 0;
    bit	 		idDestRegSpecialValidOut = 0;
 
@@ -325,6 +331,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:31] 	rdDisp32Out = 0;
    logic [0:63] 	rdDisp64Out = 0;
    logic [0:3]		rdDestRegOut = 0;
+   bit			rdDestRegValidOut = 0;
    logic [0:3]		rdDestRegSpecialOut = 0;
    bit	 		rdDestRegSpecialValidOut = 0;
    logic [0:63]		rdDestRegValueOut = 0;
@@ -356,6 +363,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:31] 	acDisp32Out = 0;
    logic [0:63] 	acDisp64Out = 0;
    logic [0:3]		acDestRegOut = 0;
+   bit			acDestRegValidOut = 0;
    logic [0:3]		acDestRegSpecialOut = 0;
    bit	 		acDestRegSpecialValidOut = 0;
    logic [0:63]         acMemoryAddressSrc1Out = 0;
@@ -390,6 +398,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:31] 	memDisp32Out = 0;
    logic [0:63] 	memDisp64Out = 0;
    logic [0:3]		memDestRegOut = 0;
+   bit			memDestRegValidOut = 0;
    logic [0:3]		memDestRegSpecialOut = 0;
    bit	 		memDestRegSpecialValidOut = 0;
    logic [0:63]         memMemoryAddressSrc1Out = 0;
@@ -429,6 +438,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:31] 	exDisp32Out = 0;
    logic [0:63] 	exDisp64Out = 0;
    logic [0:3]		exDestRegOut = 0;
+   bit			exDestRegValidOut = 0;
    logic [0:3]		exDestRegSpecialOut = 0;
    bit	 		exDestRegSpecialValidOut = 0;
    logic [0:63]		exAluResultOut = 0;
@@ -443,6 +453,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    bit 			wbSourceRegCode1ValidOut = 0;
    bit 			wbSourceRegCode2ValidOut = 0;   
    logic [0:3]		wbDestRegOut = 0;
+   bit			wbDestRegValidOut = 0;
    logic [0:3]		wbDestRegSpecialOut = 0;
    bit	 		wbDestRegSpecialValidOut = 0;
    /* verilator lint_off UNUSED */
@@ -581,6 +592,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		idDisp32Out,
 		idDisp64Out,
 		idDestRegOut,
+		idDestRegValidOut,
 		idDestRegSpecialOut,
 		idDestRegSpecialValidOut,
 		core_memaccess_inprogress_latch,
@@ -617,6 +629,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		idrdDisp32,
 		idrdDisp64,
 		idrdDestReg,                
+		idrdDestRegValid,
 		idrdDestRegSpecial,
 		idrdDestRegSpecialValid,
 
@@ -648,6 +661,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		rdDisp32Out,
 		rdDisp64Out,
 		rdDestRegOut,
+		rdDestRegValidOut,
 		rdDestRegValueOut,
 		rdDestRegSpecialOut,
 		rdDestRegSpecialValidOut,
@@ -686,6 +700,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		rdacDisp32,
 		rdacDisp64,
 		rdacDestReg,
+		rdacDestRegValid,
 		rdacDestRegValue,
 		rdacDestRegSpecial,
 		rdacDestRegSpecialValid,
@@ -718,6 +733,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		acDisp32Out,
 		acDisp64Out,
 		acDestRegOut,
+		acDestRegValidOut,
 		acDestRegValueOut,
 		acDestRegSpecialOut,
 		acDestRegSpecialValidOut,
@@ -758,6 +774,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		acmemDisp32,
 		acmemDisp64,
 		acmemDestReg,
+		acmemDestRegValid,
 		acmemDestRegValue,
 		acmemDestRegSpecial,
 		acmemDestRegSpecialValid,
@@ -793,6 +810,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		memDisp32Out,
 		memDisp64Out,
 		memDestRegOut,
+		memDestRegValidOut,
 		memDestRegValueOut,
 		memDestRegSpecialOut,
 		memDestRegSpecialValidOut,
@@ -838,6 +856,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		memexDisp32,
 		memexDisp64,
 		memexDestReg,
+		memexDestRegValid,
 		memexDestRegValue,
 		memexDestRegSpecial,
 		memexDestRegSpecialValid,
@@ -876,6 +895,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		exDisp32Out,
 		exDisp64Out,
 		exDestRegOut,
+		exDestRegValidOut,
 		exDestRegValueOut,
 		exDestRegSpecialOut,
 		exDestRegSpecialValidOut,
@@ -906,6 +926,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		exwbSourceRegCode1Valid,
 		exwbSourceRegCode2Valid,
 		exwbDestReg,
+		exwbDestRegValid,
 		exwbDestRegSpecial,
 		exwbDestRegSpecialValid,
 		exwbIsMemoryAccessSrc1,
@@ -923,6 +944,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		wbSourceRegCode1ValidOut,
 		wbSourceRegCode2ValidOut,
 		wbDestRegOut,
+		wbDestRegValidOut,
 		wbDestRegSpecialOut,
 		wbDestRegSpecialValidOut,
 		wbAluResultOut,
@@ -1036,6 +1058,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		idrdDisp32 <= idDisp32Out;
 		idrdDisp64 <= idDisp64Out;
 		idrdDestReg <= idDestRegOut;
+		idrdDestRegValid <= idDestRegValidOut;
 		idrdDestRegSpecial <= idDestRegSpecialOut;
 		idrdDestRegSpecialValid <=  idDestRegSpecialValidOut;
 
@@ -1062,6 +1085,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		rdacDisp32 <= rdDisp32Out;
 		rdacDisp64 <= rdDisp64Out;
 		rdacDestReg <= rdDestRegOut;
+		rdacDestRegValid <= rdDestRegValidOut;
 		rdacDestRegValue <= rdDestRegValueOut;
 		rdacDestRegSpecial <= rdDestRegSpecialOut;
 		rdacDestRegSpecialValid <=  rdDestRegSpecialValidOut;
@@ -1094,6 +1118,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		acmemDisp32 <= acDisp32Out;
 		acmemDisp64 <= acDisp64Out;
 		acmemDestReg <= acDestRegOut;
+		acmemDestRegValid <= acDestRegValidOut;
 		acmemDestRegValue <= acDestRegValueOut;
 		acmemDestRegSpecial <= acDestRegSpecialOut;
 		acmemDestRegSpecialValid <= acDestRegSpecialValidOut;
@@ -1128,6 +1153,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		memexDisp32 <= memDisp32Out;
 		memexDisp64 <= memDisp64Out;
 		memexDestReg <= memDestRegOut;
+		memexDestRegValid <= memDestRegValidOut;
 		memexDestRegValue <= memDestRegValueOut;
 		memexDestRegSpecial <= memDestRegSpecialOut;
 		memexDestRegSpecialValid <= memDestRegSpecialValidOut;
@@ -1164,6 +1190,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		exwbDisp32 <= exDisp32Out;
 		exwbDisp64 <= exDisp64Out;
 		exwbDestReg <= exDestRegOut;
+		exwbDestRegValid <= exDestRegValidOut;
 		exwbDestRegValue <= exDestRegValueOut;
 		exwbDestRegSpecial <= exDestRegSpecialOut;
 		exwbDestRegSpecialValid <= exDestRegSpecialValidOut;
@@ -1199,7 +1226,9 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
      	killLatch <= killOut;
 
 	if (writeBackSuccessfulOut) begin
-		regInUseBitMap[wbDestRegOut] <= wbRegInUseBitMapOut[wbDestRegOut];
+		if (wbDestRegValidOut) begin
+			regInUseBitMap[wbDestRegOut] <= wbRegInUseBitMapOut[wbDestRegOut];
+		end
 
 		if (wbDestRegSpecialValidOut) begin
 			regInUseBitMap[wbDestRegSpecialOut] <= wbRegInUseBitMapOut[wbDestRegSpecialOut];
@@ -1215,7 +1244,9 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	end
 
 	if (bytes_decoded_this_cycle > 0) begin
-		regInUseBitMap[idDestRegOut] <= regInUseBitMapOut[idDestRegOut];
+		if (idDestRegValidOut) begin
+			regInUseBitMap[idDestRegOut] <= regInUseBitMapOut[idDestRegOut];
+		end
 
 		if (idDestRegSpecialValidOut) begin
 			regInUseBitMap[idDestRegSpecialOut] <= regInUseBitMapOut[idDestRegSpecialOut];
