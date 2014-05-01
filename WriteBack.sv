@@ -6,6 +6,8 @@ module WriteBack (
 			      /* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */ CacheCoreInterface dCacheCoreBus /* verilator lint_on UNUSED */ /* verilator lint_on UNDRIVEN */,
 		  /* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */
 		input [0:7]   opcodeIn,
+		input [0:2]   extendedOpcodeIn,
+		input [0:31]  hasExtendedOpcodeIn,
 		input 	      regInUseBitMapIn[16],
 		  /* verilator lint_on UNDRIVEN */ /* verilator lint_on UNUSED */
    		input [63:0]  regFileIn[16],
@@ -30,6 +32,8 @@ module WriteBack (
 
 		output [0:63] currentRipOut,
 		output [0:7]  opcodeOut, 
+		output [0:2]  extendedOpcodeOut,
+		output [0:31] hasExtendedOpcodeOut,
 		output [0:3]  sourceRegCode1Out,
 		output [0:3]  sourceRegCode2Out,
 		output 	      sourceRegCode1ValidOut,
@@ -126,6 +130,8 @@ module WriteBack (
 			aluResultOut = aluResultIn;
 			aluResultSpecialOut = aluResultSpecialIn;
 		        opcodeOut = opcodeIn;
+		        extendedOpcodeOut = extendedOpcodeIn;
+		        hasExtendedOpcodeOut = hasExtendedOpcodeIn;
 		        isMemoryAccessSrc1Out = isMemoryAccessSrc1In;
 		        isMemoryAccessSrc2Out = isMemoryAccessSrc2In;
 		        isMemoryAccessDestOut = isMemoryAccessDestIn;

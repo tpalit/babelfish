@@ -256,8 +256,6 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:63]         exwbMemoryAddressDest = 0;
    logic [0:63]         exwbDestRegValue = 0;
 
-   logic [0:7] 		wbOpcodeOut = 0;
-
 
    bit 			regInUseBitMap[16];
    
@@ -467,6 +465,9 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:63]         wbMemoryAddressDestOut = 0;
    bit			wbStallOnMemoryWrOut = 0;
    bit 			wbDidMemoryWrite = 0;
+   logic [0:7] 		wbOpcodeOut = 0;
+   logic [0:2] 		wbExtendedOpcodeOut = 0;
+   logic [0:31]		wbHasExtendedOpcodeOut = 0;
    /* verilator lint_on UNUSED */
 
    bit			readSuccessfulOut = 0;
@@ -918,6 +919,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	/* verilator lint_on UNUSED */
 	/* verilator lint_on UNDRIVEN */
 		exwbOpcode,	       
+   		exwbExtendedOpcode,
+    		exwbHasExtendedOpcode,
 		regInUseBitMap,
 		regFile,
 		exwbCurrentRip,
@@ -939,6 +942,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		exwbAluResultSpecial,
 		wbCurrentRipOut,
 		wbOpcodeOut,
+   		wbExtendedOpcodeOut,
+    		wbHasExtendedOpcodeOut,
 		wbSourceRegCode1Out,
 		wbSourceRegCode2Out,
 		wbSourceRegCode1ValidOut,
