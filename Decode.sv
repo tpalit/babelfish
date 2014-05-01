@@ -892,7 +892,8 @@ module Decode (
                                  opcode == 8'h94 ||
                                  opcode == 8'h99 ||
                                  opcode == 8'h96 ||
-                                 opcode == 8'h97) begin
+                                 opcode == 8'h97 ||
+				 opcode == 8'h90) begin
                        exit_after_print = 0;
                    end else begin
                        exit_after_print = 1;
@@ -3366,9 +3367,9 @@ module Decode (
 
 		/* Extra processing for EXECUTE */
 		sourceRegCode1Out = { rex_field[7], rm_field }; // read operand
-		sourceRegCode2Out = 0;		  
+		sourceRegCode2Out = 0;
 		sourceRegCode1ValidOut = 1;
-		sourceRegCode2ValidOut = 0;	       		  
+		sourceRegCode2ValidOut = 0;
 		destRegOut = { rex_field[7], rm_field }; // write operand
 		destRegValidOut = 1;
 		immLenOut = 0;
@@ -3423,7 +3424,7 @@ module Decode (
             end else if (opcode == 8'hE9) begin
                decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hE8) begin
-               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });       
+               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'h91 ||
                 opcode == 8'h92 ||
                 opcode == 8'h93 ||
@@ -3446,7 +3447,11 @@ module Decode (
             end else if (opcode == 8'hFF && reg_field == 3'b010) begin
                /****************** For CALLQ ff/2 *************/
                //$write("*%s ", decode_64_reg({rex_field[7], rm_field}));
-               
+            end else if (opcode == 8'h90) begin
+		/************* for NOP ******************/
+
+		/* Extra processing for EXECUTE */
+		opcodeValidOut = 1;
             end else begin
                //$display("Couldn't decode this!!\n");
 

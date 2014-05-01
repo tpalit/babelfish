@@ -106,7 +106,9 @@ module Execute (
 				operandValue2 = operand2ValIn;
 			end
 
-			if ((opcodeLengthIn == 1) && (opcodeIn == 8'hC7) &&
+			if ((opcodeLengthIn == 1) && (opcodeIn == 8'h90)) begin
+				isExecuteSuccessfulOut = 1;
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hC7) &&
 				(hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b000)) begin
 				/* MOV immediate into operand 1 */
 
