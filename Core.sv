@@ -22,13 +22,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
    logic [63:0] regFile[16];
 
-   /* verilator lint_off UNUSED */
-   /* verilator lint_off UNDRIVEN */
    logic [63:0] rflags;
    logic [63:0] latch_rflags;
-
-   /* verilator lint_on UNDRIVEN */
-   /* verilator lint_on UNUSED */
 
 
    /**
@@ -502,6 +497,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	 
       end
       rflags = 64'h00200200;
+      latch_rflags = 64'h00200200;
 
       fetch_skip = 0;
    end
@@ -868,6 +864,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		memexMemoryAddressSrc2,
 		memexMemoryAddressDest,
 		memexMemoryData,
+		latch_rflags,
 
 		exAluResultOut,
 		exAluResultSpecialOut,
@@ -907,6 +904,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		exMemoryAddressSrc2Out,
 		exMemoryAddressDestOut,
 		executeSuccessfulOut,
+		rflags,
           	killOut
 		);
 
@@ -1036,6 +1034,10 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
 	canExecute <= memorySuccessfulOut;
 	canWriteBack <= executeSuccessfulOut;
+
+	if (executeSuccessfulOut == 1) begin
+		latch_rflags <= rflags;
+	end
 
 	/* Latch the output values from each stage. */
 	

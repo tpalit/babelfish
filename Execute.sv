@@ -39,6 +39,7 @@ module Execute (
 		input [0:63]  memoryAddressSrc2In,
 		input [0:63]  memoryAddressDestIn,
 		input [0:63]  memoryDataIn,
+		input [0:63]  rflagsIn,
 
 		output [0:63] aluResultOut,
 		output [0:63] aluResultSpecialOut,
@@ -79,6 +80,7 @@ module Execute (
 		output [0:63] memoryAddressSrc2Out,
 		output [0:63] memoryAddressDestOut,
 		output        isExecuteSuccessfulOut,
+		output [0:63] rflagsOut,
 		output        killOut
 		);
 
@@ -91,6 +93,8 @@ module Execute (
 			logic [0:63] temp_var = 0;
 			logic [0:127] mul_temp_var = 0;
 			killOut = 0;
+
+			rflagsOut = rflagsIn;
 
 			assert(!((isMemoryAccessSrc1In == 1) && (isMemoryAccessSrc2In == 1))) else $fatal("\nBoth source operands access Memory!\n");
 
