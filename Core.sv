@@ -53,12 +53,13 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
    always @ (posedge bus.clk) begin
       // TODO - Handle instructions where input/output are both memory operands.
-      if (wbDidMemoryWrite) begin
+      if (wbDidMemoryWrite && core_memaccess_inprogress_latch == 2) begin
 	 core_memaccess_inprogress_latch <= wb_core_memaccess_inprogress;
-      end else if (memDidMemoryRead) begin
+      end else if (memDidMemoryRead  && core_memaccess_inprogress_latch == 1) begin
 	 core_memaccess_inprogress_latch <= mem_core_memaccess_inprogress;
-      end else
+      end else if (!wbDidMemoryWrite && !memDidMemoryRead) begin
 	 core_memaccess_inprogress_latch <= id_core_memaccess_inprogress;
+      end
    end
 
    /*

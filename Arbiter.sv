@@ -43,9 +43,6 @@ module Arbiter #(WIDTH = 64, TAG_WIDTH = 13) (
    int d_read_count;
    int d_write_count;
 
-   always_comb begin
-         $display("Arbiter state = %d",arbiter_state);
-   end
    initial begin
       arbiter_state = arbiter_idle;
       i_read_count = 0;
@@ -53,6 +50,21 @@ module Arbiter #(WIDTH = 64, TAG_WIDTH = 13) (
       d_write_count = 0;
    end
 
+
+   always_comb begin
+      if (arbiter_state == arbiter_data) begin
+	 dcache_interface.reqack = dcache_interface.reqcyc;
+      end else if (arbiter_state == arbiter_instn) begin
+	 icache_interface.reqack = icache_interface.reqcyc;
+      end else if (arbiter_state == arbiter_idle) begin
+	 if (icache_interface.reqcyc) begin
+	    icache_interface.reqack = icache_interface.reqcyc;
+	 end else if (dcache_interface.reqcyc) begin
+	    dcache_interface.reqack = dcache_interface.reqcyc;
+	 end
+      end
+   end
+   
    always @ (posedge bus.clk)
 
    
@@ -63,14 +75,14 @@ module Arbiter #(WIDTH = 64, TAG_WIDTH = 13) (
 	// The icache has priority.
 	// Send the requests on the 
 	if (icache_interface.reqcyc) begin
-	   icache_interface.reqack <= 1;
+//	   icache_interface.reqack <= 1; Commented as we're doing an always assign
 	   bus.req <= icache_interface.req;
 	   bus.reqtag <= icache_interface.reqtag;
 	   bus.reqcyc <= icache_interface.reqcyc;
 	   arbiter_state <= arbiter_instn;
 	   i_read_count <= 0;
 	end else if (dcache_interface.reqcyc) begin
-	   dcache_interface.reqack <= 1;
+//	   dcache_interface.reqack <= 1; Commented as we're doing an always assign
 	   bus.req <= dcache_interface.req;
 	   bus.reqtag <= dcache_interface.reqtag;
 	   bus.reqcyc <= dcache_interface.reqcyc;
@@ -88,10 +100,10 @@ module Arbiter #(WIDTH = 64, TAG_WIDTH = 13) (
 		if (dcache_interface.reqtag[12] & dcache_interface.READ) begin
 		        // Doing the read before the write
 			bus.reqcyc <= 0;
-	                dcache_interface.reqack <= 0;
+//	                dcache_interface.reqack <= 0; Commented as we're doing an always assign
 		end else begin
 			if (dcache_interface.reqcyc && d_write_count <= 7) begin
-	   			dcache_interface.reqack <= 1;
+//	   			dcache_interface.reqack <= 1; Commented as we're doing an always assign
 				bus.req <= dcache_interface.req;
 				bus.reqtag <= dcache_interface.reqtag;
 				bus.reqcyc <= dcache_interface.reqcyc;
@@ -100,7 +112,7 @@ module Arbiter #(WIDTH = 64, TAG_WIDTH = 13) (
 		end
 	end
      if (d_write_count > 7) begin
-	   dcache_interface.reqack <= 0;
+//	   dcache_interface.reqack <= 0; Commented as we're doing an always assign
         dcache_interface.writeack <= 1; // Set the writeack now. For details see the comment at the toppish-middle of the file.
 	   arbiter_state <= arbiter_idle;
 	   bus.reqcyc <= 0;
@@ -128,7 +140,7 @@ module Arbiter #(WIDTH = 64, TAG_WIDTH = 13) (
 		bus.reqcyc <= 0;
 	end
 
-	icache_interface.reqack <= 0;
+//	icache_interface.reqack <= 0; Commented as we're doing an always assign
 
 	if (bus.respcyc) begin
 	   bus.respack <= 1;
