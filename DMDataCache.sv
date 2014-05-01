@@ -211,8 +211,7 @@ module DMDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 3)
                   cache_state <= cache_writing_memory;
 	          arbiterCacheBus.reqcyc <= 1;
 	          arbiterCacheBus.req <= rwArbiterCacheBus.req & ~63;
-	          //   arbiterCacheBus.reqtag <= rwArbiterCacheBus.reqtag;
-		  arbiterCacheBus.reqtag <= { rwArbiterCacheBus.READ, rwArbiterCacheBus.reqtag[11:0] };
+		  arbiterCacheBus.reqtag <= rwArbiterCacheBus.reqtag;
                end
 //               cache_state <= cache_idle;
 	    end else begin
