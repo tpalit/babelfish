@@ -29,6 +29,7 @@ module Read (
 	     input [0:31]  disp32In,
 	     input [0:63]  disp64In,
 	     input [0:3]   destRegIn,
+	     input	   destRegValidIn,
              input [0:3]   destRegisterSpecialIn, // TODO: Treat IMUL as special case with dest as RDX:RAX
              input 	   destRegisterSpecialValidIn, // TODO: Treat IMUL as special case with dest as RDX:RAX
 	     
@@ -61,7 +62,8 @@ module Read (
 	     output [0:31] disp32Out,
 	     output [0:63] disp64Out,
 	     output [0:3]  destRegOut,
-	     output [63:0] destRegValOut,
+	     output	   destRegValidOut,
+	     output [63:0] destRegValueOut,
              output [0:3]  destRegisterSpecialOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
              output 	   destRegisterSpecialValidOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
 	     output	   isReadSuccessfulOut
@@ -79,7 +81,9 @@ module Read (
 	       operandVal2ValidOut = 1;
 	    end
 
-	    destRegValOut = registerFileIn[destRegIn];
+	    if (destRegValidIn) begin
+	       destRegValueOut = registerFileIn[destRegIn];
+	    end
 
 	    currentRipOut = currentRipIn;
 
@@ -99,6 +103,7 @@ module Read (
 	    disp32Out = disp32In;
 	    disp64Out = disp64In;
 	    destRegOut = destRegIn;
+	    destRegValidOut = destRegValidIn;
 	    destRegisterSpecialOut = destRegisterSpecialIn;
 	    destRegisterSpecialValidOut = destRegisterSpecialValidIn;
 

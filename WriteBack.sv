@@ -6,6 +6,8 @@ module WriteBack (
 			      /* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */ CacheCoreInterface dCacheCoreBus /* verilator lint_on UNUSED */ /* verilator lint_on UNDRIVEN */,
 		  /* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */
 		input [0:7]   opcodeIn,
+		input [0:2]   extendedOpcodeIn,
+		input [0:31]  hasExtendedOpcodeIn,
 		input 	      regInUseBitMapIn[16],
 		  /* verilator lint_on UNDRIVEN */ /* verilator lint_on UNUSED */
    		input [63:0]  regFileIn[16],
@@ -16,6 +18,7 @@ module WriteBack (
 		input 	      sourceReg1ValidIn,
 		input 	      sourceReg2ValidIn,
 		input [0:3]   destRegIn,
+		input         destRegValidIn,
 		input [0:3]   destRegSpecialIn,
 		input 	      destRegSpecialValidIn,
 		input 	      isMemoryAccessSrc1In,
@@ -29,11 +32,14 @@ module WriteBack (
 
 		output [0:63] currentRipOut,
 		output [0:7]  opcodeOut, 
+		output [0:2]  extendedOpcodeOut,
+		output [0:31] hasExtendedOpcodeOut,
 		output [0:3]  sourceRegCode1Out,
 		output [0:3]  sourceRegCode2Out,
 		output 	      sourceRegCode1ValidOut,
 		output 	      sourceRegCode2ValidOut,
 		output [0:3]  destRegOut,
+		output        destRegValidOut,
 		output [0:3]  destRegSpecialOut,
 		output 	      destRegSpecialValidOut,
 		output [0:63] aluResultOut,
@@ -104,10 +110,12 @@ module WriteBack (
 			   stallOnMemoryWrOut = 0;
 			end
 
-			regInUseBitMapOut[destRegIn] = 0;
+			if (destRegValidIn == 1) begin
+			   regInUseBitMapOut[destRegIn] = 0;
 
-			if (isMemoryAccessDestIn == 0 && killIn == 0) begin
+  			   if (isMemoryAccessDestIn == 0 && killIn == 0) begin
 				regFileOut[destRegIn] = aluResultIn;
+			   end
 			end
 
   		        currentRipOut = currentRipIn;
@@ -116,11 +124,14 @@ module WriteBack (
 		        sourceRegCode1ValidOut = sourceReg1ValidIn;
 		        sourceRegCode2ValidOut = sourceReg2ValidIn;
 			destRegOut = destRegIn;
+			destRegValidOut = destRegValidIn;
 		        destRegSpecialOut = destRegSpecialIn;
 		        destRegSpecialValidOut = destRegSpecialValidIn;
 			aluResultOut = aluResultIn;
 			aluResultSpecialOut = aluResultSpecialIn;
 		        opcodeOut = opcodeIn;
+		        extendedOpcodeOut = extendedOpcodeIn;
+		        hasExtendedOpcodeOut = hasExtendedOpcodeIn;
 		        isMemoryAccessSrc1Out = isMemoryAccessSrc1In;
 		        isMemoryAccessSrc2Out = isMemoryAccessSrc2In;
 		        isMemoryAccessDestOut = isMemoryAccessDestIn;
