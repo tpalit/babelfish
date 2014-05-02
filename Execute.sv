@@ -359,7 +359,7 @@ module Execute (
 					rflagsOut[11] = 1;
 				end
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h6B || opcodeIn == 8'h69)) begin
-				/* IMUL RDX:operand 2 = operand 1 * imm8In sign-extended. TODO: Upper half lost, flags need to be set. */
+				/* IMUL RDX:operand 2 = operand 1 * imm8In sign-extended. */
 
 				mul_temp_var = operandValue2 * imm64In;
 
@@ -375,7 +375,7 @@ module Execute (
 					rflagsOut[11] = 1;
 				end
 			end else if ((opcodeLengthIn == 2) && (opcodeIn == 8'hAF)) begin
-				/* IMUL RDX:operand 2 = operand 1 * operand 2 TODO: Upper half lost, flags need to be set. */
+				/* IMUL RDX:operand 2 = operand 1 * operand 2 */
 
 				mul_temp_var = operandValue1 * operandValue2;
 
@@ -535,9 +535,9 @@ module Execute (
 				/* ADC operand 1 with immediate and write into operand 1 */
 
 				if (rflagsIn[0] == 0) begin
-					add_temp_var = operandValue1 + imm64In; //TODO: Add CF flag
+					add_temp_var = operandValue1 + imm64In;
 				end else begin
-					add_temp_var = operandValue1 + imm64In + 1; //TODO: Add CF flag
+					add_temp_var = operandValue1 + imm64In + 1;
 				end
 
 				aluResultOut = add_temp_var[1:64];
@@ -564,9 +564,9 @@ module Execute (
 				/* ADC operand 1 with operand 2 and write into operand 1 */
 	
 				if (rflagsIn[0] == 0) begin
-					add_temp_var = operandValue1 + operandValue2; //TODO: Add CF flag
+					add_temp_var = operandValue1 + operandValue2;
 				end else begin
-					add_temp_var = operandValue1 + operandValue2 + 1; //TODO: Add CF flag
+					add_temp_var = operandValue1 + operandValue2 + 1;
 				end
 	
 				aluResultOut = add_temp_var[1:64];
@@ -593,9 +593,9 @@ module Execute (
 				/* ADC operand 1 (RAX) with immediate and write into operand 1 (RAX) */
 	
 				if (rflagsIn[0] == 0) begin
-					add_temp_var = operandValue1 + imm64In; //TODO: Add CF flag
+					add_temp_var = operandValue1 + imm64In;
 				end else begin
-					add_temp_var = operandValue1 + imm64In + 1; //TODO: Add CF flag
+					add_temp_var = operandValue1 + imm64In + 1;
 				end
 	
 				aluResultOut = add_temp_var[1:64];
