@@ -9,8 +9,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    /* verilator lint_off UNUSED */
    enum { fetch_idle, fetch_waiting, fetch_active } fetch_state;
    logic[5:0] fetch_skip;
-   /* verilator lint_on UNUSED */
    logic[63:0] fetch_rip;
+   /* verilator lint_on UNUSED */
    logic[0:2*64*8-1] decode_buffer; // NOTE: buffer bits are left-to-right in increasing order
    logic[6:0] fetch_offset, decode_offset;
 
@@ -52,7 +52,6 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    int core_memaccess_inprogress_latch = 0;
 
    always @ (posedge bus.clk) begin
-      // TODO - Handle instructions where input/output are both memory operands.
       if (wbDidMemoryWrite && core_memaccess_inprogress_latch == 2) begin
 	 core_memaccess_inprogress_latch <= wb_core_memaccess_inprogress;
       end else if (memDidMemoryRead  && core_memaccess_inprogress_latch == 1) begin
@@ -60,24 +59,27 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
       end else if (!wbDidMemoryWrite && !memDidMemoryRead) begin
 	 core_memaccess_inprogress_latch <= id_core_memaccess_inprogress;
       end
-   end
-
-   /*
-    always @ (posedge bus.clk) begin
-    if (bytes_decoded_this_cycle > 0) begin
-
-    if (core_memaccess_inprogress == 2) begin
-    if (wbWroteToMemory) begin
-    // Check when an actual writeback happened.
-    core_memaccess_inprogress <= 0;
-	 end
-      end else if (core_memaccess_inprogress == 1) begin
-    if (memReadFromMemory) begin
-    core_memaccess_inprogress <= 0;
-	 end
+      if (exDidJumpOut && stallOnJumpLatch) begin
+	 stallOnJumpLatch <= 0; // Move ahead
+	 $display("At this point, I should jump to %x", exJumpTarget);
+      end else begin
+	 stallOnJumpLatch <= idStallOnJumpOut;
       end
    end
+
+
+   /**
+    * We stall on jumps. The Decode stage sets this if there is Jcc instruction and 
+    * then waits for the Jcc instruction to reach the Execute stage which decides 
+    * whether to change the offset or not. After the Jcc instruction has completed
+    * the Execute stage, it will return the RIP value to jump to. 
     */
+   bit stallOnJumpLatch;
+   /* verilator lint_off UNUSED */
+   bit idStallOnJumpOut;
+   /* verilator lint_on UNUSED */
+
+   
    
    /******** Latches ********/
 
@@ -114,7 +116,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    bit			idrdDestRegValid = 0;
    logic [0:3]		idrdDestRegSpecial = 0;
    bit	 		idrdDestRegSpecialValid = 0;
-   
+   logic [0:31] 	idrdInstructionLength;
+      
    logic [0:2] 		rdacExtendedOpcode = 0;
    logic [0:31] 	rdacHasExtendedOpcode = 0;
    logic [0:31] 	rdacOpcodeLength = 0;
@@ -146,6 +149,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:3]		rdacDestRegSpecial = 0;
    bit	 		rdacDestRegSpecialValid = 0;
    logic [0:63]		rdacDestRegValue = 0;
+   logic [0:31] 	rdacInstructionLength;
 
    logic [0:2] 		acmemExtendedOpcode = 0;
    logic [0:31] 	acmemHasExtendedOpcode = 0;
@@ -181,6 +185,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:63]         acmemMemoryAddressSrc1 = 0;
    logic [0:63]         acmemMemoryAddressSrc2 = 0;
    logic [0:63]         acmemMemoryAddressDest = 0;
+   logic [0:31] 	acmemInstructionLength;
+
 
    logic [0:2] 		memexExtendedOpcode = 0;
    logic [0:31] 	memexHasExtendedOpcode = 0;
@@ -217,6 +223,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:63]         memexMemoryAddressSrc2 = 0;
    logic [0:63]         memexMemoryAddressDest = 0;
    logic [0:63]         memexMemoryData = 0;
+   logic [0:31] 	memexInstructionLength;
+	
 
    /* verilator lint_off UNUSED */
    logic [0:2] 		exwbExtendedOpcode = 0;
@@ -264,7 +272,6 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    /* verilator lint_on UNUSED */
    /******** Wires ********/
 
-   /* TODO: Change this to 64 bits */
    logic [63:0]         idCurrentRipOut; 
    logic [63:0]         rdCurrentRipOut;
    /* verilator lint_off UNUSED */
@@ -333,6 +340,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:3]		rdDestRegSpecialOut = 0;
    bit	 		rdDestRegSpecialValidOut = 0;
    logic [0:63]		rdDestRegValueOut = 0;
+   logic [0:31] 	rdInstructionLengthOut = 0;
 
    logic [0:2] 		acExtendedOpcodeOut = 0;
    logic [0:31] 	acHasExtendedOpcodeOut = 0;
@@ -368,6 +376,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:63]         acMemoryAddressSrc2Out = 0;
    logic [0:63]         acMemoryAddressDestOut = 0;
    logic [0:63]		acDestRegValueOut = 0;
+   logic [0:31] 	acInstructionLengthOut = 0;
 
    logic [0:2] 		memExtendedOpcodeOut = 0;
    logic [0:31] 	memHasExtendedOpcodeOut = 0;
@@ -408,6 +417,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:63]         memMemoryDataOut = 0;
    /* verilator lint_on UNUSED */
    bit 			memDidMemoryRead = 0;
+   logic [0:31] 	memInstructionLengthOut = 0;
 
    logic [0:2] 		exExtendedOpcodeOut = 0;
    logic [0:31] 	exHasExtendedOpcodeOut = 0;
@@ -445,6 +455,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:63]         exMemoryAddressSrc2Out = 0;
    logic [0:63]         exMemoryAddressDestOut = 0;
    logic [0:63]		exDestRegValueOut = 0;
+   bit 			exDidJumpOut;
+   logic [0:63] 	exJumpTarget;
 
    logic [0:3] 		wbSourceRegCode1Out = 0;
    logic [0:3] 		wbSourceRegCode2Out = 0;
@@ -504,6 +516,9 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
       rflags = 64'h00200200;
 
       fetch_skip = 0;
+      stallOnJumpLatch = 0;
+      idStallOnJumpOut = 0;
+      ifidCurrentRip = entry;
    end
 
    function logic mtrr_is_mmio(logic[63:0] physaddr);
@@ -559,6 +574,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    wire [0:15*8-1]         decode_bytes = decode_bytes_repeated[decode_offset*8 +: 15*8]; // NOTE: buffer bits are left-to-right in increasing order
    wire can_decode = (fetch_offset - decode_offset >= 7'd15);
 
+   
+       
    /* Initialize the Decode module */
    Decode decode(	       
 		decode_bytes,
@@ -598,6 +615,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		idDestRegSpecialValidOut,
 		core_memaccess_inprogress_latch,
 		id_core_memaccess_inprogress,
+		stallOnJumpLatch,
+		idStallOnJumpOut,
 		bytes_decoded_this_cycle
 		);
 
@@ -614,6 +633,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		idrdExtendedOpcode,
 		idrdHasExtendedOpcode,
 		idrdOpcodeLength,
+	        idrdInstructionLength,
 		idrdOpcodeValid,
 		idrdOpcode,
 		idrdImmLen,
@@ -646,6 +666,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		rdExtendedOpcodeOut,
 		rdHasExtendedOpcodeOut,
 		rdOpcodeLengthOut,
+	        rdInstructionLengthOut,
 		rdOpcodeValidOut, 
 		rdOpcodeOut,
 		rdImmLenOut,
@@ -677,6 +698,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		rdacExtendedOpcode,
 		rdacHasExtendedOpcode,
 		rdacOpcodeLength,
+		rdacInstructionLength,
 		rdacOpcodeValid, 
 		rdacOpcode,
 		rdacSourceRegCode1,
@@ -710,6 +732,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		acExtendedOpcodeOut,
 		acHasExtendedOpcodeOut,
 		acOpcodeLengthOut,
+		acInstructionLengthOut,
 		acOpcodeValidOut, 
 		acOpcodeOut,
 		acOperandVal1Out,
@@ -754,6 +777,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		acmemExtendedOpcode,
 		acmemHasExtendedOpcode,
 		acmemOpcodeLength,
+		acmemInstructionLength,
 		acmemOpcodeValid, 
 		acmemOpcode,
 		acmemSourceRegCode1,
@@ -790,6 +814,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		memExtendedOpcodeOut,
 		memHasExtendedOpcodeOut,
 		memOpcodeLengthOut,
+		memInstructionLengthOut,
 		memOpcodeValidOut, 
 		memOpcodeOut,
 		memOperandVal1Out,
@@ -836,6 +861,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		memexExtendedOpcode,
 		memexHasExtendedOpcode,
 		memexOpcodeLength,
+		memexInstructionLength,
 		memexOpcodeValid, 
 		memexOpcode,
 		memexSourceRegCode1,
@@ -907,6 +933,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		exMemoryAddressSrc2Out,
 		exMemoryAddressDestOut,
 		executeSuccessfulOut,
+	        exDidJumpOut,
+		exJumpTarget,
           	killOut
 		);
 
@@ -1066,6 +1094,10 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		idrdDestRegValid <= idDestRegValidOut;
 		idrdDestRegSpecial <= idDestRegSpecialOut;
 		idrdDestRegSpecialValid <=  idDestRegSpecialValidOut;
+	        /* verilator lint_off WIDTH */
+	        idrdInstructionLength <= bytes_decoded_this_cycle;
+	        /* verilator lint_on WIDTH */
+	
 
 		rdacExtendedOpcode <= rdExtendedOpcodeOut;           
 		rdacHasExtendedOpcode <= rdHasExtendedOpcodeOut;   
@@ -1098,6 +1130,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		rdacSourceRegCode2 <= rdSourceRegCode2Out;
 		rdacSourceRegCode1Valid <= rdSourceRegCode1ValidOut;
 		rdacSourceRegCode2Valid <= rdSourceRegCode2ValidOut;
+	        rdacInstructionLength <= rdInstructionLengthOut;
 
 		acmemExtendedOpcode <= acExtendedOpcodeOut;
 		acmemHasExtendedOpcode <= acHasExtendedOpcodeOut;
@@ -1133,6 +1166,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		acmemMemoryAddressSrc1 <= acMemoryAddressSrc1Out;
 		acmemMemoryAddressSrc2 <= acMemoryAddressSrc2Out;
 		acmemMemoryAddressDest <= acMemoryAddressDestOut;
+	        acmemInstructionLength <= acInstructionLengthOut;
 
 		memexExtendedOpcode <= memExtendedOpcodeOut;
 		memexHasExtendedOpcode <= memHasExtendedOpcodeOut;
@@ -1168,6 +1202,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		memexMemoryAddressSrc1 <= memMemoryAddressSrc1Out;
 		memexMemoryAddressSrc2 <= memMemoryAddressSrc2Out;
 		memexMemoryAddressDest <= memMemoryAddressDestOut;
+	        memexInstructionLength <= memInstructionLengthOut;
 //	end
 
 //	if (wbStallOnMemoryWrOut == 0) begin
@@ -1216,11 +1251,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	exwbCurrentRip <= exCurrentRipOut;
 
         /* verilator lint_off WIDTH */
-        if (ifidCurrentRip == 0) begin
-           ifidCurrentRip <= fetch_rip;
-        end else begin
-           ifidCurrentRip <= ifidCurrentRip + bytes_decoded_this_cycle;
-        end
+        ifidCurrentRip <= ifidCurrentRip + bytes_decoded_this_cycle;
+        
         /* verilator lint_on WIDTH */
 
 	idStallLatch <= idStallOut;

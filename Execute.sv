@@ -2,21 +2,22 @@
 
 module Execute (
 		input [0:63]  currentRipIn,
-		input         canExecuteIn,
-		input         wbStallIn,
+		input 	      canExecuteIn,
+		input 	      wbStallIn,
 		input [0:2]   extendedOpcodeIn,
 		input [0:31]  hasExtendedOpcodeIn,
 		input [0:31]  opcodeLengthIn,
+		input [0:31]  instructionLengthIn,
 		input [0:0]   opcodeValidIn,
 		input [0:7]   opcodeIn,
 		input [0:3]   sourceReg1In,
 		input [0:3]   sourceReg2In,
-		input         sourceReg1ValidIn,
-		input         sourceReg2ValidIn,
+		input 	      sourceReg1ValidIn,
+		input 	      sourceReg2ValidIn,
 		input [0:63]  operand1ValIn,
 		input [0:63]  operand2ValIn,
-		input         operand1ValValidIn,
-		input         operand2ValValidIn,
+		input 	      operand1ValValidIn,
+		input 	      operand2ValValidIn,
 		input [0:31]  immLenIn,
 		input [0:31]  dispLenIn,
 		input [0:7]   imm8In,
@@ -28,13 +29,13 @@ module Execute (
 		input [0:31]  disp32In,
 		input [0:63]  disp64In,
 		input [0:3]   destRegIn,
-		input         destRegValidIn,
+		input 	      destRegValidIn,
 		input [0:63]  destRegValueIn,
 		input [0:3]   destRegSpecialIn,
-		input         destRegSpecialValidIn,
-		input         isMemoryAccessSrc1In,
-		input         isMemoryAccessSrc2In,
-		input         isMemoryAccessDestIn,
+		input 	      destRegSpecialValidIn,
+		input 	      isMemoryAccessSrc1In,
+		input 	      isMemoryAccessSrc2In,
+		input 	      isMemoryAccessDestIn,
 		input [0:63]  memoryAddressSrc1In,
 		input [0:63]  memoryAddressSrc2In,
 		input [0:63]  memoryAddressDestIn,
@@ -51,12 +52,12 @@ module Execute (
 		output [0:7]  opcodeOut,
 		output [0:63] operand1ValOut,
 		output [0:63] operand2ValOut,
-		output        operand1ValValidOut,
-		output        operand2ValValidOut,
+		output 	      operand1ValValidOut,
+		output 	      operand2ValValidOut,
 		output [0:3]  sourceRegCode1Out,
 		output [0:3]  sourceRegCode2Out,
-		output        sourceRegCode1ValidOut,
-		output        sourceRegCode2ValidOut,
+		output 	      sourceRegCode1ValidOut,
+		output 	      sourceRegCode2ValidOut,
 		output [0:31] immLenOut,
 		output [0:31] dispLenOut,
 		output [0:7]  imm8Out,
@@ -68,18 +69,20 @@ module Execute (
 		output [0:31] disp32Out,
 		output [0:63] disp64Out,
 		output [0:3]  destRegOut,
-		output        destRegValidOut,
+		output 	      destRegValidOut,
 		output [0:63] destRegValueOut,
 		output [0:3]  destRegSpecialOut,
-		output        destRegSpecialValidOut,
-		output        isMemoryAccessSrc1Out,
-		output        isMemoryAccessSrc2Out,
-		output        isMemoryAccessDestOut,
+		output 	      destRegSpecialValidOut,
+		output 	      isMemoryAccessSrc1Out,
+		output 	      isMemoryAccessSrc2Out,
+		output 	      isMemoryAccessDestOut,
 		output [0:63] memoryAddressSrc1Out,
 		output [0:63] memoryAddressSrc2Out,
 		output [0:63] memoryAddressDestOut,
-		output        isExecuteSuccessfulOut,
-		output        killOut
+		output 	      isExecuteSuccessfulOut,
+		output 	      didJump,
+		output [0:63] jumpTarget,
+		output 	      killOut
 		);
 
 	logic [0:63] operandValue1 = 0;
@@ -106,6 +109,8 @@ module Execute (
 				operandValue2 = operand2ValIn;
 			end
 
+		        didJump = 0;
+		        jumpTarget = currentRipIn;
 			if ((opcodeLengthIn == 1) && (opcodeIn == 8'h90)) begin
 				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hC7) &&
@@ -380,6 +385,13 @@ module Execute (
 //				$finish;
 				killOut = 1;
 				isExecuteSuccessfulOut = 1;
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h74)) begin
+			        isExecuteSuccessfulOut = 1;
+			        didJump = 1;
+			        /* TODO - Actually check the RFLAGS condition. */
+			        /* verilator lint_off WIDTH */
+			        jumpTarget = currentRipIn + imm64In + instructionLengthIn;
+			        /* verilator lint_on WIDTH */
 			end else begin
 				isExecuteSuccessfulOut = 0;
 			end

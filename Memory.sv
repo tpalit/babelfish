@@ -10,6 +10,7 @@ module Memory (
 		input [0:2]   extendedOpcodeIn,
 		input [0:31]  hasExtendedOpcodeIn,
 		input [0:31]  opcodeLengthIn,
+	        input [0:31]  instructionLengthIn,
 		input [0:0]   opcodeValidIn,
 		input [0:7]   opcodeIn,
 		input [0:3]   sourceReg1In,
@@ -46,6 +47,7 @@ module Memory (
 		output [0:2]  extendedOpcodeOut,
 		output [0:31] hasExtendedOpcodeOut,
 		output [0:31] opcodeLengthOut,
+	        output  [0:31] instructionLengthOut,
 		output [0:0]  opcodeValidOut,
 		output [0:7]  opcodeOut,
 		output [0:63] operand1ValOut,
@@ -103,6 +105,7 @@ module Memory (
 		        extendedOpcodeOut = extendedOpcodeIn;
 		        hasExtendedOpcodeOut = hasExtendedOpcodeIn;
 		        opcodeLengthOut = opcodeLengthIn;
+		        instructionLengthOut = instructionLengthIn;
 		        opcodeValidOut = opcodeValidIn;
 		        opcodeOut = opcodeIn;
 		        immLenOut = immLenIn;

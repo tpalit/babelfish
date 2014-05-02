@@ -13,6 +13,7 @@ module Read (
 	     input [0:2]   extendedOpcodeIn,
 	     input [0:31]  hasExtendedOpcodeIn,
 	     input [0:31]  opcodeLengthIn,
+	     input [0:31]  instructionLengthIn,
 	     input [0:0]   opcodeValidIn, 
 	     input [0:7]   opcodeIn,
 	     input [0:31]  immLenIn,
@@ -29,7 +30,7 @@ module Read (
 	     input [0:31]  disp32In,
 	     input [0:63]  disp64In,
 	     input [0:3]   destRegIn,
-	     input	   destRegValidIn,
+	     input 	   destRegValidIn,
              input [0:3]   destRegisterSpecialIn, // TODO: Treat IMUL as special case with dest as RDX:RAX
              input 	   destRegisterSpecialValidIn, // TODO: Treat IMUL as special case with dest as RDX:RAX
 	     
@@ -46,6 +47,7 @@ module Read (
 	     output [0:2]  extendedOpcodeOut,
 	     output [0:31] hasExtendedOpcodeOut,
 	     output [0:31] opcodeLengthOut,
+	     output [0:31] instructionLengthOut,
 	     output [0:0]  opcodeValidOut, 
 	     output [0:7]  opcodeOut,
 	     output [0:31] immLenOut,
@@ -62,11 +64,11 @@ module Read (
 	     output [0:31] disp32Out,
 	     output [0:63] disp64Out,
 	     output [0:3]  destRegOut,
-	     output	   destRegValidOut,
+	     output 	   destRegValidOut,
 	     output [63:0] destRegValueOut,
              output [0:3]  destRegisterSpecialOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
              output 	   destRegisterSpecialValidOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
-	     output	   isReadSuccessfulOut
+	     output 	   isReadSuccessfulOut
 	     );
 
    always_comb begin
@@ -90,6 +92,7 @@ module Read (
 	    extendedOpcodeOut = extendedOpcodeIn;
 	    hasExtendedOpcodeOut = hasExtendedOpcodeIn;
 	    opcodeLengthOut = opcodeLengthIn;
+	    instructionLengthOut = instructionLengthIn;
 	    opcodeValidOut = opcodeValidIn;
 	    opcodeOut = opcodeIn;
 	    immLenOut = immLenIn;

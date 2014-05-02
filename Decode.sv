@@ -39,7 +39,9 @@ module Decode (
                output [0:3] 	destRegSpecialOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
                output 		destRegSpecialValidOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
 	       input [0:31] 	core_memaccess_inprogress_in,
-	       output [0:31]    core_memaccess_inprogress_out,
+	       output [0:31] 	core_memaccess_inprogress_out,
+	       input 		stallOnJumpIn, 
+	       output 		stallOnJumpOut, 
 	       output [0:3] 	bytesDecodedThisCycleOut 	
 	       );
    
@@ -733,6 +735,11 @@ module Decode (
       if (core_memaccess_inprogress_in != 0) begin
 	 return 1;
       end
+
+      // Check if we are stalled on a jump
+      if (stallOnJumpIn != 0) begin
+	 return 1;
+      end
       
       return 0;
    endfunction
@@ -797,7 +804,7 @@ module Decode (
 	 isMemoryAccessDestOut = 0;
 	 
 	 
-
+	 stallOnJumpOut = 0;
          while (is_prefix_flag) begin
             instr_count = instr_count + 1;
             is_prefix_flag = is_prefix(decode_bytes[instr_count*8 +: 8]);
@@ -857,7 +864,7 @@ module Decode (
                                  opcode == 8'h71 ||
                                  opcode == 8'h72 ||
                                  opcode == 8'h73 ||
-                                 opcode == 8'h74 ||
+//                                 opcode == 8'h74 ||
                                  opcode == 8'h75 ||
                                  opcode == 8'h76 ||
                                  opcode == 8'h77 ||
@@ -2893,7 +2900,7 @@ module Decode (
 	       sourceRegCode1ValidOut = 1;
 	       sourceRegCode2ValidOut = 0;	       	       
 	       destRegOut = 4'b0000; // write operand
-		destRegValidOut = 1;
+	       destRegValidOut = 1;
                imm64Out = sign_extend_32_to_64(imm32);
                immLenOut = 8;
                dispLenOut = 0;
@@ -2903,11 +2910,14 @@ module Decode (
 	       isMemoryAccessSrc1Out = 0;
 	       isMemoryAccessSrc2Out = 0;
 	       isMemoryAccessDestOut = 0;
+	    end else if (opcode == 8'h74) begin // if (opcode == 8'h3D)
+	       opcodeValidOut = 1;
+	       imm64Out = sign_extend_8_to_64(imm8);
+	       stallOnJumpOut = 1;
             end else if (opcode == 8'h70 ||
                                  opcode == 8'h71 ||
                                  opcode == 8'h72 ||
                                  opcode == 8'h73 ||
-                                 opcode == 8'h74 ||
                                  opcode == 8'h75 ||
                                  opcode == 8'h76 ||
                                  opcode == 8'h77 ||
@@ -3664,6 +3674,7 @@ module Decode (
             stallOut = 1;
             bytesDecodedThisCycleOut = 0;
 	    core_memaccess_inprogress_out = core_memaccess_inprogress_in;
+	    stallOnJumpOut = stallOnJumpIn;
          end
 
       
