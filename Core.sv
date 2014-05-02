@@ -496,8 +496,19 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
 	 
       end
-      rflags = 64'h00200200;
-      latch_rflags = 64'h00200200;
+
+      for (int j=0; j<64; j=j+1) begin
+         rflags[j] = 0;
+         latch_rflags[j] = 0;
+      end
+
+      /* Setting some RFLAGS to 1 */
+      rflags[6] = 1;		//ZF Flag
+      latch_rflags[6] = 1;	//ZF Flag
+      rflags[9] = 1;		//IF Flag
+      latch_rflags[9] = 1;	//IF Flag
+      rflags[1] = 1;		//Reserved Flag
+      latch_rflags[1] = 1;	//Reserved Flag
 
       fetch_skip = 0;
    end
@@ -1289,5 +1300,6 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
       $display("R13 = %x", regFile[13]);
       $display("R14 = %x", regFile[14]);
       $display("R15 = %x", regFile[15]);
+      $display("RFLAGS = %x", latch_rflags);
    end
 endmodule
