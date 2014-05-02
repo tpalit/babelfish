@@ -8,5 +8,5 @@ _start:
 	subq	$0x20, %rbx
 	jz	.here
 	movq	$0x40, %rcx
-.here:	movq	$0x30, %rdx
+.here:	addq	$0x30, %rdx
         retq

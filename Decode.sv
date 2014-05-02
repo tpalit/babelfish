@@ -3681,6 +3681,8 @@ module Decode (
          //if (decode_bytes == 0 && fetch_state == fetch_idle) $finish;
       end else begin
          bytesDecodedThisCycleOut = 0;
+	 stallOnJumpOut = stallOnJumpIn;
+
       end // else: !if(canDecodeIn)
 
       currentRipOut = currentRipIn;

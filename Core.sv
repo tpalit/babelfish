@@ -6,6 +6,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    , input clk
    , input reset
 );
+   logic [63:0] core_entry;
+   
    /* verilator lint_off UNUSED */
    enum { fetch_idle, fetch_waiting, fetch_active } fetch_state;
    logic[5:0] fetch_skip;
@@ -61,7 +63,26 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
       end
       if (exDidJumpOut && stallOnJumpLatch) begin
 	 stallOnJumpLatch <= 0; // Move ahead
-	 $display("At this point, I should jump to %x", exJumpTarget);
+	 $display("Watch me jump to %x!", exJumpTarget);
+	 /*
+	  * 1. Set the entry signals in Fetch module.
+	  * 2. Calculate and set the decode_offset_in signal in Fetch module.
+	  * 3. Reset the fetch_skip_in and fetch_offset_in in Fetch module.
+	  * 4. Clear the decode_buffer.
+	  * 
+	  * Assumption (I strongly believe this is correct) - The Fetch module is in idle state now.
+	  */
+	 assert(fetch_state == fetch_idle) else $fatal;
+	 if (fetch_state == fetch_idle) begin
+	    core_entry <= exJumpTarget & ~7; // word aligned
+	    decode_offset <= {4'b0, exJumpTarget[0:2]}; // The offset inside the word
+	    /*
+	    fetch_rip <= core_entry & ~63; // cache-align
+	    fetch_skip <= core_entry[5:0]; // skip these to get to the write word
+	    fetch_offset <= 0;
+	    decode_buffer <= '0;
+	     */
+	 end
       end else begin
 	 stallOnJumpLatch <= idStallOnJumpOut;
       end
@@ -501,6 +522,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    bit              wbStall;
    
    initial begin
+      core_entry = entry;
       ifidCurrentRip = 0;
       idrdCurrentRip = 0;
       rdacCurrentRip = 0;
@@ -557,7 +579,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    ReadWriteArbiter #(DATA_WIDTH, TAG_WIDTH) rwArbiter(memoryCacheCoreInf.CachePorts, writebackCacheCoreInf.CachePorts, rwArbiterCacheInf.ArbiterPorts);
 
    Fetch fetch(
-		entry,
+		core_entry,
 		instrCacheCoreInf.CorePorts,
 		decode_offset,
 		fetch_rip,
