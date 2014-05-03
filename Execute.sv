@@ -271,6 +271,8 @@ module Execute (
 				// OF Flag
 				if (operandValue1[0] == imm64In[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+				end else begin
+					rflagsOut[11] = 0;
 				end
 
 				// PF Flag
@@ -309,6 +311,8 @@ module Execute (
 				// OF Flag
 				if (operandValue1[0] == operandValue2[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+				end else begin
+					rflagsOut[11] = 0;
 				end
 
 				// PF Flag
@@ -346,6 +350,8 @@ module Execute (
 				// OF Flag
 				if (operandValue1[0] == imm64In[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+				end else begin
+					rflagsOut[11] = 0;
 				end
 
 				// PF Flag
@@ -388,6 +394,20 @@ module Execute (
 				// OF Flag
 				if (operandValue1[0] == imm64In[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+				end else begin
+					rflagsOut[11] = 0;
+				end
+
+				// PF Flag
+				for (i = 0; i < 8; i=i+1) begin
+					if (aluResultOut[56+i] == 1)
+						count = count + 1;
+				end
+
+				if (count % 2 == 0) begin
+					rflagsOut[2] = 1;
+				end else begin
+					rflagsOut[2] = 0;
 				end
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hF7) && (hasExtendedOpcodeIn == 1)
 				&& (extendedOpcodeIn == 3'b010)) begin
@@ -706,6 +726,8 @@ module Execute (
 				// OF Flag
 				if (operandValue1[0] == imm64In[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+				end else begin
+					rflagsOut[11] = 0;
 				end
 
 				// PF Flag
@@ -747,6 +769,8 @@ module Execute (
 				// OF Flag
 				if (operandValue1[0] == operandValue2[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+				end else begin
+					rflagsOut[11] = 0;
 				end
 
 				// PF Flag
@@ -789,6 +813,8 @@ module Execute (
 				// OF Flag
 				if (operandValue1[0] == imm64In[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+				end else begin
+					rflagsOut[11] = 0;
 				end
 
 				// PF Flag
@@ -832,6 +858,8 @@ module Execute (
 				// OF Flag
 				if (operandValue1[0] == imm64In[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+				end else begin
+					rflagsOut[11] = 0;
 				end
 
 				// PF Flag
@@ -873,6 +901,8 @@ module Execute (
 				// OF Flag
 				if (operandValue1[0] == operandValue2[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+				end else begin
+					rflagsOut[11] = 0;
 				end
 
 				// PF Flag
@@ -914,6 +944,8 @@ module Execute (
 				// OF Flag
 				if (operandValue1[0] == imm64In[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+				end else begin
+					rflagsOut[11] = 0;
 				end
 
 				// PF Flag
@@ -952,6 +984,8 @@ module Execute (
 				// OF Flag
 				if (operandValue1[0] == imm64In[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+				end else begin
+					rflagsOut[11] = 0;
 				end
 
 				// PF Flag
@@ -989,6 +1023,8 @@ module Execute (
 				// OF Flag
 				if (operandValue1[0] == operandValue2[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+				end else begin
+					rflagsOut[11] = 0;
 				end
 
 				// PF Flag
@@ -1026,6 +1062,8 @@ module Execute (
 				// OF Flag
 				if (operandValue1[0] == imm64In[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+				end else begin
+					rflagsOut[11] = 0;
 				end
 
 				// PF Flag
@@ -1064,6 +1102,8 @@ module Execute (
 				// OF Flag
 				if (operandValue1[0] == imm64In[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+				end else begin
+					rflagsOut[11] = 0;
 				end
 
 				// PF Flag
@@ -1101,6 +1141,8 @@ module Execute (
 				// OF Flag
 				if (operandValue1[0] == operandValue2[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+				end else begin
+					rflagsOut[11] = 0;
 				end
 
 				// PF Flag
@@ -1138,6 +1180,8 @@ module Execute (
 				// OF Flag
 				if (operandValue1[0] == imm64In[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+				end else begin
+					rflagsOut[11] = 0;
 				end
 
 				// PF Flag
@@ -1173,6 +1217,8 @@ module Execute (
 				// OF Flag
 				if (operandValue1[0] == operandValue2[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+				end else begin
+					rflagsOut[11] = 0;
 				end
 
 				// PF Flag
@@ -1208,6 +1254,8 @@ module Execute (
 				// OF Flag
 				if (operandValue1[0] == operandValue2[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+				end else begin
+					rflagsOut[11] = 0;
 				end
 
 				// PF Flag
