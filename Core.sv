@@ -6,6 +6,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    , input clk
    , input reset
 );
+   import "DPI-C" function longint syscall_cse502(input longint rax, input longint rdi, input longint rsi, input longint rdx, input longint r10, input longint r8, input longint r9);
+
    /* verilator lint_off UNUSED */
    enum { fetch_idle, fetch_waiting, fetch_active } fetch_state;
    logic[5:0] fetch_skip;
