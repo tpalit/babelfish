@@ -32,7 +32,19 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    /* verilator lint_on UNDRIVEN */
    /* verilator lint_on UNUSED */
 
+   bit 		resteerFetchIn = 0;
 
+   always_comb begin
+      if (stallOnJumpLatch && fetch_state == fetch_idle) begin
+	 if (exDidJumpOut) begin
+	    core_entry = exJumpTarget & ~7; // word aligned
+	    resteerFetchIn = exDidJumpOut; // In comb block so that we can get it in the immediate next cycle.
+	 end
+      end else begin
+	 resteerFetchIn = 0;
+      end
+   end
+   
    /**
     * These will be set by the Decode stage and cleared by the Memory and Writeback stages. 
     * The setting and clearing will be done in comb blocks inside the modules for these stages.
@@ -61,9 +73,10 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
       end else if (!wbDidMemoryWrite && !memDidMemoryRead) begin
 	 core_memaccess_inprogress_latch <= id_core_memaccess_inprogress;
       end
-      if (exDidJumpOut && stallOnJumpLatch) begin
+      if (exDidJumpOut && stallOnJumpLatch && fetch_state == fetch_idle) begin
 	 stallOnJumpLatch <= 0; // Move ahead
-	 $display("Watch me jump to %x!", exJumpTarget);
+	 decode_offset <= {4'b0000, exJumpTarget[61:63]}; // The offset inside the word
+	 $display("Watch me jump to %x with decode offset = %x!", exJumpTarget, decode_offset);
 	 /*
 	  * 1. Set the entry signals in Fetch module.
 	  * 2. Calculate and set the decode_offset_in signal in Fetch module.
@@ -72,17 +85,17 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	  * 
 	  * Assumption (I strongly believe this is correct) - The Fetch module is in idle state now.
 	  */
+	 /*
 	 assert(fetch_state == fetch_idle) else $fatal;
 	 if (fetch_state == fetch_idle) begin
 	    core_entry <= exJumpTarget & ~7; // word aligned
 	    decode_offset <= {4'b0, exJumpTarget[0:2]}; // The offset inside the word
-	    /*
 	    fetch_rip <= core_entry & ~63; // cache-align
 	    fetch_skip <= core_entry[5:0]; // skip these to get to the write word
 	    fetch_offset <= 0;
 	    decode_buffer <= '0;
-	     */
 	 end
+	  */
       end else begin
 	 stallOnJumpLatch <= idStallOnJumpOut;
       end
@@ -520,7 +533,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
    bit              memStall;
    bit              wbStall;
-   
+
    initial begin
       core_entry = entry;
       ifidCurrentRip = 0;
@@ -578,6 +591,10 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
    ReadWriteArbiter #(DATA_WIDTH, TAG_WIDTH) rwArbiter(memoryCacheCoreInf.CachePorts, writebackCacheCoreInf.CachePorts, rwArbiterCacheInf.ArbiterPorts);
 
+
+   bit 			       fetch_resteering_out = 0;
+   bit 			       can_decode = 0;
+   
    Fetch fetch(
 		core_entry,
 		instrCacheCoreInf.CorePorts,
@@ -586,7 +603,9 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		fetch_skip,
 		fetch_offset,
 		fetch_state,
-		decode_buffer
+		decode_buffer,
+	        resteerFetchIn,
+	        fetch_resteering_out
 		);
 
    /* verilator lint_on UNUSED */
@@ -594,9 +613,15 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    
    wire[0:(128+15)*8-1] decode_bytes_repeated = { decode_buffer, decode_buffer[0:15*8-1] }; // NOTE: buffer bits are left-to-right in increasing order
    wire [0:15*8-1]         decode_bytes = decode_bytes_repeated[decode_offset*8 +: 15*8]; // NOTE: buffer bits are left-to-right in increasing order
-   wire can_decode = (fetch_offset - decode_offset >= 7'd15);
+   //wire can_decode 
 
-   
+   always_comb begin
+     if (fetch_resteering_out) begin
+	can_decode = 0;
+     end else begin
+	can_decode = (fetch_offset - decode_offset >= 7'd15);
+     end
+   end
        
    /* Initialize the Decode module */
    Decode decode(	       
@@ -1050,7 +1075,9 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		$finish;
 	end
 
-        decode_offset <= decode_offset + { 3'b0, bytes_decoded_this_cycle };
+	if (!stallOnJumpLatch) begin
+           decode_offset <= decode_offset + { 3'b0, bytes_decoded_this_cycle };
+	end
         if (bytes_decoded_this_cycle > 0) begin
 	      canRead <= 1;
 	end else begin

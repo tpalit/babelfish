@@ -8,10 +8,14 @@ module Fetch (
 		output[5:0] fetch_skip_in,
 		output[6:0] fetch_offset_in,
 		output[31:0] fetch_state_in,
-		output[0:2*64*8-1] decode_buffer_in
+		output[0:2*64*8-1] decode_buffer_in,
+	        input resteerFetchIn,
+	        output isResteering
 	     );
 
 	enum { fetch_idle, fetch_waiting, fetch_active } fetch_state_in;
+        bit 	     isResteering = 0;
+   
 
 	logic send_fetch_req;
 	always_comb begin
@@ -20,12 +24,17 @@ module Fetch (
 		end else if (iCacheCoreBus.reqack) begin
 			send_fetch_req = 0; // hack: still idle, but already got ack (in theory, we could try to send another request as early as this)
 		end else begin
-			send_fetch_req = (fetch_offset_in - decode_offset_in < 7'd32);
+		        if (!isResteering) begin
+			   send_fetch_req = (fetch_offset_in - decode_offset_in < 7'd32);
+			end else begin
+			   send_fetch_req = 1;
+			end
 		end
 
-	end	   
+	end
 
 	assign iCacheCoreBus.respack = iCacheCoreBus.respcyc; // always able to accept response
+
 
 	always @ (posedge iCacheCoreBus.clk)
 
@@ -35,6 +44,12 @@ module Fetch (
 			fetch_skip_in <= entry[5:0];
 			fetch_offset_in <= 0;
 			decode_buffer_in <= 0;
+		end else if (resteerFetchIn && fetch_state_in == fetch_idle) begin
+		   fetch_rip_in <=  entry & ~63;
+		   fetch_skip_in <= entry[5:0];
+		   fetch_offset_in <= 0;
+		   decode_buffer_in <= 0;
+		   isResteering <= 1;
 		end else begin // !iCacheCoreBus.reset
 			iCacheCoreBus.reqcyc <= send_fetch_req;
 			iCacheCoreBus.req <= fetch_rip_in & ~63;
@@ -51,6 +66,16 @@ module Fetch (
 //				   $write("decode_buffer: %x\n", decode_buffer_in);
 				   
 					fetch_offset_in <= fetch_offset_in + 8;
+				        if (isResteering) begin
+					   /*
+					    * The idea is as follows -- if we are resteering, then we should wait for 
+					    * atleast three words to be filled in the decode_buffer before allowing 
+					    * reads to happen.
+					    */ 
+					   if (fetch_offset_in/8 == 3) begin
+					      isResteering <= 0;
+					   end
+					end
 				end
 			end else begin
 				if (fetch_state_in == fetch_active) begin

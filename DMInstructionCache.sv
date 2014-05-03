@@ -161,6 +161,9 @@ module DMInstructionCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFS
 	             /* NOTE, TODO - For writes, set the write enable bit here. */
 	          end else begin
 	             cache_state <= cache_idle;
+		     read_count <= 0;
+	             cacheCoreBus.respcyc <= 0;
+		     
 	          end
 	       end else begin
 	          cache_state <= cache_waiting_memory;
