@@ -6,8 +6,10 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    , input clk
    , input reset
 );
-   logic [63:0] core_entry;
+
+   import "DPI-C" function longint syscall_cse502(input longint rax, input longint rdi, input longint rsi, input longint rdx, input longint r10, input longint r8, input longint r9);
    
+   logic [63:0] core_entry;
    /* verilator lint_off UNUSED */
    enum { fetch_idle, fetch_waiting, fetch_active } fetch_state;
    logic[5:0] fetch_skip;
@@ -24,8 +26,6 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
    logic [63:0] regFile[16];
 
-   /* verilator lint_off UNUSED */
-   /* verilator lint_off UNDRIVEN */
    logic [63:0] rflags;
    logic [63:0] latch_rflags;
 
@@ -548,7 +548,19 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
 	 
       end
-      rflags = 64'h00200200;
+
+      for (int j=0; j<64; j=j+1) begin
+         rflags[j] = 0;
+         latch_rflags[j] = 0;
+      end
+
+      /* Setting some RFLAGS to 1 */
+      rflags[6] = 1;		//ZF Flag
+      latch_rflags[6] = 1;	//ZF Flag
+      rflags[9] = 1;		//IF Flag
+      latch_rflags[9] = 1;	//IF Flag
+      rflags[1] = 1;		//Reserved Flag
+      latch_rflags[1] = 1;	//Reserved Flag
 
       fetch_skip = 0;
       stallOnJumpLatch = 0;
@@ -941,6 +953,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		memexMemoryAddressSrc2,
 		memexMemoryAddressDest,
 		memexMemoryData,
+		latch_rflags,
 
 		exAluResultOut,
 		exAluResultSpecialOut,
@@ -982,6 +995,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		executeSuccessfulOut,
 	        exDidJumpOut,
 		exJumpTarget,
+		rflags,
           	killOut
 		);
 
@@ -1114,184 +1128,182 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	canExecute <= memorySuccessfulOut;
 	canWriteBack <= executeSuccessfulOut;
 
+	if (executeSuccessfulOut == 1) begin
+		latch_rflags <= rflags;
+	end
+
 	/* Latch the output values from each stage. */
 	
-//	if (memStallOnMemoryOut == 0 || wbStallOnMemoryWrOut == 0) begin
-		idrdExtendedOpcode <= idExtendedOpcodeOut;           
-		idrdHasExtendedOpcode <= idHasExtendedOpcodeOut;   
-		idrdOpcodeLength <= idOpcodeLengthOut;        
-		idrdOpcodeValid <= idOpcodeValidOut;
-		idrdOpcode <= idOpcodeOut;
-		idrdSourceRegCode1 <= idSourceRegCode1Out;
-		idrdSourceRegCode2 <= idSourceRegCode2Out;
-		idrdSourceRegCode1Valid <= idSourceRegCode1ValidOut;
-		idrdSourceRegCode2Valid <= idSourceRegCode2ValidOut;
-		idrdImmLen <= idImmLenOut;
-		idrdIsMemoryAccessSrc1 <= idIsMemoryAccessSrc1Out;
-		idrdIsMemoryAccessSrc2 <= idIsMemoryAccessSrc2Out;
-		idrdIsMemoryAccessDest <= idIsMemoryAccessDestOut;
-		idrdDispLen <= idDispLenOut;
-		idrdImm8 <=  idImm8Out ;
-		idrdImm16 <= idImm16Out;
-		idrdImm32 <= idImm32Out;
-		idrdImm64 <= idImm64Out;
-		idrdDisp8 <= idDisp8Out;
-		idrdDisp16 <= idDisp16Out;
-		idrdDisp32 <= idDisp32Out;
-		idrdDisp64 <= idDisp64Out;
-		idrdDestReg <= idDestRegOut;
-		idrdDestRegValid <= idDestRegValidOut;
-		idrdDestRegSpecial <= idDestRegSpecialOut;
-		idrdDestRegSpecialValid <=  idDestRegSpecialValidOut;
-	        /* verilator lint_off WIDTH */
-	        idrdInstructionLength <= bytes_decoded_this_cycle;
-	        /* verilator lint_on WIDTH */
-	
+        idrdExtendedOpcode <= idExtendedOpcodeOut;           
+	idrdHasExtendedOpcode <= idHasExtendedOpcodeOut;   
+	idrdOpcodeLength <= idOpcodeLengthOut;        
+	idrdOpcodeValid <= idOpcodeValidOut;
+	idrdOpcode <= idOpcodeOut;
+	idrdSourceRegCode1 <= idSourceRegCode1Out;
+	idrdSourceRegCode2 <= idSourceRegCode2Out;
+	idrdSourceRegCode1Valid <= idSourceRegCode1ValidOut;
+	idrdSourceRegCode2Valid <= idSourceRegCode2ValidOut;
+	idrdImmLen <= idImmLenOut;
+	idrdIsMemoryAccessSrc1 <= idIsMemoryAccessSrc1Out;
+	idrdIsMemoryAccessSrc2 <= idIsMemoryAccessSrc2Out;
+	idrdIsMemoryAccessDest <= idIsMemoryAccessDestOut;
+	idrdDispLen <= idDispLenOut;
+	idrdImm8 <=  idImm8Out ;
+	idrdImm16 <= idImm16Out;
+	idrdImm32 <= idImm32Out;
+	idrdImm64 <= idImm64Out;
+	idrdDisp8 <= idDisp8Out;
+	idrdDisp16 <= idDisp16Out;
+	idrdDisp32 <= idDisp32Out;
+	idrdDisp64 <= idDisp64Out;
+	idrdDestReg <= idDestRegOut;
+	idrdDestRegValid <= idDestRegValidOut;
+	idrdDestRegSpecial <= idDestRegSpecialOut;
+	idrdDestRegSpecialValid <=  idDestRegSpecialValidOut;
+	idrdInstructionLength <= {28'b0, bytes_decoded_this_cycle};
 
-		rdacExtendedOpcode <= rdExtendedOpcodeOut;           
-		rdacHasExtendedOpcode <= rdHasExtendedOpcodeOut;   
-		rdacOpcodeLength <= rdOpcodeLengthOut;        
-		rdacOpcodeValid <= rdOpcodeValidOut;
-		rdacOpcode <= rdOpcodeOut;
-		rdacOperandVal1 <= rdOperandVal1Out;
-		rdacOperandVal2 <= rdOperandVal2Out;
-		rdacOperandVal1Valid <= rdOperandVal1ValidOut;
-		rdacOperandVal2Valid <= rdOperandVal2ValidOut;
-		rdacImmLen <= rdImmLenOut;
-		rdacIsMemoryAccessSrc1 <= rdIsMemoryAccessSrc1Out;
-		rdacIsMemoryAccessSrc2 <= rdIsMemoryAccessSrc2Out;
-		rdacIsMemoryAccessDest <= rdIsMemoryAccessDestOut;
-		rdacDispLen <= rdDispLenOut;
-		rdacImm8 <=  rdImm8Out ;
-		rdacImm16 <= rdImm16Out;
-		rdacImm32 <= rdImm32Out;
-		rdacImm64 <= rdImm64Out;
-		rdacDisp8 <= rdDisp8Out;
-		rdacDisp16 <= rdDisp16Out;
-		rdacDisp32 <= rdDisp32Out;
-		rdacDisp64 <= rdDisp64Out;
-		rdacDestReg <= rdDestRegOut;
-		rdacDestRegValid <= rdDestRegValidOut;
-		rdacDestRegValue <= rdDestRegValueOut;
-		rdacDestRegSpecial <= rdDestRegSpecialOut;
-		rdacDestRegSpecialValid <=  rdDestRegSpecialValidOut;
-		rdacSourceRegCode1 <= rdSourceRegCode1Out;
-		rdacSourceRegCode2 <= rdSourceRegCode2Out;
-		rdacSourceRegCode1Valid <= rdSourceRegCode1ValidOut;
-		rdacSourceRegCode2Valid <= rdSourceRegCode2ValidOut;
-	        rdacInstructionLength <= rdInstructionLengthOut;
+	rdacExtendedOpcode <= rdExtendedOpcodeOut;           
+	rdacHasExtendedOpcode <= rdHasExtendedOpcodeOut;   
+	rdacOpcodeLength <= rdOpcodeLengthOut;        
+	rdacOpcodeValid <= rdOpcodeValidOut;
+	rdacOpcode <= rdOpcodeOut;
+	rdacOperandVal1 <= rdOperandVal1Out;
+	rdacOperandVal2 <= rdOperandVal2Out;
+	rdacOperandVal1Valid <= rdOperandVal1ValidOut;
+	rdacOperandVal2Valid <= rdOperandVal2ValidOut;
+	rdacImmLen <= rdImmLenOut;
+	rdacIsMemoryAccessSrc1 <= rdIsMemoryAccessSrc1Out;
+	rdacIsMemoryAccessSrc2 <= rdIsMemoryAccessSrc2Out;
+	rdacIsMemoryAccessDest <= rdIsMemoryAccessDestOut;
+	rdacDispLen <= rdDispLenOut;
+	rdacImm8 <=  rdImm8Out ;
+	rdacImm16 <= rdImm16Out;
+	rdacImm32 <= rdImm32Out;
+	rdacImm64 <= rdImm64Out;
+	rdacDisp8 <= rdDisp8Out;
+	rdacDisp16 <= rdDisp16Out;
+	rdacDisp32 <= rdDisp32Out;
+	rdacDisp64 <= rdDisp64Out;
+	rdacDestReg <= rdDestRegOut;
+	rdacDestRegValid <= rdDestRegValidOut;
+	rdacDestRegValue <= rdDestRegValueOut;
+	rdacDestRegSpecial <= rdDestRegSpecialOut;
+	rdacDestRegSpecialValid <=  rdDestRegSpecialValidOut;
+	rdacSourceRegCode1 <= rdSourceRegCode1Out;
+	rdacSourceRegCode2 <= rdSourceRegCode2Out;
+	rdacSourceRegCode1Valid <= rdSourceRegCode1ValidOut;
+	rdacSourceRegCode2Valid <= rdSourceRegCode2ValidOut;
+	rdacInstructionLength <= rdInstructionLengthOut;
 
-		acmemExtendedOpcode <= acExtendedOpcodeOut;
-		acmemHasExtendedOpcode <= acHasExtendedOpcodeOut;
-		acmemOpcodeLength <= acOpcodeLengthOut;
-		acmemOpcodeValid <= acOpcodeValidOut; 
-		acmemOpcode <= acOpcodeOut;
-		acmemOperandVal1 <= acOperandVal1Out;
-		acmemOperandVal2 <= acOperandVal2Out;
-		acmemOperandVal1Valid <= acOperandVal1ValidOut;
-		acmemOperandVal2Valid <= acOperandVal2ValidOut;   
-		acmemSourceRegCode1 <= acSourceRegCode1Out;
-		acmemSourceRegCode2 <= acSourceRegCode2Out;
-		acmemSourceRegCode1Valid <= acSourceRegCode1ValidOut;
-		acmemSourceRegCode2Valid <= acSourceRegCode2ValidOut;   
-		acmemImmLen <= acImmLenOut;
-		acmemDispLen <= acDispLenOut;
-		acmemImm8 <= acImm8Out;
-		acmemImm16 <= acImm16Out;
-		acmemImm32 <= acImm32Out;
-		acmemImm64 <= acImm64Out;
-		acmemDisp8 <= acDisp8Out;
-		acmemDisp16 <= acDisp16Out;
-		acmemDisp32 <= acDisp32Out;
-		acmemDisp64 <= acDisp64Out;
-		acmemDestReg <= acDestRegOut;
-		acmemDestRegValid <= acDestRegValidOut;
-		acmemDestRegValue <= acDestRegValueOut;
-		acmemDestRegSpecial <= acDestRegSpecialOut;
-		acmemDestRegSpecialValid <= acDestRegSpecialValidOut;
-		acmemIsMemoryAccessSrc1 <= acIsMemoryAccessSrc1Out;
-		acmemIsMemoryAccessSrc2 <= acIsMemoryAccessSrc2Out;
-		acmemIsMemoryAccessDest <= acIsMemoryAccessDestOut;
-		acmemMemoryAddressSrc1 <= acMemoryAddressSrc1Out;
-		acmemMemoryAddressSrc2 <= acMemoryAddressSrc2Out;
-		acmemMemoryAddressDest <= acMemoryAddressDestOut;
-	        acmemInstructionLength <= acInstructionLengthOut;
+	acmemExtendedOpcode <= acExtendedOpcodeOut;
+	acmemHasExtendedOpcode <= acHasExtendedOpcodeOut;
+	acmemOpcodeLength <= acOpcodeLengthOut;
+	acmemOpcodeValid <= acOpcodeValidOut; 
+	acmemOpcode <= acOpcodeOut;
+	acmemOperandVal1 <= acOperandVal1Out;
+	acmemOperandVal2 <= acOperandVal2Out;
+	acmemOperandVal1Valid <= acOperandVal1ValidOut;
+	acmemOperandVal2Valid <= acOperandVal2ValidOut;   
+	acmemSourceRegCode1 <= acSourceRegCode1Out;
+	acmemSourceRegCode2 <= acSourceRegCode2Out;
+	acmemSourceRegCode1Valid <= acSourceRegCode1ValidOut;
+	acmemSourceRegCode2Valid <= acSourceRegCode2ValidOut;   
+	acmemImmLen <= acImmLenOut;
+	acmemDispLen <= acDispLenOut;
+	acmemImm8 <= acImm8Out;
+	acmemImm16 <= acImm16Out;
+	acmemImm32 <= acImm32Out;
+	acmemImm64 <= acImm64Out;
+	acmemDisp8 <= acDisp8Out;
+	acmemDisp16 <= acDisp16Out;
+	acmemDisp32 <= acDisp32Out;
+	acmemDisp64 <= acDisp64Out;
+	acmemDestReg <= acDestRegOut;
+	acmemDestRegValid <= acDestRegValidOut;
+	acmemDestRegValue <= acDestRegValueOut;
+	acmemDestRegSpecial <= acDestRegSpecialOut;
+	acmemDestRegSpecialValid <= acDestRegSpecialValidOut;
+	acmemIsMemoryAccessSrc1 <= acIsMemoryAccessSrc1Out;
+	acmemIsMemoryAccessSrc2 <= acIsMemoryAccessSrc2Out;
+	acmemIsMemoryAccessDest <= acIsMemoryAccessDestOut;
+	acmemMemoryAddressSrc1 <= acMemoryAddressSrc1Out;
+	acmemMemoryAddressSrc2 <= acMemoryAddressSrc2Out;
+	acmemMemoryAddressDest <= acMemoryAddressDestOut;
+	acmemInstructionLength <= acInstructionLengthOut;
 
-		memexExtendedOpcode <= memExtendedOpcodeOut;
-		memexHasExtendedOpcode <= memHasExtendedOpcodeOut;
-		memexOpcodeLength <= memOpcodeLengthOut;
-		memexOpcodeValid <= memOpcodeValidOut; 
-		memexOpcode <= memOpcodeOut;
-		memexOperandVal1 <= memOperandVal1Out;
-		memexOperandVal2 <= memOperandVal2Out;
-		memexOperandVal1Valid <= memOperandVal1ValidOut;
-		memexOperandVal2Valid <= memOperandVal2ValidOut;   
-		memexSourceRegCode1 <= memSourceRegCode1Out;
-		memexSourceRegCode2 <= memSourceRegCode2Out;
-		memexSourceRegCode1Valid <= memSourceRegCode1ValidOut;
-		memexSourceRegCode2Valid <= memSourceRegCode2ValidOut;   
-		memexImmLen <= memImmLenOut;
-		memexDispLen <= memDispLenOut;
-		memexImm8 <= memImm8Out;
-		memexImm16 <= memImm16Out;
-		memexImm32 <= memImm32Out;
-		memexImm64 <= memImm64Out;
-		memexDisp8 <= memDisp8Out;
-		memexDisp16 <= memDisp16Out;
-		memexDisp32 <= memDisp32Out;
-		memexDisp64 <= memDisp64Out;
-		memexDestReg <= memDestRegOut;
-		memexDestRegValid <= memDestRegValidOut;
-		memexDestRegValue <= memDestRegValueOut;
-		memexDestRegSpecial <= memDestRegSpecialOut;
-		memexDestRegSpecialValid <= memDestRegSpecialValidOut;
-		memexIsMemoryAccessSrc1 <= memIsMemoryAccessSrc1Out;
-		memexIsMemoryAccessSrc2 <= memIsMemoryAccessSrc2Out;
-		memexIsMemoryAccessDest <= memIsMemoryAccessDestOut;
-		memexMemoryAddressSrc1 <= memMemoryAddressSrc1Out;
-		memexMemoryAddressSrc2 <= memMemoryAddressSrc2Out;
-		memexMemoryAddressDest <= memMemoryAddressDestOut;
-	        memexInstructionLength <= memInstructionLengthOut;
-//	end
+	memexExtendedOpcode <= memExtendedOpcodeOut;
+	memexHasExtendedOpcode <= memHasExtendedOpcodeOut;
+	memexOpcodeLength <= memOpcodeLengthOut;
+	memexOpcodeValid <= memOpcodeValidOut; 
+	memexOpcode <= memOpcodeOut;
+	memexOperandVal1 <= memOperandVal1Out;
+	memexOperandVal2 <= memOperandVal2Out;
+	memexOperandVal1Valid <= memOperandVal1ValidOut;
+	memexOperandVal2Valid <= memOperandVal2ValidOut;   
+	memexSourceRegCode1 <= memSourceRegCode1Out;
+	memexSourceRegCode2 <= memSourceRegCode2Out;
+	memexSourceRegCode1Valid <= memSourceRegCode1ValidOut;
+	memexSourceRegCode2Valid <= memSourceRegCode2ValidOut;   
+	memexImmLen <= memImmLenOut;
+	memexDispLen <= memDispLenOut;
+	memexImm8 <= memImm8Out;
+	memexImm16 <= memImm16Out;
+	memexImm32 <= memImm32Out;
+	memexImm64 <= memImm64Out;
+	memexDisp8 <= memDisp8Out;
+	memexDisp16 <= memDisp16Out;
+	memexDisp32 <= memDisp32Out;
+	memexDisp64 <= memDisp64Out;
+	memexDestReg <= memDestRegOut;
+	memexDestRegValid <= memDestRegValidOut;
+	memexDestRegValue <= memDestRegValueOut;
+	memexDestRegSpecial <= memDestRegSpecialOut;
+	memexDestRegSpecialValid <= memDestRegSpecialValidOut;
+	memexIsMemoryAccessSrc1 <= memIsMemoryAccessSrc1Out;
+	memexIsMemoryAccessSrc2 <= memIsMemoryAccessSrc2Out;
+	memexIsMemoryAccessDest <= memIsMemoryAccessDestOut;
+	memexMemoryAddressSrc1 <= memMemoryAddressSrc1Out;
+	memexMemoryAddressSrc2 <= memMemoryAddressSrc2Out;
+	memexMemoryAddressDest <= memMemoryAddressDestOut;
+	memexInstructionLength <= memInstructionLengthOut;
 
-//	if (wbStallOnMemoryWrOut == 0) begin
-		exwbExtendedOpcode <= exExtendedOpcodeOut;
-		exwbHasExtendedOpcode <= exHasExtendedOpcodeOut;
-		exwbOpcodeLength <= exOpcodeLengthOut;
-		exwbOpcodeValid <= exOpcodeValidOut; 
-		exwbOpcode <= exOpcodeOut;
-		exwbOperandVal1 <= exOperandVal1Out;
-		exwbOperandVal2 <= exOperandVal2Out;
-		exwbOperandVal1Valid <= exOperandVal1ValidOut;
-		exwbOperandVal2Valid <= exOperandVal2ValidOut;   
-		exwbSourceRegCode1 <= exSourceRegCode1Out;
-		exwbSourceRegCode2 <= exSourceRegCode2Out;
-		exwbSourceRegCode1Valid <= exSourceRegCode1ValidOut;
-		exwbSourceRegCode2Valid <= exSourceRegCode2ValidOut;   
-		exwbImmLen <= exImmLenOut;
-		exwbDispLen <= exDispLenOut;
-		exwbImm8 <= exImm8Out;
-		exwbImm16 <= exImm16Out;
-		exwbImm32 <= exImm32Out;
-		exwbImm64 <= exImm64Out;
-		exwbDisp8 <= exDisp8Out;
-		exwbDisp16 <= exDisp16Out;
-		exwbDisp32 <= exDisp32Out;
-		exwbDisp64 <= exDisp64Out;
-		exwbDestReg <= exDestRegOut;
-		exwbDestRegValid <= exDestRegValidOut;
-		exwbDestRegValue <= exDestRegValueOut;
-		exwbDestRegSpecial <= exDestRegSpecialOut;
-		exwbDestRegSpecialValid <= exDestRegSpecialValidOut;
-		exwbAluResult <= exAluResultOut;
-		exwbAluResultSpecial <= exAluResultSpecialOut;
-		exwbIsMemoryAccessSrc1 <= exIsMemoryAccessSrc1Out;
-		exwbIsMemoryAccessSrc2 <= exIsMemoryAccessSrc2Out;
-		exwbIsMemoryAccessDest <= exIsMemoryAccessDestOut;
-		exwbMemoryAddressSrc1 <= exMemoryAddressSrc1Out;
-		exwbMemoryAddressSrc2 <= exMemoryAddressSrc2Out;
-		exwbMemoryAddressDest <= exMemoryAddressDestOut;
-//	end
+	exwbExtendedOpcode <= exExtendedOpcodeOut;
+	exwbHasExtendedOpcode <= exHasExtendedOpcodeOut;
+	exwbOpcodeLength <= exOpcodeLengthOut;
+	exwbOpcodeValid <= exOpcodeValidOut; 
+	exwbOpcode <= exOpcodeOut;
+	exwbOperandVal1 <= exOperandVal1Out;
+	exwbOperandVal2 <= exOperandVal2Out;
+	exwbOperandVal1Valid <= exOperandVal1ValidOut;
+	exwbOperandVal2Valid <= exOperandVal2ValidOut;   
+	exwbSourceRegCode1 <= exSourceRegCode1Out;
+	exwbSourceRegCode2 <= exSourceRegCode2Out;
+	exwbSourceRegCode1Valid <= exSourceRegCode1ValidOut;
+	exwbSourceRegCode2Valid <= exSourceRegCode2ValidOut;   
+	exwbImmLen <= exImmLenOut;
+	exwbDispLen <= exDispLenOut;
+	exwbImm8 <= exImm8Out;
+	exwbImm16 <= exImm16Out;
+	exwbImm32 <= exImm32Out;
+	exwbImm64 <= exImm64Out;
+	exwbDisp8 <= exDisp8Out;
+	exwbDisp16 <= exDisp16Out;
+	exwbDisp32 <= exDisp32Out;
+	exwbDisp64 <= exDisp64Out;
+	exwbDestReg <= exDestRegOut;
+	exwbDestRegValid <= exDestRegValidOut;
+	exwbDestRegValue <= exDestRegValueOut;
+	exwbDestRegSpecial <= exDestRegSpecialOut;
+	exwbDestRegSpecialValid <= exDestRegSpecialValidOut;
+	exwbAluResult <= exAluResultOut;
+	exwbAluResultSpecial <= exAluResultSpecialOut;
+	exwbIsMemoryAccessSrc1 <= exIsMemoryAccessSrc1Out;
+	exwbIsMemoryAccessSrc2 <= exIsMemoryAccessSrc2Out;
+	exwbIsMemoryAccessDest <= exIsMemoryAccessDestOut;
+	exwbMemoryAddressSrc1 <= exMemoryAddressSrc1Out;
+	exwbMemoryAddressSrc2 <= exMemoryAddressSrc2Out;
+	exwbMemoryAddressDest <= exMemoryAddressDestOut;
+
 
 	idrdCurrentRip <= idCurrentRipOut;
 	rdacCurrentRip <= rdCurrentRipOut;
@@ -1368,5 +1380,6 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
       $display("R13 = %x", regFile[13]);
       $display("R14 = %x", regFile[14]);
       $display("R15 = %x", regFile[15]);
+      $display("RFLAGS = %x", latch_rflags);
    end
 endmodule
