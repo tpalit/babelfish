@@ -860,11 +860,11 @@ module Decode (
 
                 imm_len = get_imm(decode_bytes[opcode_start_index*8 +: 8]);
                 if((modrm_array[decode_bytes[opcode_start_index*8 +: 8]] == 0) && (imm_len == 0)) begin
-                   if (opcode == 8'h70 ||
+                   if (/*opcode == 8'h70 ||
                                  opcode == 8'h71 ||
                                  opcode == 8'h72 ||
                                  opcode == 8'h73 ||
-//                                 opcode == 8'h74 ||
+                                 opcode == 8'h74 ||
                                  opcode == 8'h75 ||
                                  opcode == 8'h76 ||
                                  opcode == 8'h77 ||
@@ -875,7 +875,7 @@ module Decode (
                                  opcode == 8'h7C ||
                                  opcode == 8'h7D ||
                                  opcode == 8'h7E ||
-                                 opcode == 8'h7F ||
+                                 opcode == 8'h7F || */
                                  opcode == 8'hE3 ||
                                  opcode == 8'h50 ||
                                  opcode == 8'h51 ||
@@ -2910,27 +2910,26 @@ module Decode (
 	       isMemoryAccessSrc1Out = 0;
 	       isMemoryAccessSrc2Out = 0;
 	       isMemoryAccessDestOut = 0;
-	    end else if (opcode == 8'h74) begin // if (opcode == 8'h3D)
+	    end else if (opcode == 8'h70 || 
+			 opcode == 8'h71 || 
+			 opcode == 8'h72 || 
+			 opcode == 8'h73 || 
+			 opcode == 8'h74 || 
+			 opcode == 8'h75 ||
+			 opcode == 8'h76 || 
+			 opcode == 8'h77 ||
+			 opcode == 8'h78 || 
+			 opcode == 8'h79 ||
+			 opcode == 8'h7A ||
+			 opcode == 8'h7B ||
+			 opcode == 8'h7C ||
+			 opcode == 8'h7D ||
+			 opcode == 8'h7E || 
+			 opcode == 8'h7F) begin // if (opcode == 8'h3D)
+	       decode_D(imm8, imm32, 1, currentRipIn+{ 32'b0, instr_count });
 	       opcodeValidOut = 1;
 	       imm64Out = sign_extend_8_to_64(imm8);
 	       stallOnJumpOut = 1;
-            end else if (opcode == 8'h70 ||
-                                 opcode == 8'h71 ||
-                                 opcode == 8'h72 ||
-                                 opcode == 8'h73 ||
-                                 opcode == 8'h75 ||
-                                 opcode == 8'h76 ||
-                                 opcode == 8'h77 ||
-                                 opcode == 8'h78 ||
-                                 opcode == 8'h79 ||
-                                 opcode == 8'h7A ||
-                                 opcode == 8'h7B ||
-                                 opcode == 8'h7C ||
-                                 opcode == 8'h7D ||
-                                 opcode == 8'h7E ||
-                                 opcode == 8'h7F ||
-                                 opcode == 8'hE3 ) begin
-               decode_D(imm8, imm32, 1, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hD1 && reg_field == 3'b100) begin
                /****************** For SAL/SHL *************/
                decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count });

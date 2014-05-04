@@ -36,9 +36,11 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
    always_comb begin
       if (stallOnJumpLatch && fetch_state == fetch_idle) begin
-	 if (exDidJumpOut) begin
+	 if (exDidJumpOut && exJumpTarget != 0) begin
 	    core_entry = exJumpTarget & ~7; // word aligned
 	    resteerFetchIn = exDidJumpOut; // In comb block so that we can get it in the immediate next cycle.
+	 end else begin
+	    resteerFetchIn = 0;
 	 end
       end else begin
 	 resteerFetchIn = 0;
@@ -75,8 +77,9 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
       end
       if (exDidJumpOut && stallOnJumpLatch && fetch_state == fetch_idle) begin
 	 stallOnJumpLatch <= 0; // Move ahead
-	 decode_offset <= {4'b0000, exJumpTarget[61:63]}; // The offset inside the word
-	 $display("Watch me jump to %x with decode offset = %x!", exJumpTarget, decode_offset);
+	 if (exJumpTarget != 0) begin
+	    decode_offset <= {4'b0000, exJumpTarget[61:63]}; // The offset inside the word
+	 end
 	 /*
 	  * 1. Set the entry signals in Fetch module.
 	  * 2. Calculate and set the decode_offset_in signal in Fetch module.
@@ -1312,7 +1315,11 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	exwbCurrentRip <= exCurrentRipOut;
 
         /* verilator lint_off WIDTH */
-        ifidCurrentRip <= ifidCurrentRip + bytes_decoded_this_cycle;
+	if (stallOnJumpLatch && exDidJumpOut && exJumpTarget != 0) begin
+	   ifidCurrentRip <= exJumpTarget;
+	end else begin
+           ifidCurrentRip <= ifidCurrentRip + bytes_decoded_this_cycle;
+	end
         
         /* verilator lint_on WIDTH */
 

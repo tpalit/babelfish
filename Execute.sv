@@ -1277,13 +1277,182 @@ module Execute (
 			end else if ((opcodeLengthIn == 1) && (opcodeIn ==  8'hC3 || opcodeIn == 8'hCB || opcodeIn == 8'hCF)) begin
 				killOut = 1;
 				isExecuteSuccessfulOut = 1;
-			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h74)) begin
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h70)) begin
+			        /* Jump short if overflow */
 			        isExecuteSuccessfulOut = 1;
 			        didJump = 1;
-			        /* TODO - Actually check the RFLAGS condition. */
-			        /* verilator lint_off WIDTH */
-			        jumpTarget = currentRipIn + imm64In + instructionLengthIn;
-			        /* verilator lint_on WIDTH */
+                                if (rflagsIn[11] == 1) begin
+			           /* verilator lint_off WIDTH */
+			           jumpTarget = currentRipIn + imm64In + instructionLengthIn;
+			           /* verilator lint_on WIDTH */
+				end else begin
+				   jumpTarget = 0;
+				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h71)) begin
+			        /* Jump short if not overflow */
+			        isExecuteSuccessfulOut = 1;
+			        didJump = 1;
+                                if (rflagsIn[11] == 0) begin
+			           /* verilator lint_off WIDTH */
+			           jumpTarget = currentRipIn + imm64In + instructionLengthIn;
+			           /* verilator lint_on WIDTH */
+				end else begin
+				   jumpTarget = 0;
+				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h72)) begin
+			        /* Jump short if not above or equal (CF=1). */
+			        isExecuteSuccessfulOut = 1;
+			        didJump = 1;
+                                if (rflagsIn[0] == 1) begin
+			           /* verilator lint_off WIDTH */
+			           jumpTarget = currentRipIn + imm64In + instructionLengthIn;
+			           /* verilator lint_on WIDTH */
+				end else begin
+				   jumpTarget = 0;
+				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h73)) begin
+			        /* Jump short if not carry (CF=0). */
+			        isExecuteSuccessfulOut = 1;
+			        didJump = 1;
+                                if (rflagsIn[0] == 0) begin
+			           /* verilator lint_off WIDTH */
+			           jumpTarget = currentRipIn + imm64In + instructionLengthIn;
+			           /* verilator lint_on WIDTH */
+				end else begin
+				   jumpTarget = 0;
+				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h74)) begin
+			        /* Jump short if equal */
+			        isExecuteSuccessfulOut = 1;
+			        didJump = 1;
+                                if (rflagsIn[6] == 1) begin
+			           /* verilator lint_off WIDTH */
+			           jumpTarget = currentRipIn + imm64In + instructionLengthIn;
+			           /* verilator lint_on WIDTH */
+				end else begin
+				   jumpTarget = 0;
+				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h75)) begin
+			        /* Jump short if not equal (ZF=0).*/
+			        isExecuteSuccessfulOut = 1;
+			        didJump = 1;
+                                if (rflagsIn[6] == 0) begin
+			           /* verilator lint_off WIDTH */
+			           jumpTarget = currentRipIn + imm64In + instructionLengthIn;
+			           /* verilator lint_on WIDTH */
+				end else begin
+				   jumpTarget = 0;
+				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h76)) begin
+			        /* Jump short if below or equal (CF=1 or ZF=1). */
+			        isExecuteSuccessfulOut = 1;
+			        didJump = 1;
+                                if (rflagsIn[0] == 1 || rflagsIn[6] == 1) begin
+			           /* verilator lint_off WIDTH */
+			           jumpTarget = currentRipIn + imm64In + instructionLengthIn;
+			           /* verilator lint_on WIDTH */
+				end else begin
+				   jumpTarget = 0;
+				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h77)) begin
+			        /* Jump short if above (CF=0 and ZF=0). */
+			        isExecuteSuccessfulOut = 1;
+			        didJump = 1;
+                                if (rflagsIn[0] == 0 && rflagsIn[6] == 0) begin
+			           /* verilator lint_off WIDTH */
+			           jumpTarget = currentRipIn + imm64In + instructionLengthIn;
+			           /* verilator lint_on WIDTH */
+				end else begin
+				   jumpTarget = 0;
+				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h78)) begin
+			        /* Jump short if sign (SF=1). */
+			        isExecuteSuccessfulOut = 1;
+			        didJump = 1;
+                                if (rflagsIn[7] == 1) begin
+			           /* verilator lint_off WIDTH */
+			           jumpTarget = currentRipIn + imm64In + instructionLengthIn;
+			           /* verilator lint_on WIDTH */
+				end else begin
+				   jumpTarget = 0;
+				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h79)) begin
+ 			        /* Jump short if not sign (SF=0). */
+			        isExecuteSuccessfulOut = 1;
+			        didJump = 1;
+                                if (rflagsIn[7] == 0) begin
+			           /* verilator lint_off WIDTH */
+			           jumpTarget = currentRipIn + imm64In + instructionLengthIn;
+			           /* verilator lint_on WIDTH */
+				end else begin
+				   jumpTarget = 0;
+				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h7A)) begin
+			        /* Jump short if parity (PF=1). */
+			        isExecuteSuccessfulOut = 1;
+			        didJump = 1;
+                                if (rflagsIn[2] == 1) begin
+			           /* verilator lint_off WIDTH */
+			           jumpTarget = currentRipIn + imm64In + instructionLengthIn;
+			           /* verilator lint_on WIDTH */
+				end else begin
+				   jumpTarget = 0;
+				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h7B)) begin
+			        /* Jump short if parity odd (PF=0). */
+			        isExecuteSuccessfulOut = 1;
+			        didJump = 1;
+                                if (rflagsIn[2] == 0) begin
+			           /* verilator lint_off WIDTH */
+			           jumpTarget = currentRipIn + imm64In + instructionLengthIn;
+			           /* verilator lint_on WIDTH */
+				end else begin
+				   jumpTarget = 0;
+				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h7C)) begin
+			        /* Jump short if not greater or equal (SF != OF). */
+			        isExecuteSuccessfulOut = 1;
+			        didJump = 1;
+                                if (rflagsIn[7] != rflagsIn[11]) begin
+			           /* verilator lint_off WIDTH */
+			           jumpTarget = currentRipIn + imm64In + instructionLengthIn;
+			           /* verilator lint_on WIDTH */
+				end else begin
+				   jumpTarget = 0;
+				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h7D)) begin
+			        /* Jump short if not less (SF=OF). */
+			        isExecuteSuccessfulOut = 1;
+			        didJump = 1;
+                                if (rflagsIn[7] == rflagsIn[11]) begin
+			           /* verilator lint_off WIDTH */
+			           jumpTarget = currentRipIn + imm64In + instructionLengthIn;
+			           /* verilator lint_on WIDTH */
+				end else begin
+				   jumpTarget = 0;
+				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h7E)) begin
+			        /* Jump short if not greater (ZF=1 or SF != OF). */
+			        isExecuteSuccessfulOut = 1;
+			        didJump = 1;
+                                if ((rflagsIn[6] == 1) && (rflagsIn[7] != rflagsIn[11])) begin
+			           /* verilator lint_off WIDTH */
+			           jumpTarget = currentRipIn + imm64In + instructionLengthIn;
+			           /* verilator lint_on WIDTH */
+				end else begin
+				   jumpTarget = 0;
+				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h7F)) begin
+			        /* Jump short if not equal (ZF=0). */
+			        isExecuteSuccessfulOut = 1;
+			        didJump = 1;
+                                if (rflagsIn[6] == 0) begin
+			           /* verilator lint_off WIDTH */
+			           jumpTarget = currentRipIn + imm64In + instructionLengthIn;
+			           /* verilator lint_on WIDTH */
+				end else begin
+				   jumpTarget = 0;
+				end
 			end else begin
 				isExecuteSuccessfulOut = 0;
 			end

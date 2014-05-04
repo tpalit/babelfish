@@ -2,7 +2,7 @@
         .text
 
 _start:
-	/*
+/*	
 	movq	$0x10, %rax
 	movq	$0x10, %rbx
 	addq	%rax, %rbx
@@ -11,7 +11,7 @@ _start:
 	movq	$0x40, %rcx
 .here:	addq	$0x30, %rdx
         retq
-	*/
+*/
 	movq	$0x10, %rax
 	movq	$0x10, %rbx
 	addq	%rax, %rbx
@@ -29,4 +29,5 @@ _start:
 .everywhere:
 	movq $0x11, %rbx
 	retq
+
 	
