@@ -33,7 +33,7 @@
  * 
  */
 
-module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 5) (
+module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 6) (
         /* verilator lint_off UNDRIVEN */
         /* verilator lint_off UNUSED */
 
@@ -53,7 +53,12 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
     logic [1:0] stateSet1[(1<<LOGDEPTH)-1:0];
     logic [1:0] stateSet2[(1<<LOGDEPTH)-1:0];
 
-    logic mostRecentlyUsedSet[(1<<LOGDEPTH)-1:0];    // Used to figure out what to evict.
+    /* 
+     * Used to figure out what to evict. Tracks the most recently used entry.
+     * We evict the least recently used, thus we evict the entry from Set1 when
+     * this is set to 1, and we evict from Set2 when this is set to 0.
+     */
+    logic mostRecentlyUsedSet[(1<<LOGDEPTH)-1:0];
 
     logic [WORDSIZE-LOGDEPTH-LOGLINEOFFSET-1:0] readDataTagSet1;
     logic [WORDSIZE-LOGDEPTH-LOGLINEOFFSET-1:0] writeDataTagSet1;
@@ -80,14 +85,13 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
     logic [0:LOGDEPTH-1] reqAddrIndex;
     logic [0:LOGLINEOFFSET-1] reqAddrOffset;
     
-    enum { cache_idle, cache_waiting_sram, cache_waiting_memory, cache_writing_memory } cache_state;
-    
     /*
      * cache_idle - Cache idle.
      * cache_waiting_sram - Waiting to read tags and data from the SRAM.
      * cache_waiting_memory - Waiting to read data from the memory.
      * cache_writing_memory - Waiting writing data to the memory.
      */
+    enum { cache_idle, cache_waiting_sram, cache_waiting_memory, cache_writing_memory } cache_state;
     
     initial begin
         for(int i=0; i<(1<<LOGDEPTH); i=i+1) begin
@@ -96,7 +100,7 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
             stateSet2[i][0] = 1;
             stateSet2[i][1] = 0;
 
-            mostRecentlyUsedSet[i] = 0;
+            mostRecentlyUsedSet[i] = 1;
         end
 
         read_count = 0;
@@ -117,7 +121,6 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
         writeEnableTagSet2 = 0;
 
         waitCounter = 0;
-        waitCounter = 0;
         
         reqAddrTag = 0;
         reqAddrIndex = 0;
@@ -125,7 +128,7 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
         
         isWrite = 0;
         
-        $display("Initializing 2-way Set Associative L1 Cache");
+        $display("Initializing 2-way Set Associative Data Cache");
     end
 
     SRAM #(WIDTH * num_word_aligned_blocks, LOGDEPTH, 64) sram_cache_set1(
@@ -198,14 +201,19 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
             rwArbiterCacheBus.respcyc <= 0;
             // Check the state, if the index is valid, go to SRAM to get tags.
             // Else, directly go to memory, 
-            if (state[reqAddrIndex][0] == 0) begin
+            if (stateSet1[reqAddrIndex][0] == 0) begin
+                cache_state <= cache_waiting_sram;
+                waitCounter <= delay;
+            end else if (stateSet2[reqAddrIndex][0] == 0) begin
                 cache_state <= cache_waiting_sram;
                 waitCounter <= delay;
             end else begin
                 cache_state <= cache_waiting_memory;
+
                 // Send the request to the Arbiter
                 arbiterCacheBus.reqcyc <= 1;
                 arbiterCacheBus.req <= rwArbiterCacheBus.req & ~63;
+
                 if (!isWrite) begin
                     arbiterCacheBus.reqtag <= rwArbiterCacheBus.reqtag;
                 end else begin
@@ -214,38 +222,78 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
             end
             // reset read_count
             read_count <= 0;
+        end else if ((rwArbiterCacheBus.reqcyc == 0) && (cache_state == cache_idle)) begin
+        	rwArbiterCacheBus.respcyc <= 0;
         end else if ((cache_state == cache_waiting_sram)) begin
             rwArbiterCacheBus.reqack <= 0;
+
             if (waitCounter == 0) begin
                 // Can read tags now. So read tags and do comparison
                 // If the tag is the same, then use the data in the cache
                 // else make a memory request.
-                if (readDataTag == reqAddrTag) begin
+                if (readDataTagSet1 == reqAddrTag) begin
                     if(!isWrite) begin
                         rwArbiterCacheBus.respcyc <= 1;
-                        rwArbiterCacheBus.resp <= readDataCacheLine[reqAddrOffset*8+:WORDSIZE];
+                        rwArbiterCacheBus.resp <= readDataCacheLineSet1[reqAddrOffset*8+:WORDSIZE];
                         arbiterCacheBus.reqtag <= rwArbiterCacheBus.reqtag;
+                        cache_state <= cache_idle;
                     end else begin
-
                         logic[0:LOGLINEOFFSET-1] i = 0;
+
                         // We'll not set respcyc to high now. Set it only when the data is sent off to the memory.
-                        writeEnable[reqAddrOffset/8] <= 1;
+                        writeEnableSet1[reqAddrOffset/8] <= 1;
 
                         // Copy over the cache contents read into the write buffer, so that it's easier to send
                         // the memory write requests.
 
                         for(i=0; i<((1<<LOGLINEOFFSET)-8); i=i+8) begin
                             if(i != reqAddrOffset) begin
-                                writeDataCacheLine[i*8+:WORDSIZE] <= readDataCacheLine[i*8+:WORDSIZE];
+                                writeDataCacheLineSet1[i*8+:WORDSIZE] <= readDataCacheLineSet1[i*8+:WORDSIZE];
                             end else begin
-                                writeDataCacheLine[i*8+:WORDSIZE] <= rwArbiterCacheBus.reqdata;
+                                writeDataCacheLineSet1[i*8+:WORDSIZE] <= rwArbiterCacheBus.reqdata;
                             end 
                         end
 
                         if(i != reqAddrOffset) begin
-                            writeDataCacheLine[i*8+:WORDSIZE] <= readDataCacheLine[i*8+:WORDSIZE];
+                            writeDataCacheLineSet1[i*8+:WORDSIZE] <= readDataCacheLineSet1[i*8+:WORDSIZE];
                         end else begin
-                            writeDataCacheLine[i*8+:WORDSIZE] <= rwArbiterCacheBus.reqdata;
+                            writeDataCacheLineSet1[i*8+:WORDSIZE] <= rwArbiterCacheBus.reqdata;
+                        end
+
+                        // Initialize the memory write
+                        write_count <= 0;
+                        cache_state <= cache_writing_memory;
+                        arbiterCacheBus.reqcyc <= 1;
+                        arbiterCacheBus.req <= rwArbiterCacheBus.req & ~63;
+                        arbiterCacheBus.reqtag <= rwArbiterCacheBus.reqtag;
+                    end
+                end else if (readDataTagSet2 == reqAddrTag) begin
+                    if(!isWrite) begin
+                        rwArbiterCacheBus.respcyc <= 1;
+                        rwArbiterCacheBus.resp <= readDataCacheLineSet2[reqAddrOffset*8+:WORDSIZE];
+                        arbiterCacheBus.reqtag <= rwArbiterCacheBus.reqtag;
+                        cache_state <= cache_idle;
+                    end else begin
+                        logic[0:LOGLINEOFFSET-1] i = 0;
+
+                        // We'll not set respcyc to high now. Set it only when the data is sent off to the memory.
+                        writeEnableSet2[reqAddrOffset/8] <= 1;
+
+                        // Copy over the cache contents read into the write buffer, so that it's easier to send
+                        // the memory write requests.
+
+                        for(i=0; i<((1<<LOGLINEOFFSET)-8); i=i+8) begin
+                            if(i != reqAddrOffset) begin
+                                writeDataCacheLineSet2[i*8+:WORDSIZE] <= readDataCacheLineSet2[i*8+:WORDSIZE];
+                            end else begin
+                                writeDataCacheLineSet2[i*8+:WORDSIZE] <= rwArbiterCacheBus.reqdata;
+                            end 
+                        end
+
+                        if(i != reqAddrOffset) begin
+                            writeDataCacheLineSet2[i*8+:WORDSIZE] <= readDataCacheLineSet2[i*8+:WORDSIZE];
+                        end else begin
+                            writeDataCacheLineSet2[i*8+:WORDSIZE] <= rwArbiterCacheBus.reqdata;
                         end
 
                         // Initialize the memory write
@@ -269,7 +317,12 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
                         arbiterCacheBus.reqtag <= { rwArbiterCacheBus.READ, rwArbiterCacheBus.reqtag[11:0] };
                     end
 
-                    state[reqAddrIndex][0] <= 1; // Mark the entry as invalid
+		    /* We set the state of LRU set to Invalid, as that is what we replace. */
+		    if (mostRecentlyUsedSet[reqAddrIndex] == 1) begin
+			stateSet1[reqAddrIndex][0] <= 1; // Mark the entry as invalid
+		    end else begin
+			stateSet2[reqAddrIndex][0] <= 1; // Mark the entry as invalid
+		    end
                 end
             end else begin
                 waitCounter <= waitCounter-1;
@@ -293,41 +346,83 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
                 read_count <= read_count+1;
 
                 if (read_count < 8) begin
-                    writeDataCacheLine[read_count*WORDSIZE+:WORDSIZE] <= arbiterCacheBus.resp;
+		    if (mostRecentlyUsedSet[reqAddrIndex] == 1) begin
+			writeDataCacheLineSet1[read_count*WORDSIZE+:WORDSIZE] <= arbiterCacheBus.resp;
+		    end else begin
+			writeDataCacheLineSet2[read_count*WORDSIZE+:WORDSIZE] <= arbiterCacheBus.resp;
+		    end
                 end
 
                 if (read_count >= 7) begin
-                    state[reqAddrIndex][0] <= 0; // Mark the cache entry as valid
-                    // Write to the tag.
-                    writeEnableTag <= 1;
-                    writeDataTag <= reqAddrTag;
+		    if (mostRecentlyUsedSet[reqAddrIndex] == 1) begin
+			stateSet1[reqAddrIndex][0] <= 0; // Mark the cache entry as valid
 
-                    for(int j=0; j < 8; j=j+1) begin
-                        writeEnable[j] <= 1;
-                    end
+			// Write to the tag.
+                    	writeEnableTagSet1 <= 1;
+                    	writeDataTagSet1 <= reqAddrTag;
+
+                    	for(int j=0; j < 8; j=j+1) begin
+                    	    writeEnableSet1[j] <= 1;
+                    	end
+		    end else begin
+			stateSet2[reqAddrIndex][0] <= 0; // Mark the cache entry as valid
+
+			// Write to the tag.
+                    	writeEnableTagSet2 <= 1;
+                    	writeDataTagSet2 <= reqAddrTag;
+
+                    	for(int j=0; j < 8; j=j+1) begin
+                    	    writeEnableSet2[j] <= 1;
+                    	end
+		    end
 
                     if (!isWrite) begin
-                        rwArbiterCacheBus.resp <= writeDataCacheLine[reqAddrOffset*8+:WORDSIZE];
+			if (mostRecentlyUsedSet[reqAddrIndex] == 1) begin
+			    rwArbiterCacheBus.resp <= writeDataCacheLineSet1[reqAddrOffset*8+:WORDSIZE];
+			end else begin
+			    rwArbiterCacheBus.resp <= writeDataCacheLineSet2[reqAddrOffset*8+:WORDSIZE];
+			end
+
                         rwArbiterCacheBus.resptag <= arbiterCacheBus.resptag;
                         rwArbiterCacheBus.respcyc <= 1;
                     end else begin
-                        writeDataCacheLine[reqAddrOffset*8+:WORDSIZE] <= rwArbiterCacheBus.reqdata;
+			if (mostRecentlyUsedSet[reqAddrIndex] == 1) begin
+			    writeDataCacheLineSet1[reqAddrOffset*8+:WORDSIZE] <= rwArbiterCacheBus.reqdata;
+			end else begin
+			    writeDataCacheLineSet2[reqAddrOffset*8+:WORDSIZE] <= rwArbiterCacheBus.reqdata;
+			end
                     end
                 end
             end else begin 
                 if (read_count >= 7) begin
                     arbiterCacheBus.respack <= 0;
-                    writeEnableTag <= 0;
 
-                    for(int j=0; j < 8; j=j+1) begin
-                        writeEnable[j] <= 0;
-                    end
+		    if (mostRecentlyUsedSet[reqAddrIndex] == 1) begin
+			writeEnableTagSet1 <= 0;
+
+                    	for(int j=0; j < 8; j=j+1) begin
+                    	    writeEnableSet1[j] <= 0;
+                    	end
+		    end else begin
+			writeEnableTagSet2 <= 0;
+
+                    	for(int j=0; j < 8; j=j+1) begin
+                    	    writeEnableSet2[j] <= 0;
+                    	end
+		    end
 
                     read_count <= 0;
 
                     if (!isWrite) begin
                         rwArbiterCacheBus.respcyc <= 0;
                         cache_state <= cache_idle;
+    
+        		/* Set current entry as the mostRecentlyUsed entry. */
+        		if (mostRecentlyUsedSet[reqAddrIndex] == 1) begin
+        		    mostRecentlyUsedSet[reqAddrIndex] <= 0;
+        		end else begin
+        		    mostRecentlyUsedSet[reqAddrIndex] <= 1;
+        		end
                     end else begin
                         // Go to the Memory write stage.
                         // Initialize the memory write
@@ -344,7 +439,12 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
             if (write_count <= 7) begin
                 if (arbiterCacheBus.reqack == 1) begin
                     // Send next request
-                    arbiterCacheBus.req <= writeDataCacheLine[write_count*WORDSIZE+:WORDSIZE];
+		    if (mostRecentlyUsedSet[reqAddrIndex] == 1) begin
+			arbiterCacheBus.req <= writeDataCacheLineSet1[write_count*WORDSIZE+:WORDSIZE];
+		    end else begin
+			arbiterCacheBus.req <= writeDataCacheLineSet2[write_count*WORDSIZE+:WORDSIZE];
+		    end
+
                     write_count <= write_count+1;
                     arbiterCacheBus.reqcyc <= 1;
                 end
@@ -353,6 +453,13 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
                 arbiterCacheBus.respack <= 0;
                 cache_state <= cache_idle;
                 write_count <= 0;
+    
+        	/* Set current entry as the mostRecentlyUsed entry. */
+        	if (mostRecentlyUsedSet[reqAddrIndex] == 1) begin
+        	    mostRecentlyUsedSet[reqAddrIndex] <= 0;
+        	end else begin
+        	    mostRecentlyUsedSet[reqAddrIndex] <= 1;
+        	end
             end
         end
     endfunction

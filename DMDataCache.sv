@@ -167,6 +167,8 @@ module DMDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 5)
 	 end
          // reset read_count
 	 read_count <= 0;
+      end else if ((rwArbiterCacheBus.reqcyc == 0) && (cache_state == cache_idle)) begin
+         rwArbiterCacheBus.respcyc <= 0;
       end else if ((cache_state == cache_waiting_sram)) begin
 	 rwArbiterCacheBus.reqack <= 0;
 	 if (waitCounter == 0) begin
@@ -178,6 +180,7 @@ module DMDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 5)
 	          rwArbiterCacheBus.respcyc <= 1;
 	          rwArbiterCacheBus.resp <= readDataCacheLine[reqAddrOffset*8+:WORDSIZE];
 	          arbiterCacheBus.reqtag <= rwArbiterCacheBus.reqtag;
+                  cache_state <= cache_idle;
                end else begin
                   logic[0:LOGLINEOFFSET-1] i = 0;
                   // We'll not set respcyc to high now. Set it only when the data is sent off to the memory.

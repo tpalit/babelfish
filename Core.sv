@@ -599,8 +599,10 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    ArbiterCacheInterface #(DATA_WIDTH, TAG_WIDTH) instrArbiterCacheInf(reset, clk);
    ArbiterCacheInterface #(DATA_WIDTH, TAG_WIDTH) dataArbiterCacheInf(reset, clk);
 
-   DMInstructionCache #(DATA_WIDTH, 64, 9, 3) instrCache(instrCacheCoreInf.CachePorts, instrArbiterCacheInf.CachePorts);
-   DMDataCache #(DATA_WIDTH, 64, 9, 6) dataCache(rwArbiterCacheInf.CachePorts, dataArbiterCacheInf.CachePorts);
+//   DMInstructionCache #(DATA_WIDTH, 64, 9, 3) instrCache(instrCacheCoreInf.CachePorts, instrArbiterCacheInf.CachePorts);
+   SetAssociativeInstructionCache #(DATA_WIDTH, 64, 9, 3) instrCache(instrCacheCoreInf.CachePorts, instrArbiterCacheInf.CachePorts);
+//   DMDataCache #(DATA_WIDTH, 64, 9, 6) dataCache(rwArbiterCacheInf.CachePorts, dataArbiterCacheInf.CachePorts);
+   SetAssociativeDataCache #(DATA_WIDTH, 64, 9, 6) dataCache(rwArbiterCacheInf.CachePorts, dataArbiterCacheInf.CachePorts);
 
    Arbiter #(DATA_WIDTH, TAG_WIDTH) cacheArbiter(bus.Top, dataArbiterCacheInf.ArbiterPorts, instrArbiterCacheInf.ArbiterPorts);
 
