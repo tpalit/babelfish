@@ -11,13 +11,8 @@ _start:
 	mov    (%rax), %r10
 	mov    (%rbx), %r11
 	nop
-<<<<<<< HEAD
 	addq   $10, (%rax)
 	movq   (%rax), %r12
-=======
-	add    $10, (%rax)
-	mov    (%rax), %r14
->>>>>>> 4551093a08ef71ea3a30acfa428ec45e00069773
 //        mov    %r8, (%rbx)
 /*        sub    $3, %rdx
         sub    $3, %rdx
