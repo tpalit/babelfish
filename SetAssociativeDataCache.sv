@@ -95,6 +95,8 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
             stateSet1[i][1] = 0;
             stateSet2[i][0] = 1;
             stateSet2[i][1] = 0;
+
+            mostRecentlyUsedSet[i] = 0;
         end
 
         read_count = 0;
