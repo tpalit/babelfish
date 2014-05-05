@@ -263,6 +263,9 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
                             writeDataCacheLineSet1[i*8+:WORDSIZE] <= rwArbiterCacheBus.reqdata;
                         end
 
+			/* This is a hack for now so that the correct flag gets set in writing memory mode., need better logic. */
+        		mostRecentlyUsedSet[reqAddrIndex] <= 1;
+
                         // Initialize the memory write
                         write_count <= 0;
                         cache_state <= cache_writing_memory;
@@ -301,6 +304,9 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
                         end else begin
                             writeDataCacheLineSet2[i*8+:WORDSIZE] <= rwArbiterCacheBus.reqdata;
                         end
+
+			/* This is a hack for now so that the correct flag gets set in writing memory mode., need better logic. */
+        		mostRecentlyUsedSet[reqAddrIndex] <= 0;
 
                         // Initialize the memory write
                         write_count <= 0;

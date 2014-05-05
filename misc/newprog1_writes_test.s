@@ -25,6 +25,9 @@ _start:
 	mov    (%rbx), %r15
 	add    $80, (%rdx)
 	mov    (%rdx), %rsi
+	mov    %rsp, (%rdx)
+	add    $20, (%rdx)
+	mov    (%rdx), %rdi
 //        mov    %r8, (%rbx)
 /*        sub    $3, %rdx
         sub    $3, %rdx
