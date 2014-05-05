@@ -237,6 +237,9 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
                         rwArbiterCacheBus.resp <= readDataCacheLineSet1[reqAddrOffset*8+:WORDSIZE];
                         arbiterCacheBus.reqtag <= rwArbiterCacheBus.reqtag;
                         cache_state <= cache_idle;
+    
+        		/* Set current entry as the mostRecentlyUsed entry. */
+        		mostRecentlyUsedSet[reqAddrIndex] <= 0;
                     end else begin
                         logic[0:LOGLINEOFFSET-1] i = 0;
 
@@ -273,6 +276,9 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
                         rwArbiterCacheBus.resp <= readDataCacheLineSet2[reqAddrOffset*8+:WORDSIZE];
                         arbiterCacheBus.reqtag <= rwArbiterCacheBus.reqtag;
                         cache_state <= cache_idle;
+    
+        		/* Set current entry as the mostRecentlyUsed entry. */
+        		mostRecentlyUsedSet[reqAddrIndex] <= 1;
                     end else begin
                         logic[0:LOGLINEOFFSET-1] i = 0;
 
