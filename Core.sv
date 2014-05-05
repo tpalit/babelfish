@@ -295,6 +295,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:3]		exwbDestRegSpecial = 0;
    bit	 		exwbDestRegSpecialValid = 0;
    logic [0:63]		exwbAluResult = 0;
+   logic [0:63]		exwbAluResultSyscall = 0;
    logic [0:63]		exwbAluResultSpecial = 0;
    logic [0:63]         exwbMemoryAddressSrc1 = 0;
    logic [0:63]         exwbMemoryAddressSrc2 = 0;
@@ -487,6 +488,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:3]		exDestRegSpecialOut = 0;
    bit	 		exDestRegSpecialValidOut = 0;
    logic [0:63]		exAluResultOut = 0;
+   logic [0:63]		exAluResultSyscallOut = 0;
    logic [0:63]		exAluResultSpecialOut = 0;
    logic [0:63]         exMemoryAddressSrc1Out = 0;
    logic [0:63]         exMemoryAddressSrc2Out = 0;
@@ -919,7 +921,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		mem_core_memaccess_inprogress
 		);
    
-   Execute execute(	       
+   Execute execute(
+		clk,
 		memexCurrentRip,
 		canExecute,
 		wbStall,
@@ -964,6 +967,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
 		exAluResultOut,
 		exAluResultSpecialOut,
+		exAluResultSyscallOut,
 		exCurrentRipOut,
 		exExtendedOpcodeOut,
 		exHasExtendedOpcodeOut,
@@ -1005,8 +1009,9 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		rflags,
           	killOut
 		);
+   assign exwbAluResultSyscall = exAluResultSyscallOut;
 
-   WriteBack writeback(	       
+   WriteBack writeback(
 		canWriteBack,
           	killLatch,	
 	/* verilator lint_off UNDRIVEN */
@@ -1037,6 +1042,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		exwbMemoryAddressDest,
 		exwbAluResult,
 		exwbAluResultSpecial,
+		exwbAluResultSyscall,
 		wbCurrentRipOut,
 		wbOpcodeOut,
 		wbOpcodeLengthOut,

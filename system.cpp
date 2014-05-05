@@ -228,8 +228,6 @@ extern uint64_t global_ram_brkptr;
 
 long long syscall_cse502(long long rax, long long rdi, long long rsi, long long rdx, long long r10, long long r8, long long r9)
 {
-	printf("\nsyscall_cse502: rax: %llu, rdi: %llu, rsi: %llu, rdx: %llu, r10: %llu, r8: %llu, r9: %llu\n", rax, rdi, rsi, rdx, r10, r8, r9);
-
 	switch (rax) {
 	case __NR_exit:
 		return __syscall1(rax, rdi);

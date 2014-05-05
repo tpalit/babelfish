@@ -3624,7 +3624,7 @@ module Decode (
             opcodeValidOut = 1;
          end
 
-         if ((opcodeLengthOut == 2) && (opcodeOut == 8'h05) && !toStallOrNotToStallSyscall(regInUseBitMapIn)) begin
+         if ((opcodeLengthOut == 2) && (opcodeOut == 8'h05) && (!toStallOrNotToStallSyscall(regInUseBitMapIn))) begin
             /* Special handling for syscall */
             regInUseBitMapOut[0] = 1;
             regInUseBitMapOut[7] = 1;
@@ -3633,7 +3633,7 @@ module Decode (
             regInUseBitMapOut[8] = 1;
             regInUseBitMapOut[9] = 1;
             regInUseBitMapOut[10] = 1;
-         end else if (!toStallOrNotToStall(sourceRegCode1Out, sourceRegCode1ValidOut, sourceRegCode2Out, sourceRegCode2ValidOut, destRegOut, destRegValidOut, destRegSpecialOut, destRegSpecialValidOut, regInUseBitMapIn)) begin
+         end else if (!((opcodeLengthOut == 2) && (opcodeOut == 8'h05)) && !toStallOrNotToStall(sourceRegCode1Out, sourceRegCode1ValidOut, sourceRegCode2Out, sourceRegCode2ValidOut, destRegOut, destRegValidOut, destRegSpecialOut, destRegSpecialValidOut, regInUseBitMapIn)) begin
 
             if (sourceRegCode1ValidOut) begin
                regInUseBitMapOut[sourceRegCode1Out] = 1;

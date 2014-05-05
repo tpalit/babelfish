@@ -30,6 +30,7 @@ module WriteBack (
 		input [0:63]  memoryAddressDestIn,
 		input [0:63]  aluResultIn,
 		input [0:63]  aluResultSpecialIn,
+		input [0:63]  aluResultSyscallIn,
 
 		output [0:63] currentRipOut,
 		output [0:7]  opcodeOut, 
@@ -85,6 +86,8 @@ module WriteBack (
 				regInUseBitMapOut[8] = 0;
 				regInUseBitMapOut[9] = 0;
 				regInUseBitMapOut[10] = 0;
+
+				regFileOut[destRegIn] = aluResultSyscallIn;
 			end else begin
 				if (sourceReg1ValidIn == 1) begin
 					regInUseBitMapOut[sourceReg1In] = 0;
@@ -123,7 +126,7 @@ module WriteBack (
 			   stallOnMemoryWrOut = 0;
 			end
 
-			if (destRegValidIn == 1) begin
+			if (destRegValidIn == 1 && !((opcodeLengthIn == 2) && (opcodeIn == 8'h05))) begin
 			   regInUseBitMapOut[destRegIn] = 0;
 
   			   if (isMemoryAccessDestIn == 0 && killIn == 0) begin

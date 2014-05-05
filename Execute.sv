@@ -1,6 +1,7 @@
 /* Copyright Tapti Palit, Amitav Paul, Sonam Mandal, 2014, All rights reserved. */
 
 module Execute (
+		input 	      clk,
 		input [0:63]  currentRipIn,
 		input 	      canExecuteIn,
 		input 	      wbStallIn,
@@ -45,6 +46,7 @@ module Execute (
 
 		output [0:63] aluResultOut,
 		output [0:63] aluResultSpecialOut,
+		output [0:63] aluResultSyscallOut,
 
 		output [0:63] currentRipOut,
 		output [0:2]  extendedOpcodeOut,
@@ -101,7 +103,6 @@ module Execute (
 			logic [0:127] mul_temp_var = 0;
 			int count = 0;
 			int i = 0;
-			int syscall_already_run = 0;
 
 			killOut = 0;
 
@@ -1634,20 +1635,8 @@ module Execute (
 				   jumpTarget = 0;
 				end
 			end else if ((opcodeLengthIn == 2) && (opcodeIn == 8'h05)) begin
-				/* syscall implementation. Requires registerFileIn. */
-
-				if (syscall_already_run == 0) begin
-					aluResultOut = syscall_cse502(registerFileIn[0],
-									registerFileIn[7],
-									registerFileIn[6],
-									registerFileIn[2],
-									registerFileIn[10],
-									registerFileIn[8],
-									registerFileIn[9]
-									);
-					syscall_already_run = 1;
-				end
-				isExecuteSuccessfulOut = 1;
+				/* Handling syscall. */
+			        isExecuteSuccessfulOut = 1;
 			end else begin
 				isExecuteSuccessfulOut = 0;
 			end
@@ -1686,11 +1675,28 @@ module Execute (
 			destRegValueOut = destRegValueIn;
 
 		end else begin // if ((opcodeValidIn == 1) && (canExecuteIn == 1) && !wbStallIn)
-             if (!wbStallIn) begin
-			isExecuteSuccessfulOut = 0;
-             end
+			if (!wbStallIn) begin
+				isExecuteSuccessfulOut = 0;
+			end
 		end
 	        operand1ValValidOut = operand1ValValidIn;
 	        operand2ValValidOut = operand2ValValidIn;
+	end
+
+	always @ (posedge clk) begin
+		if ((opcodeValidIn == 1) && (canExecuteIn == 1) && !wbStallIn) begin
+			if ((opcodeLengthIn == 2) && (opcodeIn == 8'h05)) begin
+				/* syscall implementation. Requires registerFileIn. */
+
+				aluResultSyscallOut <= syscall_cse502(registerFileIn[0],
+								registerFileIn[7],
+								registerFileIn[6],
+								registerFileIn[2],
+								registerFileIn[10],
+								registerFileIn[8],
+								registerFileIn[9]
+								);
+			end
+		end
 	end
 endmodule
