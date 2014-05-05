@@ -3595,54 +3595,26 @@ module Decode (
                //$write("sysexit");
             end else if (opcode == 8'h07) begin
                //$write("sysret");
-            end else if (opcode == 8'h80) begin
-               //$write("jo       ");
-               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });
-            end else if (opcode == 8'h81) begin
-               //$write("jno      ");
-               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });
-            end else if (opcode == 8'h82) begin
-               //$write("jb       ");
-               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });
-            end else if (opcode == 8'h83) begin
-               //$write("jae      ");
-               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });       
-            end else if (opcode == 8'h84) begin
-               //$write("je       ");
-               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });
-            end else if (opcode == 8'h85) begin
-               //$write("jne      ");
-               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });       
-            end else if (opcode == 8'h86) begin
-               //$write("jna      ");
-               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });      
-            end else if (opcode == 8'h87) begin
-               //$write("ja       ");
-               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });       
-            end else if (opcode == 8'h88) begin
-               //$write("js       ");
-               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });       
-            end else if (opcode == 8'h89) begin
-               //$write("jns      ");
-               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });       
-            end else if (opcode == 8'h8A) begin
-               //$write("jp       ");
-               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });       
-            end else if (opcode == 8'h8B) begin
-               //$write("jpo      ");
-               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });       
-            end else if (opcode == 8'h8C) begin
-               //$write("jnge     ");
-               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });       
-            end else if (opcode == 8'h8D) begin
-               //$write("jnl      ");
-               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });
-            end else if (opcode == 8'h8E) begin
-               //$write("jle      ");
-               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count }); 
-            end else if (opcode == 8'h8F) begin
-               //$write("jnle     ");
-               decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });       
+            end else if (opcode == 8'h80 ||
+			 opcode == 8'h81 ||
+			 opcode == 8'h82 || 
+			 opcode == 8'h83 ||
+			 opcode == 8'h84 ||
+			 opcode == 8'h85 ||
+			 opcode == 8'h86 ||
+			 opcode == 8'h87 ||
+			 opcode == 8'h88 ||
+			 opcode == 8'h89 ||
+			 opcode == 8'h8A ||
+			 opcode == 8'h8B ||
+			 opcode == 8'h8C ||
+			 opcode == 8'h8D ||
+			 opcode == 8'h8E ||
+			 opcode == 8'h8F) begin
+	       decode_D(imm8, imm32, 1, currentRipIn+{ 32'b0, instr_count });
+	       opcodeValidOut = 1;
+	       imm64Out = sign_extend_32_to_64(imm32);
+	       stallOnJumpOut = 1;
             end else begin
                //$write("Couldn't decode this!!\n");
             end
