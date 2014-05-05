@@ -740,11 +740,29 @@ module Decode (
       if (stallOnJumpIn != 0) begin
 	 return 1;
       end
-      
+
       return 0;
    endfunction
 
-   
+   function bit toStallOrNotToStallSyscall(bit regInUseBM[16]);
+      /* We need to check if the following are free: rax, rdi, rsi, rdx, r10, r9, r8 */
+      if ((regInUseBM[0] == 1) || (regInUseBM[7] == 1) || (regInUseBM[6] == 1) || (regInUseBM[2] == 1) || (regInUseBM[10] == 1) || (regInUseBM[9] == 1) || (regInUseBM[8] == 1)) begin
+         return 1;
+      end
+
+      // Check if there's an ongoing memory access
+      if (core_memaccess_inprogress_in != 0) begin
+	 return 1;
+      end
+
+      // Check if we are stalled on a jump
+      if (stallOnJumpIn != 0) begin
+	 return 1;
+      end
+
+      return 0;
+   endfunction
+
    always_comb begin
       if (canDecodeIn && !stallIn && !wbStallIn) begin : decode_block
 //      if (canDecodeIn) begin : decode_block
@@ -3568,6 +3586,9 @@ module Decode (
                //$write("push gs");
             end else if (opcode == 8'h05) begin
                //$write("syscall");
+	       opcodeValidOut = 1;
+	       destRegOut = 4'b0000; // write operand always RAX
+	       destRegValidOut = 1;
             end else if (opcode == 8'h34) begin
                //$write("sysenter");
             end else if (opcode == 8'h35) begin
@@ -3631,7 +3652,16 @@ module Decode (
             opcodeValidOut = 1;
          end
 
-         if (!toStallOrNotToStall(sourceRegCode1Out, sourceRegCode1ValidOut, sourceRegCode2Out, sourceRegCode2ValidOut, destRegOut, destRegValidOut, destRegSpecialOut, destRegSpecialValidOut, regInUseBitMapIn)) begin
+         if ((opcodeLengthOut == 2) && (opcodeOut == 8'h05) && !toStallOrNotToStallSyscall(regInUseBitMapIn)) begin
+            /* Special handling for syscall */
+            regInUseBitMapOut[0] = 1;
+            regInUseBitMapOut[7] = 1;
+            regInUseBitMapOut[6] = 1;
+            regInUseBitMapOut[2] = 1;
+            regInUseBitMapOut[8] = 1;
+            regInUseBitMapOut[9] = 1;
+            regInUseBitMapOut[10] = 1;
+         end else if (!toStallOrNotToStall(sourceRegCode1Out, sourceRegCode1ValidOut, sourceRegCode2Out, sourceRegCode2ValidOut, destRegOut, destRegValidOut, destRegSpecialOut, destRegSpecialValidOut, regInUseBitMapIn)) begin
 
             if (sourceRegCode1ValidOut) begin
                regInUseBitMapOut[sourceRegCode1Out] = 1;

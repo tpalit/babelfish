@@ -6,6 +6,7 @@ module WriteBack (
 			      /* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */ CacheCoreInterface dCacheCoreBus /* verilator lint_on UNUSED */ /* verilator lint_on UNDRIVEN */,
 		  /* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */
 		input [0:7]   opcodeIn,
+		input [0:31]  opcodeLengthIn,
 		input [0:2]   extendedOpcodeIn,
 		input [0:31]  hasExtendedOpcodeIn,
 		input 	      regInUseBitMapIn[16],
@@ -32,6 +33,7 @@ module WriteBack (
 
 		output [0:63] currentRipOut,
 		output [0:7]  opcodeOut, 
+		output [0:31] opcodeLengthOut, 
 		output [0:2]  extendedOpcodeOut,
 		output [0:31] hasExtendedOpcodeOut,
 		output [0:3]  sourceRegCode1Out,
@@ -74,24 +76,35 @@ module WriteBack (
 		if (canWriteBackIn == 1) begin
 			/* Check regInUseBitMapIn, and set all sources and dest as unused. */
 
-			if (sourceReg1ValidIn == 1) begin
-				regInUseBitMapOut[sourceReg1In] = 0;
+			if ((opcodeLengthIn == 2) && (opcodeIn == 8'h05)) begin
+				/* Special handling for syscall. */
+				regInUseBitMapOut[0] = 0;
+				regInUseBitMapOut[6] = 0;
+				regInUseBitMapOut[7] = 0;
+				regInUseBitMapOut[2] = 0;
+				regInUseBitMapOut[8] = 0;
+				regInUseBitMapOut[9] = 0;
+				regInUseBitMapOut[10] = 0;
 			end else begin
-				regInUseBitMapOut[sourceReg1In] = regInUseBitMapIn[sourceReg1In];
-			end
+				if (sourceReg1ValidIn == 1) begin
+					regInUseBitMapOut[sourceReg1In] = 0;
+				end else begin
+					regInUseBitMapOut[sourceReg1In] = regInUseBitMapIn[sourceReg1In];
+				end
 
-			if (sourceReg2ValidIn == 1) begin
-				regInUseBitMapOut[sourceReg2In] = 0;
-			end else begin
-				regInUseBitMapOut[sourceReg2In] = regInUseBitMapIn[sourceReg2In];
-			end
+				if (sourceReg2ValidIn == 1) begin
+					regInUseBitMapOut[sourceReg2In] = 0;
+				end else begin
+					regInUseBitMapOut[sourceReg2In] = regInUseBitMapIn[sourceReg2In];
+				end
 
-			if (destRegSpecialValidIn == 1) begin
-				regInUseBitMapOut[destRegSpecialIn] = 0;
-				regFileOut[destRegSpecialIn] = aluResultSpecialIn;
-			end else begin
-				regInUseBitMapOut[destRegSpecialIn] = regInUseBitMapIn[destRegSpecialIn];
-				regFileOut[destRegSpecialIn] = regFileIn[destRegSpecialIn];
+				if (destRegSpecialValidIn == 1) begin
+					regInUseBitMapOut[destRegSpecialIn] = 0;
+					regFileOut[destRegSpecialIn] = aluResultSpecialIn;
+				end else begin
+					regInUseBitMapOut[destRegSpecialIn] = regInUseBitMapIn[destRegSpecialIn];
+					regFileOut[destRegSpecialIn] = regFileIn[destRegSpecialIn];
+				end
 			end
 
 			if (isMemoryAccessDestIn == 0) begin
@@ -130,6 +143,7 @@ module WriteBack (
 			aluResultOut = aluResultIn;
 			aluResultSpecialOut = aluResultSpecialIn;
 		        opcodeOut = opcodeIn;
+		        opcodeLengthOut = opcodeLengthIn;
 		        extendedOpcodeOut = extendedOpcodeIn;
 		        hasExtendedOpcodeOut = hasExtendedOpcodeIn;
 		        isMemoryAccessSrc1Out = isMemoryAccessSrc1In;

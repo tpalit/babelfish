@@ -515,6 +515,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    bit			wbStallOnMemoryWrOut = 0;
    bit 			wbDidMemoryWrite = 0;
    logic [0:7] 		wbOpcodeOut = 0;
+   logic [0:31]		wbOpcodeLengthOut = 0;
    logic [0:2] 		wbExtendedOpcodeOut = 0;
    logic [0:31]		wbHasExtendedOpcodeOut = 0;
    /* verilator lint_on UNUSED */
@@ -922,6 +923,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		memexCurrentRip,
 		canExecute,
 		wbStall,
+		regFile,
 		memexExtendedOpcode,
 		memexHasExtendedOpcode,
 		memexOpcodeLength,
@@ -1012,7 +1014,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		writebackCacheCoreInf.CorePorts,
 	/* verilator lint_on UNUSED */
 	/* verilator lint_on UNDRIVEN */
-		exwbOpcode,	       
+		exwbOpcode,
+		exwbOpcodeLength,
    		exwbExtendedOpcode,
     		exwbHasExtendedOpcode,
 		regInUseBitMap,
@@ -1036,6 +1039,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		exwbAluResultSpecial,
 		wbCurrentRipOut,
 		wbOpcodeOut,
+		wbOpcodeLengthOut,
    		wbExtendedOpcodeOut,
     		wbHasExtendedOpcodeOut,
 		wbSourceRegCode1Out,
@@ -1333,38 +1337,60 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
      	killLatch <= killOut;
 
 	if (writeBackSuccessfulOut) begin
-		if (wbDestRegValidOut) begin
-			regInUseBitMap[wbDestRegOut] <= wbRegInUseBitMapOut[wbDestRegOut];
-		end
+		if (wbOpcodeLengthOut == 2 && wbOpcodeOut == 8'h05) begin
+			/* Special handling for syscall */
+			regInUseBitMap[0] <= wbRegInUseBitMapOut[0];
+			regInUseBitMap[7] <= wbRegInUseBitMapOut[7];
+			regInUseBitMap[6] <= wbRegInUseBitMapOut[6];
+			regInUseBitMap[2] <= wbRegInUseBitMapOut[2];
+			regInUseBitMap[8] <= wbRegInUseBitMapOut[8];
+			regInUseBitMap[9] <= wbRegInUseBitMapOut[9];
+			regInUseBitMap[10] <= wbRegInUseBitMapOut[10];
+		end else begin
+			if (wbDestRegValidOut) begin
+				regInUseBitMap[wbDestRegOut] <= wbRegInUseBitMapOut[wbDestRegOut];
+			end
 
-		if (wbDestRegSpecialValidOut) begin
-			regInUseBitMap[wbDestRegSpecialOut] <= wbRegInUseBitMapOut[wbDestRegSpecialOut];
-		end
+			if (wbDestRegSpecialValidOut) begin
+				regInUseBitMap[wbDestRegSpecialOut] <= wbRegInUseBitMapOut[wbDestRegSpecialOut];
+			end
 
-		if (wbSourceRegCode1ValidOut) begin
-			regInUseBitMap[wbSourceRegCode1Out] <= wbRegInUseBitMapOut[wbSourceRegCode1Out];	 
-		end
+			if (wbSourceRegCode1ValidOut) begin
+				regInUseBitMap[wbSourceRegCode1Out] <= wbRegInUseBitMapOut[wbSourceRegCode1Out];	 
+			end
 
-		if (wbSourceRegCode2ValidOut) begin
-			regInUseBitMap[wbSourceRegCode2Out] <= wbRegInUseBitMapOut[wbSourceRegCode2Out];	 
+			if (wbSourceRegCode2ValidOut) begin
+				regInUseBitMap[wbSourceRegCode2Out] <= wbRegInUseBitMapOut[wbSourceRegCode2Out];	 
+			end
 		end
 	end
 
 	if (bytes_decoded_this_cycle > 0) begin
-		if (idDestRegValidOut) begin
-			regInUseBitMap[idDestRegOut] <= regInUseBitMapOut[idDestRegOut];
-		end
+		if (idOpcodeLengthOut == 2 && idOpcodeOut == 8'h05) begin
+			/* Special handling for syscall */
+			regInUseBitMap[0] <= regInUseBitMapOut[0];
+			regInUseBitMap[7] <= regInUseBitMapOut[7];
+			regInUseBitMap[6] <= regInUseBitMapOut[6];
+			regInUseBitMap[2] <= regInUseBitMapOut[2];
+			regInUseBitMap[8] <= regInUseBitMapOut[8];
+			regInUseBitMap[9] <= regInUseBitMapOut[9];
+			regInUseBitMap[10] <= regInUseBitMapOut[10];
+		end else begin
+			if (idDestRegValidOut) begin
+				regInUseBitMap[idDestRegOut] <= regInUseBitMapOut[idDestRegOut];
+			end
 
-		if (idDestRegSpecialValidOut) begin
-			regInUseBitMap[idDestRegSpecialOut] <= regInUseBitMapOut[idDestRegSpecialOut];
-		end
+			if (idDestRegSpecialValidOut) begin
+				regInUseBitMap[idDestRegSpecialOut] <= regInUseBitMapOut[idDestRegSpecialOut];
+			end
 
-		if (idSourceRegCode1ValidOut) begin
-			regInUseBitMap[idSourceRegCode1Out] <= regInUseBitMapOut[idSourceRegCode1Out];	 
-		end
+			if (idSourceRegCode1ValidOut) begin
+				regInUseBitMap[idSourceRegCode1Out] <= regInUseBitMapOut[idSourceRegCode1Out];	 
+			end
 
-		if (idSourceRegCode2ValidOut) begin
-			regInUseBitMap[idSourceRegCode2Out] <= regInUseBitMapOut[idSourceRegCode2Out];	 
+			if (idSourceRegCode2ValidOut) begin
+				regInUseBitMap[idSourceRegCode2Out] <= regInUseBitMapOut[idSourceRegCode2Out];	 
+			end
 		end
 	end
      end

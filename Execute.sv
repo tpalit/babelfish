@@ -4,6 +4,7 @@ module Execute (
 		input [0:63]  currentRipIn,
 		input 	      canExecuteIn,
 		input 	      wbStallIn,
+		input [63:0]  registerFileIn[16],	// Added for syscall only
 		input [0:2]   extendedOpcodeIn,
 		input [0:31]  hasExtendedOpcodeIn,
 		input [0:31]  opcodeLengthIn,
@@ -86,6 +87,8 @@ module Execute (
 		output [63:0] rflagsOut,		
 		output 	      killOut
 		);
+
+   	import "DPI-C" function longint syscall_cse502(input longint rax, input longint rdi, input longint rsi, input longint rdx, input longint r10, input longint r8, input longint r9);
 
 	logic [0:63] operandValue1 = 0;
 	logic [0:63] operandValue2 = 0;
@@ -1453,6 +1456,18 @@ module Execute (
 				end else begin
 				   jumpTarget = 0;
 				end
+			end else if ((opcodeLengthIn == 2) && (opcodeIn == 8'h05)) begin
+				/* syscall implementation. Requires registerFileIn. */
+
+				aluResultOut = syscall_cse502(registerFileIn[0],
+								registerFileIn[7],
+								registerFileIn[6],
+								registerFileIn[2],
+								registerFileIn[10],
+								registerFileIn[8],
+								registerFileIn[9]
+								);
+				isExecuteSuccessfulOut = 1;
 			end else begin
 				isExecuteSuccessfulOut = 0;
 			end
