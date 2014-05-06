@@ -19,6 +19,7 @@ module WriteBack (
 		input 	      sourceReg1ValidIn,
 		input 	      sourceReg2ValidIn,
 		input [0:3]   destRegIn,
+		input [0:63]  destRegValueIn,
 		input         destRegValidIn,
 		input [0:3]   destRegSpecialIn,
 		input 	      destRegSpecialValidIn,
@@ -42,6 +43,7 @@ module WriteBack (
 		output 	      sourceRegCode1ValidOut,
 		output 	      sourceRegCode2ValidOut,
 		output [0:3]  destRegOut,
+		output [0:63] destRegValueOut,
 		output        destRegValidOut,
 		output [0:3]  destRegSpecialOut,
 		output 	      destRegSpecialValidOut,
@@ -129,6 +131,19 @@ module WriteBack (
 			if (destRegValidIn == 1 && !((opcodeLengthIn == 2) && (opcodeIn == 8'h05))) begin
 			   regInUseBitMapOut[destRegIn] = 0;
 
+			   /* Special handling for PUSH */
+			   if ((opcodeLengthIn == 1) && ((opcodeIn == 8'h50) ||                             
+                                                        (opcodeIn == 8'h51) ||                               
+                                                        (opcodeIn == 8'h52) ||
+                                                        (opcodeIn == 8'h53) ||                                        
+                                                        (opcodeIn == 8'h54) ||
+                                                        (opcodeIn == 8'h55) ||
+                                                        (opcodeIn == 8'h56) ||
+                                                        (opcodeIn == 8'h57))) begin
+				//assert (isMemoryAccessDestIn == 1) else $fatal ("\nPush must write to Memory.\n");
+				regFileOut[destRegIn] = aluResultSpecialIn;
+			   end
+
   			   if (isMemoryAccessDestIn == 0 && killIn == 0) begin
 				regFileOut[destRegIn] = aluResultIn;
 			   end
@@ -141,6 +156,7 @@ module WriteBack (
 		        sourceRegCode2ValidOut = sourceReg2ValidIn;
 			destRegOut = destRegIn;
 			destRegValidOut = destRegValidIn;
+			destRegValueOut = destRegValueIn;
 		        destRegSpecialOut = destRegSpecialIn;
 		        destRegSpecialValidOut = destRegSpecialValidIn;
 			aluResultOut = aluResultIn;

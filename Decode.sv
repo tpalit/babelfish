@@ -1215,6 +1215,33 @@ module Decode (
                isMemoryAccessSrc1Out = 0;
 	       isMemoryAccessSrc2Out = 0;
 	       isMemoryAccessDestOut = 0;
+            end else if ((opcode == 8'h50) ||
+               (opcode == 8'h51) ||
+               (opcode == 8'h52) ||
+               (opcode == 8'h53) ||
+               (opcode == 8'h54) ||
+               (opcode == 8'h55) ||
+               (opcode == 8'h56) ||
+               (opcode == 8'h57)) begin
+               /****************** For PUSH *************/
+                oi_reg = opcode-8'h50;
+
+		/* Extra processing for EXECUTE */
+		sourceRegCode1Out = { 1'b0 , oi_reg[5:7] }; // read operand
+		sourceRegCode2Out = 0;
+		sourceRegCode1ValidOut = 1;
+		sourceRegCode2ValidOut = 0;	       
+		destRegOut = 4'b0100; // write operand RSP
+		destRegValidOut = 1;
+		immLenOut = 0;
+		opcodeValidOut = 1;
+		extendedOpcodeOut = 0;
+		hasExtendedOpcodeOut = 0;
+		isMemoryAccessSrc1Out = 0;
+		isMemoryAccessSrc2Out = 0;
+		isMemoryAccessDestOut = 1;
+		disp64Out = 0;
+		dispLenOut = 0;
             end else if (opcode == 8'h83 && reg_field == 3'b110) begin
                /****************** For XOR *************/
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b10);
@@ -3659,6 +3686,8 @@ module Decode (
 		isMemoryAccessSrc1Out = 0;
 		isMemoryAccessSrc2Out = 0;
 		isMemoryAccessDestOut = 0;
+		disp64Out = 0;
+		dispLenOut = 0;
             end else if (opcode == 8'h85) begin
                /****************** For TEST *************/
                decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
@@ -3723,17 +3752,6 @@ module Decode (
             end else if (opcode == 8'h8F && reg_field == 3'b000) begin
                /****************** For POP *************/
                decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
-            end else if (opcode == 8'h50 ||
-                opcode == 8'h51 ||
-                opcode == 8'h52 ||
-                opcode == 8'h53 ||
-                opcode == 8'h54 ||
-                opcode == 8'h55 ||
-                opcode == 8'h56 ||
-                opcode == 8'h57) begin
-               /****************** For PUSH *************/
-               oi_reg = opcode-8'h50;
-               decode_O(rex_field, oi_reg[5:7]);
             end else if (opcode == 8'hFF && reg_field == 3'b110) begin
                /****************** For PUSH *************/
                decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });

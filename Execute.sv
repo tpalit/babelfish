@@ -1593,6 +1593,20 @@ module Execute (
 				end else begin
 					rflagsOut[2] = 0;
 				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h50 ||                                         
+							opcodeIn == 8'h51 ||                                                  
+							opcodeIn == 8'h52 ||                                                  
+							opcodeIn == 8'h53 ||                                                  
+							opcodeIn == 8'h54 ||                                                  
+							opcodeIn == 8'h55 ||                                                  
+							opcodeIn == 8'h56 ||
+							opcodeIn == 8'h57)) begin
+				/* PUSH */
+
+				/* Decrement the Stack Pointer by 8 (64 bit address and operand) */
+				memoryAddressDestOut = memoryAddressDestIn - 8;
+				aluResultSpecialOut = destRegValueIn - 8;
+				aluResultOut = operandValue1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn ==  8'hC3 || opcodeIn == 8'hCB || opcodeIn == 8'hCF)) begin
 				killOut = 1;
 				isExecuteSuccessfulOut = 1;
@@ -1997,8 +2011,19 @@ module Execute (
 		        isMemoryAccessDestOut = isMemoryAccessDestIn;
 			memoryAddressSrc1Out = memoryAddressSrc1In;
 			memoryAddressSrc2Out = memoryAddressSrc2In;
-			memoryAddressDestOut = memoryAddressDestIn;
-			destRegValueOut = destRegValueIn;
+
+			/* We manually set the destRegValueOut for PUSH and POP */
+			if (!((opcodeLengthIn == 1) && (opcodeIn == 8'h50 ||
+                                                        opcodeIn == 8'h51 ||
+                                                        opcodeIn == 8'h52 ||
+                                                        opcodeIn == 8'h53 ||
+                                                        opcodeIn == 8'h54 ||
+                                                        opcodeIn == 8'h55 ||
+                                                        opcodeIn == 8'h56 ||
+                                                        opcodeIn == 8'h57))) begin
+				memoryAddressDestOut = memoryAddressDestIn;
+				destRegValueOut = destRegValueIn;
+			end
 
 		end else begin // if ((opcodeValidIn == 1) && (canExecuteIn == 1) && !wbStallIn)
 			if (!wbStallIn) begin

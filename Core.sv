@@ -292,6 +292,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:63] 	exwbDisp64 = 0;
    logic [0:3]		exwbDestReg = 0;
    bit			exwbDestRegValid = 0;
+   logic [0:63]		exwbDestRegValue = 0;
    logic [0:3]		exwbDestRegSpecial = 0;
    bit	 		exwbDestRegSpecialValid = 0;
    logic [0:63]		exwbAluResult = 0;
@@ -300,7 +301,6 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:63]         exwbMemoryAddressSrc1 = 0;
    logic [0:63]         exwbMemoryAddressSrc2 = 0;
    logic [0:63]         exwbMemoryAddressDest = 0;
-   logic [0:63]         exwbDestRegValue = 0;
 
 
    bit 			regInUseBitMap[16];
@@ -520,6 +520,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:31]		wbOpcodeLengthOut = 0;
    logic [0:2] 		wbExtendedOpcodeOut = 0;
    logic [0:31]		wbHasExtendedOpcodeOut = 0;
+   logic [0:63]		wbDestRegValueOut = 0;
    /* verilator lint_on UNUSED */
 
    bit			readSuccessfulOut = 0;
@@ -1031,6 +1032,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		exwbSourceRegCode1Valid,
 		exwbSourceRegCode2Valid,
 		exwbDestReg,
+		exwbDestRegValue,
 		exwbDestRegValid,
 		exwbDestRegSpecial,
 		exwbDestRegSpecialValid,
@@ -1053,6 +1055,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		wbSourceRegCode1ValidOut,
 		wbSourceRegCode2ValidOut,
 		wbDestRegOut,
+		wbDestRegValueOut,
 		wbDestRegValidOut,
 		wbDestRegSpecialOut,
 		wbDestRegSpecialValidOut,
