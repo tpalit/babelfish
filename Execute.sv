@@ -1093,32 +1093,33 @@ module Execute (
 	
 				add_temp_var = operandValue1 - imm64In;
 	
-				aluResultOut = add_temp_var[1:64];
+//				aluResultOut = add_temp_var[1:64];
+				temp_var = add_temp_var[1:64];
 				isExecuteSuccessfulOut = 1;
 
 				// ZF Flag
-				if (aluResultOut == 0) begin
+				if (temp_var == 0) begin
 					rflagsOut[6] = 1;
 				end else begin
 					rflagsOut[6] = 0;
 				end
 
 				// SF Flag
-				rflagsOut[7] = aluResultOut[0];
+				rflagsOut[7] = temp_var[0];
 
 				// CF Flag
 				rflagsOut[0] = add_temp_var[0];
 
 				// OF Flag
 				if (operandValue1[0] == imm64In[0]) begin
-					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+					rflagsOut[11] = temp_var[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
 				end
 
 				// PF Flag
 				for (i = 0; i < 8; i=i+1) begin
-					if (aluResultOut[56+i] == 1)
+					if (temp_var[56+i] == 1)
 						count = count + 1;
 				end
 
@@ -1132,32 +1133,33 @@ module Execute (
 	
 				add_temp_var = operandValue1 - operandValue2;
 	
-				aluResultOut = add_temp_var[1:64];
+//				aluResultOut = add_temp_var[1:64];
+				temp_var = add_temp_var[1:64];
 				isExecuteSuccessfulOut = 1;
 
 				// ZF Flag
-				if (aluResultOut == 0) begin
+				if (temp_var == 0) begin
 					rflagsOut[6] = 1;
 				end else begin
 					rflagsOut[6] = 0;
 				end
 
 				// SF Flag
-				rflagsOut[7] = aluResultOut[0];
+				rflagsOut[7] = temp_var[0];
 
 				// CF Flag
 				rflagsOut[0] = add_temp_var[0];
 
 				// OF Flag
 				if (operandValue1[0] == operandValue2[0]) begin
-					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+					rflagsOut[11] = temp_var[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
 				end
 
 				// PF Flag
 				for (i = 0; i < 8; i=i+1) begin
-					if (aluResultOut[56+i] == 1)
+					if (temp_var[56+i] == 1)
 						count = count + 1;
 				end
 
@@ -1171,32 +1173,33 @@ module Execute (
 	
 				add_temp_var = operandValue1 - imm64In;
 	
-				aluResultOut = add_temp_var[1:64];
+//				aluResultOut = add_temp_var[1:64];
+				temp_var = add_temp_var[1:64];
 				isExecuteSuccessfulOut = 1;
 
 				// ZF Flag
-				if (aluResultOut == 0) begin
+				if (temp_var == 0) begin
 					rflagsOut[6] = 1;
 				end else begin
 					rflagsOut[6] = 0;
 				end
 
 				// SF Flag
-				rflagsOut[7] = aluResultOut[0];
+				rflagsOut[7] = temp_var[0];
 
 				// CF Flag
 				rflagsOut[0] = add_temp_var[0];
 
 				// OF Flag
 				if (operandValue1[0] == imm64In[0]) begin
-					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+					rflagsOut[11] = temp_var[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
 				end
 
 				// PF Flag
 				for (i = 0; i < 8; i=i+1) begin
-					if (aluResultOut[56+i] == 1)
+					if (temp_var[56+i] == 1)
 						count = count + 1;
 				end
 

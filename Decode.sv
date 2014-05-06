@@ -2723,8 +2723,8 @@ module Decode (
 		sourceRegCode2Out = 0;
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 0;	       
-		destRegOut = { rex_field[7], rm_field }; // write operand
-		destRegValidOut = 1;
+//		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 0;
 		imm64Out = sign_extend_8_to_64(imm8);
 		immLenOut = 8;
 		extendedOpcodeOut = 3'b111;
@@ -2742,19 +2742,19 @@ module Decode (
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
 			isMemoryAccessSrc2Out = 0;
-			isMemoryAccessDestOut = 1;
+			isMemoryAccessDestOut = 0;
 		end else if (mod_field == 2'b01 && rm_field != 3'b100) begin
 			disp64Out = sign_extend_8_to_64(disp8);
 			dispLenOut = 1;
 			isMemoryAccessSrc1Out = 1;
 			isMemoryAccessSrc2Out = 0;
-			isMemoryAccessDestOut = 1;
+			isMemoryAccessDestOut = 0;
 		end else if (mod_field == 2'b10 && rm_field != 3'b100) begin
 			disp64Out = sign_extend_32_to_64(disp32);
 			dispLenOut = 4;
 			isMemoryAccessSrc1Out = 1;
 			isMemoryAccessSrc2Out = 0;
-			isMemoryAccessDestOut = 1;
+			isMemoryAccessDestOut = 0;
 		end else if (mod_field == 2'b00 && rm_field == 3'b100) begin
 			/* TODO: Handle SIB Byte Here, disp = 0 */
 		end else if (mod_field == 2'b00 && rm_field == 3'b101) begin
@@ -2772,8 +2772,8 @@ module Decode (
 		sourceRegCode2Out = 0;
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 0;	       
-		destRegOut = { rex_field[7], rm_field }; // write operand
-		destRegValidOut = 1;
+//		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 0;
 		imm64Out = sign_extend_32_to_64(imm32);
 		immLenOut = 8;
 		extendedOpcodeOut = 3'b111;
@@ -2791,19 +2791,19 @@ module Decode (
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
 			isMemoryAccessSrc2Out = 0;
-			isMemoryAccessDestOut = 1;
+			isMemoryAccessDestOut = 0;
 		end else if (mod_field == 2'b01 && rm_field != 3'b100) begin
 			disp64Out = sign_extend_8_to_64(disp8);
 			dispLenOut = 1;
 			isMemoryAccessSrc1Out = 1;
 			isMemoryAccessSrc2Out = 0;
-			isMemoryAccessDestOut = 1;
+			isMemoryAccessDestOut = 0;
 		end else if (mod_field == 2'b10 && rm_field != 3'b100) begin
 			disp64Out = sign_extend_32_to_64(disp32);
 			dispLenOut = 4;
 			isMemoryAccessSrc1Out = 1;
 			isMemoryAccessSrc2Out = 0;
-			isMemoryAccessDestOut = 1;
+			isMemoryAccessDestOut = 0;
 		end else if (mod_field == 2'b00 && rm_field == 3'b100) begin
 			/* TODO: Handle SIB Byte Here, disp = 0 */
 		end else if (mod_field == 2'b00 && rm_field == 3'b101) begin
@@ -2821,8 +2821,8 @@ module Decode (
 		sourceRegCode2Out = { rex_field[5], reg_field }; // read operand
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 1;	       
-		destRegOut = { rex_field[7], rm_field }; // write operand
-		destRegValidOut = 1;
+//		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 0;
 		immLenOut = 0;
 		extendedOpcodeOut = 0;
 		hasExtendedOpcodeOut = 0;
@@ -2839,19 +2839,19 @@ module Decode (
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
 			isMemoryAccessSrc2Out = 0;
-			isMemoryAccessDestOut = 1;
+			isMemoryAccessDestOut = 0;
 		end else if (mod_field == 2'b01 && rm_field != 3'b100) begin
 			disp64Out = sign_extend_8_to_64(disp8);
 			dispLenOut = 1;
 			isMemoryAccessSrc1Out = 1;
 			isMemoryAccessSrc2Out = 0;
-			isMemoryAccessDestOut = 1;
+			isMemoryAccessDestOut = 0;
 		end else if (mod_field == 2'b10 && rm_field != 3'b100) begin
 			disp64Out = sign_extend_32_to_64(disp32);
 			dispLenOut = 4;
 			isMemoryAccessSrc1Out = 1;
 			isMemoryAccessSrc2Out = 0;
-			isMemoryAccessDestOut = 1;
+			isMemoryAccessDestOut = 0;
 		end else if (mod_field == 2'b00 && rm_field == 3'b100) begin
 			/* TODO: Handle SIB Byte Here, disp = 0 */
 		end else if (mod_field == 2'b00 && rm_field == 3'b101) begin
@@ -2869,8 +2869,8 @@ module Decode (
 		sourceRegCode2Out = { rex_field[7], rm_field }; // read operand
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 1;	       		  
-		destRegOut = { rex_field[5], reg_field }; // write operand
-		destRegValidOut = 1;
+//		destRegOut = { rex_field[5], reg_field }; // write operand
+		destRegValidOut = 0;
 		immLenOut = 0;
 		extendedOpcodeOut = 0;
 		hasExtendedOpcodeOut = 0;
@@ -2917,8 +2917,8 @@ module Decode (
                sourceRegCode2Out = 0;
 	       sourceRegCode1ValidOut = 1;
 	       sourceRegCode2ValidOut = 0;	       	       
-	       destRegOut = 4'b0000; // write operand
-	       destRegValidOut = 1;
+//	       destRegOut = 4'b0000; // write operand
+	       destRegValidOut = 0;
                imm64Out = sign_extend_32_to_64(imm32);
                immLenOut = 8;
                dispLenOut = 0;
