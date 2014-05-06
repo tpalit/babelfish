@@ -3495,6 +3495,53 @@ module Decode (
             end else if (opcode == 8'hF7 && reg_field == 3'b000) begin
                /****************** For TEST *************/
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count }, 2'b11);
+
+		/* Extra processing for EXECUTE */
+		sourceRegCode1Out = { rex_field[7], rm_field }; // read and write operand
+		sourceRegCode2Out = 0;
+		sourceRegCode1ValidOut = 1;
+		sourceRegCode2ValidOut = 0;	       
+//		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 0;
+		imm64Out = sign_extend_32_to_64(imm32);
+		immLenOut = 8;
+		extendedOpcodeOut = 3'b000;
+		hasExtendedOpcodeOut = 1;
+		opcodeValidOut = 1;
+
+		if (mod_field == 2'b11) begin
+			disp64Out = 0;
+			dispLenOut = 0;
+			isMemoryAccessSrc1Out = 0;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 0;
+		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+			disp64Out = 0;
+			dispLenOut = 0;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 0;
+		end else if (mod_field == 2'b01 && rm_field != 3'b100) begin
+			disp64Out = sign_extend_8_to_64(disp8);
+			dispLenOut = 1;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 0;
+		end else if (mod_field == 2'b10 && rm_field != 3'b100) begin
+			disp64Out = sign_extend_32_to_64(disp32);
+			dispLenOut = 4;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 0;
+		end else if (mod_field == 2'b00 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 0 */
+		end else if (mod_field == 2'b00 && rm_field == 3'b101) begin
+			/* TODO: Handle Special case, RIP + disp32 */
+		end else if (mod_field == 2'b01 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 8 */
+		end else if (mod_field == 2'b10 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 32 */
+		end
             end else if (opcode == 8'h69) begin
                /****************** For IMUL *************/
                decode_RMI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count });
@@ -3596,9 +3643,72 @@ module Decode (
             end else if (opcode == 8'hA9) begin
                /****************** For TEST *************/
                decode_I(imm32, 1);
+
+		/* Extra processing for EXECUTE */
+		sourceRegCode1Out = 4'b0000; // read and write operand
+		sourceRegCode2Out = 0;
+		sourceRegCode1ValidOut = 1;
+		sourceRegCode2ValidOut = 0;	       
+//		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 0;
+		imm64Out = sign_extend_32_to_64(imm32);
+		immLenOut = 8;
+		extendedOpcodeOut = 3'b000;
+		hasExtendedOpcodeOut = 1;
+		opcodeValidOut = 1;
+		isMemoryAccessSrc1Out = 0;
+		isMemoryAccessSrc2Out = 0;
+		isMemoryAccessDestOut = 0;
             end else if (opcode == 8'h85) begin
                /****************** For TEST *************/
                decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
+
+		/* Extra processing for EXECUTE */
+		sourceRegCode1Out = { rex_field[7], rm_field }; // read and write operand
+		sourceRegCode2Out = { rex_field[5], reg_field };
+		sourceRegCode1ValidOut = 1;
+		sourceRegCode2ValidOut = 1;	       
+//		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 0;
+		imm64Out = 0;
+		immLenOut = 0;
+		extendedOpcodeOut = 0;
+		hasExtendedOpcodeOut = 0;
+		opcodeValidOut = 1;
+
+		if (mod_field == 2'b11) begin
+			disp64Out = 0;
+			dispLenOut = 0;
+			isMemoryAccessSrc1Out = 0;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 0;
+		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+			disp64Out = 0;
+			dispLenOut = 0;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 0;
+		end else if (mod_field == 2'b01 && rm_field != 3'b100) begin
+			disp64Out = sign_extend_8_to_64(disp8);
+			dispLenOut = 1;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 0;
+		end else if (mod_field == 2'b10 && rm_field != 3'b100) begin
+			disp64Out = sign_extend_32_to_64(disp32);
+			dispLenOut = 4;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 0;
+		end else if (mod_field == 2'b00 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 0 */
+		end else if (mod_field == 2'b00 && rm_field == 3'b101) begin
+			/* TODO: Handle Special case, RIP + disp32 */
+		end else if (mod_field == 2'b01 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 8 */
+		end else if (mod_field == 2'b10 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 32 */
+		end
             end else if (opcode == 8'h58 ||
                 opcode == 8'h59 ||
                 opcode == 8'h5A ||

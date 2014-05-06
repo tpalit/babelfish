@@ -1473,6 +1473,88 @@ module Execute (
 				end else begin
 					rflagsOut[2] = 0;
 				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hF7) && (hasExtendedOpcodeIn == 1)
+				&& (extendedOpcodeIn == 3'b000)) begin
+				/* TEST with immediate */
+	
+				temp_var = operandValue1 & imm64In;
+	
+				isExecuteSuccessfulOut = 1;
+
+				// CF Flag
+				rflagsOut[0] = 0;
+
+				// SF Flag
+				rflagsOut[7] = temp_var[0];
+
+				// OF Flag
+				rflagsOut[11] = 0;
+
+				// PF Flag
+				for (i = 0; i < 8; i=i+1) begin
+					if (temp_var[56+i] == 1)
+						count = count + 1;
+				end
+
+				if (count != 0 && count % 2 == 0) begin
+					rflagsOut[2] = 1;
+				end else begin
+					rflagsOut[2] = 0;
+				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hA9)) begin
+				/* TEST RAX with immediate */
+	
+				temp_var = operandValue1 & imm64In;
+	
+				isExecuteSuccessfulOut = 1;
+
+				// CF Flag
+				rflagsOut[0] = 0;
+
+				// SF Flag
+				rflagsOut[7] = temp_var[0];
+
+				// OF Flag
+				rflagsOut[11] = 0;
+
+				// PF Flag
+				for (i = 0; i < 8; i=i+1) begin
+					if (temp_var[56+i] == 1)
+						count = count + 1;
+				end
+
+				if (count != 0 && count % 2 == 0) begin
+					rflagsOut[2] = 1;
+				end else begin
+					rflagsOut[2] = 0;
+				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h85)) begin
+				/* TEST with another register */
+	
+				temp_var = operandValue1 & operandValue2;
+	
+				isExecuteSuccessfulOut = 1;
+
+				// CF Flag
+				rflagsOut[0] = 0;
+
+				// SF Flag
+				rflagsOut[7] = temp_var[0];
+
+				// OF Flag
+				rflagsOut[11] = 0;
+
+				// PF Flag
+				for (i = 0; i < 8; i=i+1) begin
+					if (temp_var[56+i] == 1)
+						count = count + 1;
+				end
+
+				if (count != 0 && count % 2 == 0) begin
+					rflagsOut[2] = 1;
+				end else begin
+					rflagsOut[2] = 0;
+				end
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hC1) && (hasExtendedOpcodeIn == 1)
 				&& (extendedOpcodeIn == 3'b101)) begin
 				/* SHR with immediate */
