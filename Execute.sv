@@ -101,6 +101,7 @@ module Execute (
 			logic [0:63] temp_var = 0;
 			logic [0:64] add_temp_var = 0;
 			logic [0:127] mul_temp_var = 0;
+			logic [0:7] countMask = 8'h3F;
 			int count = 0;
 			int i = 0;
 
@@ -180,7 +181,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -215,7 +216,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -251,7 +252,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -291,7 +292,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -331,7 +332,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -370,7 +371,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -414,7 +415,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -526,7 +527,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -561,7 +562,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -596,7 +597,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -632,7 +633,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -667,7 +668,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -702,7 +703,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -746,7 +747,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -789,7 +790,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -833,7 +834,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -878,7 +879,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -921,7 +922,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -964,7 +965,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -1004,7 +1005,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -1043,7 +1044,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -1082,7 +1083,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -1123,7 +1124,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -1163,7 +1164,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -1203,7 +1204,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -1240,7 +1241,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -1277,7 +1278,235 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count % 2 == 0) begin
+				if (count != 0 && count % 2 == 0) begin
+					rflagsOut[2] = 1;
+				end else begin
+					rflagsOut[2] = 0;
+				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hD1) && (hasExtendedOpcodeIn == 1)
+				&& (extendedOpcodeIn == 3'b100)) begin
+				/* SHL/SAL with immediate == 1 */
+	
+				add_temp_var = { 1'b0, operandValue1 } << 1;
+	
+				aluResultOut = add_temp_var[1:64];
+				isExecuteSuccessfulOut = 1;
+
+				// ZF Flag
+				if (aluResultOut == 0) begin
+					rflagsOut[6] = 1;
+				end else begin
+					rflagsOut[6] = 0;
+				end
+
+				// CF Flag
+				rflagsOut[0] = add_temp_var[0];
+
+				// SF Flag
+				rflagsOut[7] = aluResultOut[0];
+
+				// OF Flag
+				if ((countMask & 1) == 1) begin
+					rflagsOut[11] = aluResultOut[0] ^ add_temp_var[0];
+				end
+
+				// PF Flag
+				for (i = 0; i < 8; i=i+1) begin
+					if (aluResultOut[56+i] == 1)
+						count = count + 1;
+				end
+
+				if (count != 0 && count % 2 == 0) begin
+					rflagsOut[2] = 1;
+				end else begin
+					rflagsOut[2] = 0;
+				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hC1) && (hasExtendedOpcodeIn == 1)
+				&& (extendedOpcodeIn == 3'b100)) begin
+				/* SHL/SAL with immediate */
+	
+				add_temp_var = { 1'b0, operandValue1 } << imm8In;
+	
+				aluResultOut = add_temp_var[1:64];
+				isExecuteSuccessfulOut = 1;
+
+				// ZF Flag
+				if (aluResultOut == 0) begin
+					rflagsOut[6] = 1;
+				end else begin
+					rflagsOut[6] = 0;
+				end
+
+				// CF Flag
+				rflagsOut[0] = add_temp_var[0];
+
+				// SF Flag
+				rflagsOut[7] = aluResultOut[0];
+
+				// OF Flag
+				if ((countMask & 1) == 1) begin
+					rflagsOut[11] = aluResultOut[0] ^ add_temp_var[0];
+				end
+
+				// PF Flag
+				for (i = 0; i < 8; i=i+1) begin
+					if (aluResultOut[56+i] == 1)
+						count = count + 1;
+				end
+
+				if (count != 0 && count % 2 == 0) begin
+					rflagsOut[2] = 1;
+				end else begin
+					rflagsOut[2] = 0;
+				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hD1) && (hasExtendedOpcodeIn == 1)
+				&& (extendedOpcodeIn == 3'b111)) begin
+				/* SAR with immediate == 1 */
+	
+				add_temp_var = { operandValue1, 1'b0 } >>> 1;
+	
+				aluResultOut = add_temp_var[0:63];
+				isExecuteSuccessfulOut = 1;
+
+				// ZF Flag
+				if (aluResultOut == 0) begin
+					rflagsOut[6] = 1;
+				end else begin
+					rflagsOut[6] = 0;
+				end
+
+				// CF Flag
+				rflagsOut[0] = add_temp_var[64];
+
+				// SF Flag
+				rflagsOut[7] = aluResultOut[0];
+
+				// OF Flag
+				if ((countMask & 1) == 1) begin
+					rflagsOut[11] = 0;
+				end
+
+				// PF Flag
+				for (i = 0; i < 8; i=i+1) begin
+					if (aluResultOut[56+i] == 1)
+						count = count + 1;
+				end
+
+				if (count != 0 && count % 2 == 0) begin
+					rflagsOut[2] = 1;
+				end else begin
+					rflagsOut[2] = 0;
+				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hC1) && (hasExtendedOpcodeIn == 1)
+				&& (extendedOpcodeIn == 3'b111)) begin
+				/* SAR with immediate */
+	
+				add_temp_var = { operandValue1, 1'b0 } >>> imm8In;
+	
+				aluResultOut = add_temp_var[0:63];
+				isExecuteSuccessfulOut = 1;
+
+				// ZF Flag
+				if (aluResultOut == 0) begin
+					rflagsOut[6] = 1;
+				end else begin
+					rflagsOut[6] = 0;
+				end
+
+				// CF Flag
+				rflagsOut[0] = add_temp_var[64];
+
+				// SF Flag
+				rflagsOut[7] = aluResultOut[0];
+
+				// OF Flag
+				if ((countMask & 1) == 1) begin
+					rflagsOut[11] = 0;
+				end
+
+				// PF Flag
+				for (i = 0; i < 8; i=i+1) begin
+					if (aluResultOut[56+i] == 1)
+						count = count + 1;
+				end
+
+				if (count != 0 && count % 2 == 0) begin
+					rflagsOut[2] = 1;
+				end else begin
+					rflagsOut[2] = 0;
+				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hD1) && (hasExtendedOpcodeIn == 1)
+				&& (extendedOpcodeIn == 3'b101)) begin
+				/* SHR with immediate == 1 */
+	
+				add_temp_var = { operandValue1, 1'b0 } >> 1;
+	
+				aluResultOut = add_temp_var[0:63];
+				isExecuteSuccessfulOut = 1;
+
+				// ZF Flag
+				if (aluResultOut == 0) begin
+					rflagsOut[6] = 1;
+				end else begin
+					rflagsOut[6] = 0;
+				end
+
+				// CF Flag
+				rflagsOut[0] = add_temp_var[64];
+
+				// SF Flag
+				rflagsOut[7] = aluResultOut[0];
+
+				// OF Flag
+				if ((countMask & 1) == 1) begin
+					rflagsOut[11] = aluResultOut[0];
+				end
+
+				// PF Flag
+				for (i = 0; i < 8; i=i+1) begin
+					if (aluResultOut[56+i] == 1)
+						count = count + 1;
+				end
+
+				if (count != 0 && count % 2 == 0) begin
+					rflagsOut[2] = 1;
+				end else begin
+					rflagsOut[2] = 0;
+				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hC1) && (hasExtendedOpcodeIn == 1)
+				&& (extendedOpcodeIn == 3'b101)) begin
+				/* SHR with immediate */
+	
+				add_temp_var = { operandValue1, 1'b0 } >> imm8In;
+	
+				aluResultOut = add_temp_var[0:63];
+				isExecuteSuccessfulOut = 1;
+
+				// ZF Flag
+				if (aluResultOut == 0) begin
+					rflagsOut[6] = 1;
+				end else begin
+					rflagsOut[6] = 0;
+				end
+
+				// CF Flag
+				rflagsOut[0] = add_temp_var[64];
+
+				// SF Flag
+				rflagsOut[7] = aluResultOut[0];
+
+				// OF Flag
+				if ((countMask & 1) == 1) begin
+					rflagsOut[11] = aluResultOut[0];
+				end
+
+				// PF Flag
+				for (i = 0; i < 8; i=i+1) begin
+					if (aluResultOut[56+i] == 1)
+						count = count + 1;
+				end
+
+				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;

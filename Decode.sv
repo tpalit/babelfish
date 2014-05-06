@@ -2951,24 +2951,312 @@ module Decode (
             end else if (opcode == 8'hD1 && reg_field == 3'b100) begin
                /****************** For SAL/SHL *************/
                decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count });
+
+		/* Extra processing for EXECUTE */
+		sourceRegCode1Out = { rex_field[7], rm_field }; // read operand
+		sourceRegCode2Out = 0; // read and write operand
+		sourceRegCode1ValidOut = 1;
+		sourceRegCode2ValidOut = 0;	       		  
+		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
+		// TODO: Do we need to sign extend immediate?
+                imm64Out = 1;
+                immLenOut = 1;
+		extendedOpcodeOut = 3'b100;
+		hasExtendedOpcodeOut = 1;
+		opcodeValidOut = 1;
+
+		if (mod_field == 2'b11) begin
+			disp64Out = 0;
+			dispLenOut = 0;
+			isMemoryAccessSrc1Out = 0;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 0;
+		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+			disp64Out = 0;
+			dispLenOut = 0;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
+		end else if (mod_field == 2'b01 && rm_field != 3'b100) begin
+			disp64Out = sign_extend_8_to_64(disp8);
+			dispLenOut = 1;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
+		end else if (mod_field == 2'b10 && rm_field != 3'b100) begin
+			disp64Out = sign_extend_32_to_64(disp32);
+			dispLenOut = 4;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
+		end else if (mod_field == 2'b00 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 0 */
+		end else if (mod_field == 2'b00 && rm_field == 3'b101) begin
+			/* TODO: Handle Special case, RIP + disp32 */
+		end else if (mod_field == 2'b01 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 8 */
+		end else if (mod_field == 2'b10 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 32 */
+		end
             end else if (opcode == 8'hD3 && reg_field == 3'b100) begin
                decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hC1 && reg_field == 3'b100) begin
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b00);
+
+		/* Extra processing for EXECUTE */
+		sourceRegCode1Out = { rex_field[7], rm_field }; // read operand
+		sourceRegCode2Out = 0; // read and write operand
+		sourceRegCode1ValidOut = 1;
+		sourceRegCode2ValidOut = 0;	       		  
+		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
+		// TODO: Do we need to sign extend immediate?
+                imm8Out = imm8;
+                immLenOut = 1;
+		extendedOpcodeOut = 3'b100;
+		hasExtendedOpcodeOut = 1;
+		opcodeValidOut = 1;
+
+		if (mod_field == 2'b11) begin
+			disp64Out = 0;
+			dispLenOut = 0;
+			isMemoryAccessSrc1Out = 0;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 0;
+		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+			disp64Out = 0;
+			dispLenOut = 0;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
+		end else if (mod_field == 2'b01 && rm_field != 3'b100) begin
+			disp64Out = sign_extend_8_to_64(disp8);
+			dispLenOut = 1;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
+		end else if (mod_field == 2'b10 && rm_field != 3'b100) begin
+			disp64Out = sign_extend_32_to_64(disp32);
+			dispLenOut = 4;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
+		end else if (mod_field == 2'b00 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 0 */
+		end else if (mod_field == 2'b00 && rm_field == 3'b101) begin
+			/* TODO: Handle Special case, RIP + disp32 */
+		end else if (mod_field == 2'b01 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 8 */
+		end else if (mod_field == 2'b10 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 32 */
+		end
             end else if (opcode == 8'hD1 && reg_field == 3'b111) begin
                /****************** For SAR *************/
                decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count });
+
+		/* Extra processing for EXECUTE */
+		sourceRegCode1Out = { rex_field[7], rm_field }; // read operand
+		sourceRegCode2Out = 0; // read and write operand
+		sourceRegCode1ValidOut = 1;
+		sourceRegCode2ValidOut = 0;	       		  
+		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
+		// TODO: Do we need to sign extend immediate?
+                imm64Out = 1;
+                immLenOut = 1;
+		extendedOpcodeOut = 3'b111;
+		hasExtendedOpcodeOut = 1;
+		opcodeValidOut = 1;
+
+		if (mod_field == 2'b11) begin
+			disp64Out = 0;
+			dispLenOut = 0;
+			isMemoryAccessSrc1Out = 0;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 0;
+		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+			disp64Out = 0;
+			dispLenOut = 0;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
+		end else if (mod_field == 2'b01 && rm_field != 3'b100) begin
+			disp64Out = sign_extend_8_to_64(disp8);
+			dispLenOut = 1;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
+		end else if (mod_field == 2'b10 && rm_field != 3'b100) begin
+			disp64Out = sign_extend_32_to_64(disp32);
+			dispLenOut = 4;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
+		end else if (mod_field == 2'b00 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 0 */
+		end else if (mod_field == 2'b00 && rm_field == 3'b101) begin
+			/* TODO: Handle Special case, RIP + disp32 */
+		end else if (mod_field == 2'b01 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 8 */
+		end else if (mod_field == 2'b10 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 32 */
+		end
             end else if (opcode == 8'hD3 && reg_field == 3'b111) begin
                decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hC1 && reg_field == 3'b111) begin
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b00);
+
+		/* Extra processing for EXECUTE */
+		sourceRegCode1Out = { rex_field[7], rm_field }; // read operand
+		sourceRegCode2Out = 0; // read and write operand
+		sourceRegCode1ValidOut = 1;
+		sourceRegCode2ValidOut = 0;	       		  
+		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
+		// TODO: Do we need to sign extend immediate?
+                imm8Out = imm8;
+                immLenOut = 1;
+		extendedOpcodeOut = 3'b111;
+		hasExtendedOpcodeOut = 1;
+		opcodeValidOut = 1;
+
+		if (mod_field == 2'b11) begin
+			disp64Out = 0;
+			dispLenOut = 0;
+			isMemoryAccessSrc1Out = 0;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 0;
+		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+			disp64Out = 0;
+			dispLenOut = 0;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
+		end else if (mod_field == 2'b01 && rm_field != 3'b100) begin
+			disp64Out = sign_extend_8_to_64(disp8);
+			dispLenOut = 1;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
+		end else if (mod_field == 2'b10 && rm_field != 3'b100) begin
+			disp64Out = sign_extend_32_to_64(disp32);
+			dispLenOut = 4;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
+		end else if (mod_field == 2'b00 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 0 */
+		end else if (mod_field == 2'b00 && rm_field == 3'b101) begin
+			/* TODO: Handle Special case, RIP + disp32 */
+		end else if (mod_field == 2'b01 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 8 */
+		end else if (mod_field == 2'b10 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 32 */
+		end
             end else if (opcode == 8'hD1 && reg_field == 3'b101) begin
                /****************** For SHR *************/
                decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count });
+
+		/* Extra processing for EXECUTE */
+		sourceRegCode1Out = { rex_field[7], rm_field }; // read operand
+		sourceRegCode2Out = 0; // read and write operand
+		sourceRegCode1ValidOut = 1;
+		sourceRegCode2ValidOut = 0;	       		  
+		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
+		// TODO: Do we need to sign extend immediate?
+                imm64Out = 1;
+                immLenOut = 1;
+		extendedOpcodeOut = 3'b101;
+		hasExtendedOpcodeOut = 1;
+		opcodeValidOut = 1;
+
+		if (mod_field == 2'b11) begin
+			disp64Out = 0;
+			dispLenOut = 0;
+			isMemoryAccessSrc1Out = 0;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 0;
+		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+			disp64Out = 0;
+			dispLenOut = 0;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
+		end else if (mod_field == 2'b01 && rm_field != 3'b100) begin
+			disp64Out = sign_extend_8_to_64(disp8);
+			dispLenOut = 1;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
+		end else if (mod_field == 2'b10 && rm_field != 3'b100) begin
+			disp64Out = sign_extend_32_to_64(disp32);
+			dispLenOut = 4;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
+		end else if (mod_field == 2'b00 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 0 */
+		end else if (mod_field == 2'b00 && rm_field == 3'b101) begin
+			/* TODO: Handle Special case, RIP + disp32 */
+		end else if (mod_field == 2'b01 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 8 */
+		end else if (mod_field == 2'b10 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 32 */
+		end
             end else if (opcode == 8'hD3 && reg_field == 3'b101) begin
                decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 1, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hC1 && reg_field == 3'b101) begin
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b00);
+
+		/* Extra processing for EXECUTE */
+		sourceRegCode1Out = { rex_field[7], rm_field }; // read operand
+		sourceRegCode2Out = 0; // read and write operand
+		sourceRegCode1ValidOut = 1;
+		sourceRegCode2ValidOut = 0;	       		  
+		destRegOut = { rex_field[7], rm_field }; // write operand
+		destRegValidOut = 1;
+		// TODO: Do we need to sign extend immediate?
+                imm8Out = imm8;
+                immLenOut = 1;
+		extendedOpcodeOut = 3'b101;
+		hasExtendedOpcodeOut = 1;
+		opcodeValidOut = 1;
+
+		if (mod_field == 2'b11) begin
+			disp64Out = 0;
+			dispLenOut = 0;
+			isMemoryAccessSrc1Out = 0;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 0;
+		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+			disp64Out = 0;
+			dispLenOut = 0;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
+		end else if (mod_field == 2'b01 && rm_field != 3'b100) begin
+			disp64Out = sign_extend_8_to_64(disp8);
+			dispLenOut = 1;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
+		end else if (mod_field == 2'b10 && rm_field != 3'b100) begin
+			disp64Out = sign_extend_32_to_64(disp32);
+			dispLenOut = 4;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
+		end else if (mod_field == 2'b00 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 0 */
+		end else if (mod_field == 2'b00 && rm_field == 3'b101) begin
+			/* TODO: Handle Special case, RIP + disp32 */
+		end else if (mod_field == 2'b01 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 8 */
+		end else if (mod_field == 2'b10 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 32 */
+		end
             end else if (opcode == 8'hD1 && reg_field == 3'b010) begin
                /****************** For RCL *************/
                decode_MCL(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count });
