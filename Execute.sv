@@ -279,7 +279,7 @@ module Execute (
 				rflagsOut[0] = add_temp_var[0];
 
 				// OF Flag
-				if (operandValue1[0] == imm64In[0]) begin
+				if (operandValue1[0] == imm64In[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
@@ -319,7 +319,7 @@ module Execute (
 				rflagsOut[0] = add_temp_var[0];
 
 				// OF Flag
-				if (operandValue1[0] == operandValue2[0]) begin
+				if (operandValue1[0] == operandValue2[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
@@ -358,7 +358,7 @@ module Execute (
 				rflagsOut[0] = add_temp_var[0];
 
 				// OF Flag
-				if (operandValue1[0] == imm64In[0]) begin
+				if (operandValue1[0] == imm64In[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
@@ -402,7 +402,7 @@ module Execute (
 				end
 
 				// OF Flag
-				if (operandValue1[0] == imm64In[0]) begin
+				if (operandValue1[0] == imm64In[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
@@ -734,7 +734,7 @@ module Execute (
 				rflagsOut[0] = add_temp_var[0];
 
 				// OF Flag
-				if (operandValue1[0] == imm64In[0]) begin
+				if (operandValue1[0] == imm64In[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
@@ -777,7 +777,7 @@ module Execute (
 				rflagsOut[0] = add_temp_var[0];
 
 				// OF Flag
-				if (operandValue1[0] == operandValue2[0]) begin
+				if (operandValue1[0] == operandValue2[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
@@ -821,7 +821,7 @@ module Execute (
 				rflagsOut[0] = add_temp_var[0];
 
 				// OF Flag
-				if (operandValue1[0] == imm64In[0]) begin
+				if (operandValue1[0] == imm64In[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
@@ -866,7 +866,7 @@ module Execute (
 				rflagsOut[0] = add_temp_var[0];
 
 				// OF Flag
-				if (operandValue1[0] == imm64In[0]) begin
+				if (operandValue1[0] == imm64In[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
@@ -909,7 +909,7 @@ module Execute (
 				rflagsOut[0] = add_temp_var[0];
 
 				// OF Flag
-				if (operandValue1[0] == operandValue2[0]) begin
+				if (operandValue1[0] == operandValue2[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
@@ -952,7 +952,7 @@ module Execute (
 				rflagsOut[0] = add_temp_var[0];
 
 				// OF Flag
-				if (operandValue1[0] == imm64In[0]) begin
+				if (operandValue1[0] == imm64In[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
@@ -992,7 +992,7 @@ module Execute (
 				rflagsOut[0] = add_temp_var[0];
 
 				// OF Flag
-				if (operandValue1[0] == imm64In[0]) begin
+				if (operandValue1[0] == imm64In[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
@@ -1031,7 +1031,7 @@ module Execute (
 				rflagsOut[0] = add_temp_var[0];
 
 				// OF Flag
-				if (operandValue1[0] == operandValue2[0]) begin
+				if (operandValue1[0] == operandValue2[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
@@ -1070,7 +1070,7 @@ module Execute (
 				rflagsOut[0] = add_temp_var[0];
 
 				// OF Flag
-				if (operandValue1[0] == imm64In[0]) begin
+				if (operandValue1[0] == imm64In[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
@@ -1111,7 +1111,7 @@ module Execute (
 				rflagsOut[0] = add_temp_var[0];
 
 				// OF Flag
-				if (operandValue1[0] == imm64In[0]) begin
+				if (operandValue1[0] == imm64In[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = temp_var[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
@@ -1151,7 +1151,7 @@ module Execute (
 				rflagsOut[0] = add_temp_var[0];
 
 				// OF Flag
-				if (operandValue1[0] == operandValue2[0]) begin
+				if (operandValue1[0] == operandValue2[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = temp_var[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
@@ -1191,7 +1191,7 @@ module Execute (
 				rflagsOut[0] = add_temp_var[0];
 
 				// OF Flag
-				if (operandValue1[0] == imm64In[0]) begin
+				if (operandValue1[0] == imm64In[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = temp_var[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
@@ -1228,7 +1228,7 @@ module Execute (
 				rflagsOut[7] = aluResultOut[0];
 
 				// OF Flag
-				if (operandValue1[0] == operandValue2[0]) begin
+				if (operandValue1[0] == operandValue2[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
@@ -1265,7 +1265,7 @@ module Execute (
 				rflagsOut[7] = aluResultOut[0];
 
 				// OF Flag
-				if (operandValue1[0] == operandValue2[0]) begin
+				if (operandValue1[0] == operandValue2[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
