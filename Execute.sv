@@ -1637,6 +1637,18 @@ module Execute (
 			end else if ((opcodeLengthIn == 2) && (opcodeIn == 8'h05)) begin
 				/* Handling syscall. */
 			        isExecuteSuccessfulOut = 1;
+			end else if ((opcodeLengthIn == 1) && opcodeIn == 8'hEB) begin
+			   isExecuteSuccessfulOut = 1;
+			   didJump = 1;
+			   /* verilator lint_off WIDTH */
+			   jumpTarget = currentRipIn + imm64In + instructionLengthIn;
+			   /* verilator lint_on WIDTH */
+			end else if ((opcodeLengthIn == 1) && opcodeIn == 8'hE9) begin
+			   isExecuteSuccessfulOut = 1;
+			   didJump = 1;
+			   /* verilator lint_off WIDTH */
+			   jumpTarget = currentRipIn + imm64In + instructionLengthIn;
+			   /* verilator lint_on WIDTH */
 			end else begin
 				isExecuteSuccessfulOut = 0;
 			end

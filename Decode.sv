@@ -3447,9 +3447,15 @@ module Decode (
                /****************** For PUSH *************/
                //$write("$0x%x", flip_byte_order_32(imm32));
             end else if (opcode == 8'hEB) begin
-               decode_D(imm8, imm32, 1, currentRipIn+{ 32'b0, instr_count });
+	       decode_D(imm8, imm32, 1, currentRipIn+{ 32'b0, instr_count });
+	       opcodeValidOut = 1;
+	       imm64Out = sign_extend_8_to_64(imm8);
+	       stallOnJumpOut = 1;
             end else if (opcode == 8'hE9) begin
                decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });
+	       opcodeValidOut = 1;
+	       imm64Out = sign_extend_32_to_64(imm32);
+	       stallOnJumpOut = 1;
             end else if (opcode == 8'hE8) begin
                decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'h91 ||
