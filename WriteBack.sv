@@ -139,7 +139,8 @@ module WriteBack (
                                                         (opcodeIn == 8'h54) ||
                                                         (opcodeIn == 8'h55) ||
                                                         (opcodeIn == 8'h56) ||
-                                                        (opcodeIn == 8'h57))) begin
+                                                        (opcodeIn == 8'h57) ||
+							((opcodeIn == 8'hFF) && (hasExtendedOpcodeIn == 1)))) begin
 				//assert (isMemoryAccessDestIn == 1) else $fatal ("\nPush must write to Memory.\n");
 				regFileOut[destRegIn] = aluResultSpecialIn;
 			   end

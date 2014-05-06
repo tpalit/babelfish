@@ -1607,6 +1607,16 @@ module Execute (
 				memoryAddressDestOut = memoryAddressDestIn - 8;
 				aluResultSpecialOut = destRegValueIn - 8;
 				aluResultOut = operandValue1;
+				isExecuteSuccessfulOut = 1;
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hFF) && (hasExtendedOpcodeIn == 1)
+				&& (extendedOpcodeIn == 3'b110)) begin
+				/* PUSH */
+
+				/* Decrement the Stack Pointer by 8 (64 bit address and operand) */
+				memoryAddressDestOut = memoryAddressDestIn - 8;
+				aluResultSpecialOut = destRegValueIn - 8;
+				aluResultOut = operandValue1;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn ==  8'hC3 || opcodeIn == 8'hCB || opcodeIn == 8'hCF)) begin
 				killOut = 1;
 				isExecuteSuccessfulOut = 1;
@@ -2020,7 +2030,8 @@ module Execute (
                                                         opcodeIn == 8'h54 ||
                                                         opcodeIn == 8'h55 ||
                                                         opcodeIn == 8'h56 ||
-                                                        opcodeIn == 8'h57))) begin
+                                                        opcodeIn == 8'h57 ||
+							((opcodeIn == 8'hFF) && (hasExtendedOpcodeIn == 1))))) begin
 				memoryAddressDestOut = memoryAddressDestIn;
 				destRegValueOut = destRegValueIn;
 			end

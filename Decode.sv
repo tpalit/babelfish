@@ -1227,7 +1227,7 @@ module Decode (
                 oi_reg = opcode-8'h50;
 
 		/* Extra processing for EXECUTE */
-		sourceRegCode1Out = { 1'b0 , oi_reg[5:7] }; // read operand
+		sourceRegCode1Out = { rex_field[7], oi_reg[5:7] }; // read operand
 		sourceRegCode2Out = 0;
 		sourceRegCode1ValidOut = 1;
 		sourceRegCode2ValidOut = 0;	       
@@ -1242,6 +1242,55 @@ module Decode (
 		isMemoryAccessDestOut = 1;
 		disp64Out = 0;
 		dispLenOut = 0;
+            end else if (opcode == 8'hFF && reg_field == 3'b110) begin
+               /****************** For PUSH *************/
+               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
+
+		/* Extra processing for EXECUTE */
+		sourceRegCode1Out = { rex_field[7], rm_field }; // read operand
+		sourceRegCode2Out = 0;
+		sourceRegCode1ValidOut = 1;
+		sourceRegCode2ValidOut = 0;	       
+		destRegOut = 4'b0100; // write operand RSP
+		destRegValidOut = 1;
+		immLenOut = 0;
+		opcodeValidOut = 1;
+		extendedOpcodeOut = 3'b110;
+		hasExtendedOpcodeOut = 1;
+
+		if (mod_field == 2'b11) begin
+			disp64Out = 0;
+			dispLenOut = 0;
+			isMemoryAccessSrc1Out = 0;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
+		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+			disp64Out = 0;
+			dispLenOut = 0;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
+		end else if (mod_field == 2'b01 && rm_field != 3'b100) begin
+			disp64Out = sign_extend_8_to_64(disp8);
+			dispLenOut = 1;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
+		end else if (mod_field == 2'b10 && rm_field != 3'b100) begin
+			disp64Out = sign_extend_32_to_64(disp32);
+			dispLenOut = 4;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
+		end else if (mod_field == 2'b00 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 0 */
+		end else if (mod_field == 2'b00 && rm_field == 3'b101) begin
+			/* TODO: Handle Special case, RIP + disp32 */
+		end else if (mod_field == 2'b01 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 8 */
+		end else if (mod_field == 2'b10 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 32 */
+		end
             end else if (opcode == 8'h83 && reg_field == 3'b110) begin
                /****************** For XOR *************/
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b10);
@@ -3742,7 +3791,7 @@ module Decode (
                 opcode == 8'h59 ||
                 opcode == 8'h5A ||
                 opcode == 8'h5B ||
-                opcode == 8'h55 ||
+                opcode == 8'h5C ||
                 opcode == 8'h5D ||
                 opcode == 8'h5E ||
                 opcode == 8'h5F) begin
@@ -3751,9 +3800,6 @@ module Decode (
                decode_O(rex_field, oi_reg[5:7]);
             end else if (opcode == 8'h8F && reg_field == 3'b000) begin
                /****************** For POP *************/
-               decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
-            end else if (opcode == 8'hFF && reg_field == 3'b110) begin
-               /****************** For PUSH *************/
                decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hFF && reg_field == 3'b000) begin
                /****************** For INC *************/
