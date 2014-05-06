@@ -1088,7 +1088,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
         regFile[1] <= 0;
         regFile[2] <= 0;
         regFile[3] <= 0;
-        regFile[4] <= 0;
+        regFile[4] <= 64'h00007C00; //RSP
         regFile[5] <= 0;
         regFile[6] <= 0;
         regFile[7] <= 0;
@@ -1342,6 +1342,19 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
 	regFile[wbDestRegOut] <= regFileOut[wbDestRegOut];
 	regFile[wbDestRegSpecialOut] <= regFileOut[wbDestRegSpecialOut];
+
+	/* Handling Increment of RSP */
+	if ((wbOpcodeLengthOut == 1) && (wbOpcodeOut == 8'h58 ||
+                                                        wbOpcodeOut == 8'h59 ||
+                                                        wbOpcodeOut == 8'h5A ||
+                                                        wbOpcodeOut == 8'h5B ||
+                                                        wbOpcodeOut == 8'h5C ||
+                                                        wbOpcodeOut == 8'h5D ||                                   
+                                                        wbOpcodeOut == 8'h5E ||
+                                                        wbOpcodeOut == 8'h5F ||
+							(wbOpcodeOut == 8'h8F && wbHasExtendedOpcodeOut == 1 && wbExtendedOpcodeOut == 3'b000))) begin
+		regFile[4'b0100] <= regFileOut[4'b0100];
+	end
 
      	killLatch <= killOut;
 

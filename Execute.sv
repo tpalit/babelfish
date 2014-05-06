@@ -1593,6 +1593,28 @@ module Execute (
 				end else begin
 					rflagsOut[2] = 0;
 				end
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h58 ||                                         
+							opcodeIn == 8'h59 ||                                                  
+							opcodeIn == 8'h5A ||                                                  
+							opcodeIn == 8'h5B ||                                                  
+							opcodeIn == 8'h5C ||                                                  
+							opcodeIn == 8'h5D ||                                                  
+							opcodeIn == 8'h5E ||
+							opcodeIn == 8'h5F)) begin
+				/* POP */
+
+				/* Increment the Stack Pointer by 8 (64 bit address and operand) */
+				aluResultSpecialOut = operand1ValIn + 8;
+				aluResultOut = operandValue1;
+				isExecuteSuccessfulOut = 1;
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h8F) && (hasExtendedOpcodeIn == 1)
+				&& (extendedOpcodeIn == 3'b000)) begin
+				/* POP */
+
+				/* Increment the Stack Pointer by 8 (64 bit address and operand) */
+				aluResultSpecialOut = operand1ValIn + 8;
+				aluResultOut = operandValue1;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h50 ||                                         
 							opcodeIn == 8'h51 ||                                                  
 							opcodeIn == 8'h52 ||                                                  
@@ -2021,8 +2043,9 @@ module Execute (
 		        isMemoryAccessDestOut = isMemoryAccessDestIn;
 			memoryAddressSrc1Out = memoryAddressSrc1In;
 			memoryAddressSrc2Out = memoryAddressSrc2In;
+			destRegValueOut = destRegValueIn;
 
-			/* We manually set the destRegValueOut for PUSH and POP */
+			/* We manually set the memoryAddressDestOut for PUSH */
 			if (!((opcodeLengthIn == 1) && (opcodeIn == 8'h50 ||
                                                         opcodeIn == 8'h51 ||
                                                         opcodeIn == 8'h52 ||
@@ -2031,9 +2054,8 @@ module Execute (
                                                         opcodeIn == 8'h55 ||
                                                         opcodeIn == 8'h56 ||
                                                         opcodeIn == 8'h57 ||
-							((opcodeIn == 8'hFF) && (hasExtendedOpcodeIn == 1))))) begin
+							((opcodeIn == 8'hFF) && (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b110))))) begin
 				memoryAddressDestOut = memoryAddressDestIn;
-				destRegValueOut = destRegValueIn;
 			end
 
 		end else begin // if ((opcodeValidIn == 1) && (canExecuteIn == 1) && !wbStallIn)
