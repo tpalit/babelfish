@@ -228,6 +228,7 @@ extern uint64_t global_ram_brkptr;
 
 long long syscall_cse502(long long rax, long long rdi, long long rsi, long long rdx, long long r10, long long r8, long long r9)
 {
+	cout<<"Rax is = "<<rax<<endl;
 	switch (rax) {
 	case __NR_exit:
 		return __syscall1(rax, rdi);
@@ -245,6 +246,7 @@ long long syscall_cse502(long long rax, long long rdi, long long rsi, long long 
 		return main_time/ps_per_clock;
 		// return __syscall2(rax, rdi, (uint64_t)(global_ram+rsi));
 	default:
-		assert(0);	// no other syscall is implemented.
+		cout<<"OOPS!"<<endl;
+		//		assert(0);	// no other syscall is implemented.
 	}
 }

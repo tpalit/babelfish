@@ -9,7 +9,8 @@ module Decode (
 	       input 		regInUseBitMapIn[16],
 	       input [0:63] 	currentRipIn,
 	       input 		canDecodeIn,
-	       input 		stallOnCallqIn, 
+	       input 		stallOnCallqIn,
+	       input 		stallOnRetqIn, 
 	       output 		stallOut,
 	       output 		regInUseBitMapOut[16],
 	       output [0:63] 	currentRipOut,
@@ -43,7 +44,8 @@ module Decode (
 	       output [0:31] 	core_memaccess_inprogress_out,
 	       input 		stallOnJumpIn, 
 	       output 		stallOnJumpOut,
-	       output           stallOnCallqOut, 		
+	       output 		stallOnCallqOut,
+	       output 		stallOnRetqOut,
 	       output [0:3] 	bytesDecodedThisCycleOut 	
 	       );
    
@@ -748,6 +750,11 @@ module Decode (
 	 return 1;
       end
 
+      // Stalled on a ret?
+      if (stallOnRetqIn != 0) begin
+	 return 1;
+      end
+       
       return 0;
    endfunction
 
@@ -771,6 +778,12 @@ module Decode (
       if (stallOnCallqIn != 0) begin
 	 return 1;
       end
+
+      // Stalled on a ret?
+      if (stallOnRetqIn != 0) begin
+	 return 1;
+      end
+      
       return 0;
    endfunction
 
@@ -4200,7 +4213,9 @@ module Decode (
          end
 
          if((opcode_start_index == opcode_end_index) && (opcodeOut == 8'hC3 || opcodeOut == 8'hCB || opcodeOut == 8'hCF)) begin
+	    stallOnRetqOut = 1;
             opcodeValidOut = 1;
+	    
          end
 
          if ((opcodeLengthOut == 2) && (opcodeOut == 8'h05) && (!toStallOrNotToStallSyscall(regInUseBitMapIn))) begin
@@ -4255,6 +4270,7 @@ module Decode (
 	    core_memaccess_inprogress_out = core_memaccess_inprogress_in;
 	    stallOnJumpOut = stallOnJumpIn;
 	    stallOnCallqOut = stallOnCallqIn;
+	    stallOnRetqOut = stallOnRetqIn;
          end
 
       
@@ -4263,7 +4279,7 @@ module Decode (
          bytesDecodedThisCycleOut = 0;
 	 stallOnJumpOut = stallOnJumpIn;
 	 stallOnCallqOut = stallOnCallqIn;
-	 
+	 stallOnRetqOut = stallOnRetqIn;
       end // else: !if(canDecodeIn)
 
       currentRipOut = currentRipIn;

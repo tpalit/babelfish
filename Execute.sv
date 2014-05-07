@@ -1648,7 +1648,7 @@ module Execute (
 				aluResultOut = imm64In;
 				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn ==  8'hC3 || opcodeIn == 8'hCB || opcodeIn == 8'hCF)) begin
-				killOut = 1;
+//				killOut = 1;
 				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h70)) begin
 			        /* Jump short if overflow */
@@ -2071,6 +2071,15 @@ module Execute (
 			   /* verilator lint_off WIDTH */
 			   jumpTarget = currentRipIn + imm64In + instructionLengthIn;
 			   /* verilator lint_on WIDTH */
+			   isExecuteSuccessfulOut = 1;
+			end else if ((opcodeLengthIn == 1) && opcodeIn == 8'hC3) begin
+			   // 1. Tell the Writeback stage to update the RSP
+			   destRegValidOut = 1;
+			   destRegOut = 4'b0100;
+			   aluResultSpecialOut = registerFileIn[destRegOut] + 8;
+			   // 2. Set the returning address (read by the memory stage) as the jump target
+			   didJump = 1;
+			   jumpTarget = memoryDataIn;
 			   isExecuteSuccessfulOut = 1;
 			end else
 			/* We manually set the memoryAddressDestOut for PUSH */

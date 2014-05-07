@@ -120,6 +120,14 @@ module Read (
 	    isMemoryAccessDestOut = isMemoryAccessDestIn;
 
 	    isReadSuccessfulOut = 1;
+	    // Special handling for RETQ
+	    // Doing it here since we have the registerFile here.
+	    if (opcodeLengthIn == 1 && opcodeIn == 8'hC3) begin
+	       // Read the value of RSP and put it in operandVal1. Hack, I know!
+	       operandVal1Out = registerFileIn[4'b0100];
+	       operandVal1ValidOut = 1;
+	       isMemoryAccessSrc1Out = 1;
+	    end
       end else begin // if (canReadIn && !stallIn)
          if (!stallIn && !wbStallIn) begin
 	       isReadSuccessfulOut = 0;
