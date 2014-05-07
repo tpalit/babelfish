@@ -140,6 +140,8 @@ module WriteBack (
                                                         (opcodeIn == 8'h55) ||
                                                         (opcodeIn == 8'h56) ||
                                                         (opcodeIn == 8'h57) ||
+                                                        (opcodeIn == 8'h6A) ||
+                                                        (opcodeIn == 8'h68) ||
 							((opcodeIn == 8'hFF) && (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b110)))) begin
 				regFileOut[destRegIn] = aluResultSpecialIn;
 			   end

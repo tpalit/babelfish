@@ -1291,6 +1291,46 @@ module Decode (
 		end else if (mod_field == 2'b10 && rm_field == 3'b100) begin
 			/* TODO: Handle SIB Byte Here, disp = 32 */
 		end
+            end else if (opcode == 8'h6A) begin
+               /****************** For PUSH *************/
+               //$write("$0x%x", imm8);
+
+               /* Extra processing for EXECUTE */
+               sourceRegCode1Out = 0; // read and write operand %RAX
+               sourceRegCode2Out = 0;
+	       sourceRegCode1ValidOut = 0;
+	       sourceRegCode2ValidOut = 0;
+	       destRegOut = 4'b0100; // RSP write operand
+		destRegValidOut = 1;
+               imm64Out = sign_extend_8_to_64(imm8);
+               immLenOut = 8;
+               dispLenOut = 0;
+               extendedOpcodeOut = 0;
+               hasExtendedOpcodeOut = 0;
+               opcodeValidOut = 1;
+	       isMemoryAccessSrc1Out = 0;
+	       isMemoryAccessSrc2Out = 0;
+	       isMemoryAccessDestOut = 1;
+            end else if (opcode == 8'h68) begin
+               /****************** For PUSH *************/
+               //$write("$0x%x", flip_byte_order_32(imm32));
+
+               /* Extra processing for EXECUTE */
+               sourceRegCode1Out = 0; // read and write operand %RAX
+               sourceRegCode2Out = 0;
+	       sourceRegCode1ValidOut = 0;
+	       sourceRegCode2ValidOut = 0;
+	       destRegOut = 4'b0100; // RSP write operand
+		destRegValidOut = 1;
+               imm64Out = sign_extend_32_to_64(imm32);
+               immLenOut = 8;
+               dispLenOut = 0;
+               extendedOpcodeOut = 0;
+               hasExtendedOpcodeOut = 0;
+               opcodeValidOut = 1;
+	       isMemoryAccessSrc1Out = 0;
+	       isMemoryAccessSrc2Out = 0;
+	       isMemoryAccessDestOut = 1;
             end else if (opcode == 8'h83 && reg_field == 3'b110) begin
                /****************** For XOR *************/
                decode_MI(rex_field, imm32, imm8, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, 0, currentRipIn+{ 32'b0, instr_count }, 2'b10);
@@ -3965,12 +4005,6 @@ module Decode (
             end else if (opcode == 8'hFF && reg_field == 3'b100) begin
                /****************** For JMP *************/
                decode_M(rex_field, disp32, disp8, mod_field, rm_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
-            end else if (opcode == 8'h6A) begin
-               /****************** For PUSH *************/
-               //$write("$0x%x", imm8);
-            end else if (opcode == 8'h68) begin
-               /****************** For PUSH *************/
-               //$write("$0x%x", flip_byte_order_32(imm32));
             end else if (opcode == 8'hEB) begin
 	       decode_D(imm8, imm32, 1, currentRipIn+{ 32'b0, instr_count });
 	       opcodeValidOut = 1;
