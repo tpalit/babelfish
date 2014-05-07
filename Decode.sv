@@ -38,6 +38,9 @@ module Decode (
                output 		destRegValidOut,
                output [0:3] 	destRegSpecialOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
                output 		destRegSpecialValidOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
+	       output		useRIPSrc1Out,
+	       output		useRIPSrc2Out,
+	       output		useRIPDestOut,
 	       input [0:31] 	core_memaccess_inprogress_in,
 	       output [0:31] 	core_memaccess_inprogress_out,
 	       input 		stallOnJumpIn, 
@@ -820,7 +823,9 @@ module Decode (
 	 isMemoryAccessSrc1Out = 0;
 	 isMemoryAccessSrc2Out = 0;
 	 isMemoryAccessDestOut = 0;
-	 
+	 useRIPSrc1Out = 0;
+	 useRIPSrc2Out = 0;
+	 useRIPDestOut = 0;
 	 
 	 stallOnJumpOut = 0;
          while (is_prefix_flag) begin
@@ -4032,6 +4037,60 @@ module Decode (
                decode_MR(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'h8D) begin
                /****************** For LEA *************/
+
+		/* Extra processing for EXECUTE */
+		sourceRegCode1Out = { rex_field[7], rm_field }; // read operand
+		sourceRegCode2Out = 0;
+		sourceRegCode1ValidOut = 1;
+		sourceRegCode2ValidOut = 0;
+		destRegOut = { rex_field[5], reg_field }; // write operand
+		destRegValidOut = 1;
+		immLenOut = 0;
+		extendedOpcodeOut = 0;
+		hasExtendedOpcodeOut = 0;
+		opcodeValidOut = 1;
+
+		if (mod_field == 2'b11) begin
+			disp64Out = 0;
+			dispLenOut = 0;
+			isMemoryAccessSrc1Out = 0;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 0;
+		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+			disp64Out = 0;
+			dispLenOut = 0;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 0;
+		end else if (mod_field == 2'b01 && rm_field != 3'b100) begin
+			disp64Out = sign_extend_8_to_64(disp8);
+			dispLenOut = 1;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 0;
+		end else if (mod_field == 2'b10 && rm_field != 3'b100) begin
+			disp64Out = sign_extend_32_to_64(disp32);
+			dispLenOut = 4;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 0;
+		end else if (mod_field == 2'b00 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 0 */
+		end else if (mod_field == 2'b00 && rm_field == 3'b101) begin
+			/* TODO: Handle Special case, RIP + disp32 */
+			useRIPSrc1Out = 1;
+			useRIPSrc2Out = 0;
+			useRIPDestOut = 0;
+			disp64Out = sign_extend_32_to_64(disp32);
+			dispLenOut = 4;
+			isMemoryAccessSrc1Out = 1;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 0;
+		end else if (mod_field == 2'b01 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 8 */
+		end else if (mod_field == 2'b10 && rm_field == 3'b100) begin
+			/* TODO: Handle SIB Byte Here, disp = 32 */
+		end
                decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hC2 || opcode == 8'hCA) begin
                /****************** For RET *************/

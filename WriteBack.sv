@@ -4,14 +4,14 @@ module WriteBack (
 		input 	      canWriteBackIn,
 		input 	      killIn,
 			      /* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */ CacheCoreInterface dCacheCoreBus /* verilator lint_on UNUSED */ /* verilator lint_on UNDRIVEN */,
-		  /* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */
+		/* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */
 		input [0:7]   opcodeIn,
 		input [0:31]  opcodeLengthIn,
 		input [0:2]   extendedOpcodeIn,
 		input [0:31]  hasExtendedOpcodeIn,
 		input 	      regInUseBitMapIn[16],
-		  /* verilator lint_on UNDRIVEN */ /* verilator lint_on UNUSED */
-   		input [63:0]  regFileIn[16],
+		/* verilator lint_on UNDRIVEN */ /* verilator lint_on UNUSED */
+		input [63:0]  regFileIn[16],
 
 		input [0:63]  currentRipIn,
 		input [0:3]   sourceReg1In,
@@ -23,6 +23,9 @@ module WriteBack (
 		input         destRegValidIn,
 		input [0:3]   destRegSpecialIn,
 		input 	      destRegSpecialValidIn,
+		input	      useRIPSrc1In,
+		input	      useRIPSrc2In,
+		input	      useRIPDestIn,
 		input 	      isMemoryAccessSrc1In,
 		input 	      isMemoryAccessSrc2In,
 		input 	      isMemoryAccessDestIn,
@@ -47,13 +50,16 @@ module WriteBack (
 		output        destRegValidOut,
 		output [0:3]  destRegSpecialOut,
 		output 	      destRegSpecialValidOut,
+		output	      useRIPSrc1Out,
+		output	      useRIPSrc2Out,
+		output	      useRIPDestOut,
 		output [0:63] aluResultOut,
 		output [0:63] aluResultSpecialOut,
 
-		  /* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */
+		/* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */
 		output 	      regInUseBitMapOut[16],
-		  /* verilator lint_on UNDRIVEN */ /* verilator lint_on UNUSED */
-   		output [63:0] regFileOut[16],
+		/* verilator lint_on UNDRIVEN */ /* verilator lint_on UNUSED */
+		output [63:0] regFileOut[16],
 		output 	      isMemoryAccessSrc1Out,
 		output 	      isMemoryAccessSrc2Out,
 		output 	      isMemoryAccessDestOut,
@@ -122,70 +128,73 @@ module WriteBack (
 			end
 
 			/* TODO: Check if this logic is correct. We need to exit out after we get a reqack. */
-		        if (memory_write_state == memory_write_idle && (isMemoryAccessDestIn == 1)) begin
-			   stallOnMemoryWrOut = 1;
+			if (memory_write_state == memory_write_idle && (isMemoryAccessDestIn == 1)) begin
+				stallOnMemoryWrOut = 1;
 			end else if (memory_write_state == memory_write_active && dCacheCoreBus.reqack == 1) begin
-			   stallOnMemoryWrOut = 0;
+				stallOnMemoryWrOut = 0;
 			end
 
 			if (destRegValidIn == 1 && !((opcodeLengthIn == 2) && (opcodeIn == 8'h05))) begin
-			   regInUseBitMapOut[destRegIn] = 0;
+				regInUseBitMapOut[destRegIn] = 0;
 
-			   /* Special handling for PUSH */
-			   if ((opcodeLengthIn == 1) && ((opcodeIn == 8'h50) ||                             
-                                                        (opcodeIn == 8'h51) ||                               
-                                                        (opcodeIn == 8'h52) ||
-                                                        (opcodeIn == 8'h53) ||                                        
-                                                        (opcodeIn == 8'h54) ||
-                                                        (opcodeIn == 8'h55) ||
-                                                        (opcodeIn == 8'h56) ||
-                                                        (opcodeIn == 8'h57) ||
-                                                        (opcodeIn == 8'h6A) ||
-                                                        (opcodeIn == 8'h68) ||
-							((opcodeIn == 8'hFF) && (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b110)))) begin
-				regFileOut[destRegIn] = aluResultSpecialIn;
-			   end
+				/* Special handling for PUSH */
+				if ((opcodeLengthIn == 1) && ((opcodeIn == 8'h50) ||
+						(opcodeIn == 8'h51) ||
+						(opcodeIn == 8'h52) ||
+						(opcodeIn == 8'h53) ||
+						(opcodeIn == 8'h54) ||
+						(opcodeIn == 8'h55) ||
+						(opcodeIn == 8'h56) ||
+						(opcodeIn == 8'h57) ||
+						(opcodeIn == 8'h6A) ||
+						(opcodeIn == 8'h68) ||
+						((opcodeIn == 8'hFF) && (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b110)))) begin
+			 		regFileOut[destRegIn] = aluResultSpecialIn;
+				end
 
-			   /* Special handling for POP */
-			   if ((opcodeLengthIn == 1) && ((opcodeIn == 8'h58) ||                             
-                                                        (opcodeIn == 8'h59) ||                               
-                                                        (opcodeIn == 8'h5A) ||
-                                                        (opcodeIn == 8'h5B) ||                                        
-                                                        (opcodeIn == 8'h5C) ||
-                                                        (opcodeIn == 8'h5D) ||
-                                                        (opcodeIn == 8'h5E) ||
-                                                        (opcodeIn == 8'h5F) ||
-							(opcodeIn == 8'h8F && hasExtendedOpcodeIn == 1 && extendedOpcodeIn == 3'b000))) begin
-				regFileOut[4'b0100] = aluResultSpecialIn;
-			   end
+				/* Special handling for POP */
+				if ((opcodeLengthIn == 1) && ((opcodeIn == 8'h58) ||
+						(opcodeIn == 8'h59) ||
+						(opcodeIn == 8'h5A) ||
+						(opcodeIn == 8'h5B) ||
+						(opcodeIn == 8'h5C) ||
+						(opcodeIn == 8'h5D) ||
+						(opcodeIn == 8'h5E) ||
+						(opcodeIn == 8'h5F) ||
+						(opcodeIn == 8'h8F && hasExtendedOpcodeIn == 1 && extendedOpcodeIn == 3'b000))) begin
+					regFileOut[4'b0100] = aluResultSpecialIn;
+				end
 
-  			   if (isMemoryAccessDestIn == 0 && killIn == 0) begin
-				regFileOut[destRegIn] = aluResultIn;
-			   end
+				if (isMemoryAccessDestIn == 0 && killIn == 0) begin
+					regFileOut[destRegIn] = aluResultIn;
+				end
 			end
 
-  		        currentRipOut = currentRipIn;
-		        sourceRegCode1Out = sourceReg1In;
-		        sourceRegCode2Out = sourceReg2In;
-		        sourceRegCode1ValidOut = sourceReg1ValidIn;
-		        sourceRegCode2ValidOut = sourceReg2ValidIn;
+			currentRipOut = currentRipIn;
+			sourceRegCode1Out = sourceReg1In;
+			sourceRegCode2Out = sourceReg2In;
+			sourceRegCode1ValidOut = sourceReg1ValidIn;
+			sourceRegCode2ValidOut = sourceReg2ValidIn;
 			destRegOut = destRegIn;
 			destRegValidOut = destRegValidIn;
 			destRegValueOut = destRegValueIn;
-		        destRegSpecialOut = destRegSpecialIn;
-		        destRegSpecialValidOut = destRegSpecialValidIn;
+			destRegSpecialOut = destRegSpecialIn;
+			destRegSpecialValidOut = destRegSpecialValidIn;
 			aluResultOut = aluResultIn;
 			aluResultSpecialOut = aluResultSpecialIn;
-		        opcodeOut = opcodeIn;
-		        opcodeLengthOut = opcodeLengthIn;
-		        extendedOpcodeOut = extendedOpcodeIn;
-		        hasExtendedOpcodeOut = hasExtendedOpcodeIn;
-		        isMemoryAccessSrc1Out = isMemoryAccessSrc1In;
-		        isMemoryAccessSrc2Out = isMemoryAccessSrc2In;
-		        isMemoryAccessDestOut = isMemoryAccessDestIn;
+			opcodeOut = opcodeIn;
+			opcodeLengthOut = opcodeLengthIn;
+			extendedOpcodeOut = extendedOpcodeIn;
+			hasExtendedOpcodeOut = hasExtendedOpcodeIn;
+			isMemoryAccessSrc1Out = isMemoryAccessSrc1In;
+			isMemoryAccessSrc2Out = isMemoryAccessSrc2In;
+			isMemoryAccessDestOut = isMemoryAccessDestIn;
 			memoryAddressSrc1Out = memoryAddressSrc1In;
 			memoryAddressSrc2Out = memoryAddressSrc2In;
 			memoryAddressDestOut = memoryAddressDestIn;
+			useRIPSrc1Out = useRIPSrc1In;
+			useRIPSrc2Out = useRIPSrc2In;
+			useRIPDestOut = useRIPDestIn;
 
 			killOut = killIn;
 			//writeBackSuccessfulOut = 1;
