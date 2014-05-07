@@ -37,6 +37,9 @@ module AddressCalculation (
 		input [0:63]  destRegValueIn,
 		input [0:3]   destRegSpecialIn,
 		input 	      destRegSpecialValidIn,
+		input	      useRIPSrc1In,
+		input	      useRIPSrc2In,
+		input	      useRIPDestIn,
 
 		output [0:63] currentRipOut,
 		output [0:2]  extendedOpcodeOut,
@@ -71,6 +74,9 @@ module AddressCalculation (
 		output [0:63] destRegValueOut,
 		output [0:3]  destRegSpecialOut,
 		output 	      destRegSpecialValidOut,
+		output	      useRIPSrc1Out,
+		output	      useRIPSrc2Out,
+		output	      useRIPDestOut,
 		output [0:63] memoryAddressSrc1Out,
 		output [0:63] memoryAddressSrc2Out,
 		output [0:63] memoryAddressDestOut,
@@ -82,15 +88,22 @@ module AddressCalculation (
 
 			if (isMemoryAccessSrc1In == 1) begin
 				/* We are dealing with memory here. Need to calculate address. */
-				if (dispLenIn == 0) begin
-					/* Directly use the value of operand1ValIn as Memory address */
 
-					memoryAddressSrc1Out = operand1ValIn;
+				if (useRIPSrc1In == 1) begin
+					assert(dispLenIn > 0);
+
+					memoryAddressSrc1Out = currentRipIn + disp64In;
 				end else begin
-					/* Decode should have sent us a sign extended 64 bit displacement already */
+					if (dispLenIn == 0) begin
+						/* Directly use the value of operand1ValIn as Memory address */
 
-					/* TODO: What happens if there is an overflow? */
-					memoryAddressSrc1Out = operand1ValIn + disp64In;
+						memoryAddressSrc1Out = operand1ValIn;
+					end else begin
+						/* Decode should have sent us a sign extended 64 bit displacement already */
+
+						/* TODO: What happens if there is an overflow? */
+						memoryAddressSrc1Out = operand1ValIn + disp64In;
+					end
 				end
 			end else begin
 				memoryAddressSrc1Out = 0;
@@ -98,15 +111,22 @@ module AddressCalculation (
 
 			if (isMemoryAccessSrc2In == 1) begin
 				/* We are dealing with memory here. Need to calculate address. */
-				if (dispLenIn == 0) begin
-					/* Directly use the value of operand1ValIn as Memory address */
 
-					memoryAddressSrc2Out = operand2ValIn;
+				if (useRIPSrc2In == 1) begin
+					assert(dispLenIn > 0);
+
+					memoryAddressSrc2Out = currentRipIn + disp64In;
 				end else begin
-					/* Decode should have sent us a sign extended 64 bit displacement already */
+					if (dispLenIn == 0) begin
+						/* Directly use the value of operand1ValIn as Memory address */
 
-					/* TODO: What happens if there is an overflow? */
-					memoryAddressSrc2Out = operand2ValIn + disp64In;
+						memoryAddressSrc2Out = operand2ValIn;
+					end else begin
+						/* Decode should have sent us a sign extended 64 bit displacement already */
+
+						/* TODO: What happens if there is an overflow? */
+						memoryAddressSrc2Out = operand2ValIn + disp64In;
+					end
 				end
 			end else begin
 				memoryAddressSrc2Out = 0;
@@ -114,59 +134,69 @@ module AddressCalculation (
 
 			if (isMemoryAccessDestIn == 1) begin
 				/* We are dealing with memory here. Need to calculate address. */
-				if (dispLenIn == 0) begin
-					/* Directly use the value of operand1ValIn as Memory address */
 
-					memoryAddressDestOut = destRegValueIn;
+				if (useRIPDestIn == 1) begin
+					assert(dispLenIn > 0);
+
+					memoryAddressDestOut = currentRipIn + disp64In;
 				end else begin
-					/* Decode should have sent us a sign extended 64 bit displacement already */
+					if (dispLenIn == 0) begin
+						/* Directly use the value of operand1ValIn as Memory address */
 
-					/* TODO: What happens if there is an overflow? */
-					memoryAddressDestOut = destRegValueIn + disp64In;
+						memoryAddressDestOut = destRegValueIn;
+					end else begin
+						/* Decode should have sent us a sign extended 64 bit displacement already */
+
+						/* TODO: What happens if there is an overflow? */
+						memoryAddressDestOut = destRegValueIn + disp64In;
+					end
 				end
 			end else begin
 				memoryAddressDestOut = 0;
 			end
 
 			isAddressCalculationSuccessfulOut = 1;
-  		        currentRipOut = currentRipIn;
-		        extendedOpcodeOut = extendedOpcodeIn;
-		        hasExtendedOpcodeOut = hasExtendedOpcodeIn;
-		        opcodeLengthOut = opcodeLengthIn;
-		        instructionLengthOut = instructionLengthIn;
-		        opcodeValidOut = opcodeValidIn;
-		        opcodeOut = opcodeIn;
-		        operand1ValOut = operand1ValIn;
-		        operand2ValOut = operand2ValIn;
-		        immLenOut = immLenIn;
-		        dispLenOut = dispLenIn;
-		        imm8Out = imm8In;
-		        imm16Out = imm16In;
-		        imm32Out = imm32In;
-		        imm64Out = imm64In;
-		        disp8Out = disp8In;
-		        disp16Out = disp16In;
-		        disp32Out = disp32In;
-		        disp64Out = disp64In;
-		        destRegOut = destRegIn;
-		        destRegValidOut = destRegValidIn;
-		        destRegSpecialOut = destRegSpecialIn;
-		        destRegSpecialValidOut = destRegSpecialValidIn;
-		        sourceRegCode1Out = sourceReg1In;
-		        sourceRegCode2Out = sourceReg2In;
-		        sourceRegCode1ValidOut = sourceReg1ValidIn;
-		        sourceRegCode2ValidOut = sourceReg2ValidIn;
-		        isMemoryAccessSrc1Out = isMemoryAccessSrc1In;
-		        isMemoryAccessSrc2Out = isMemoryAccessSrc2In;
-		        isMemoryAccessDestOut = isMemoryAccessDestIn;
+			currentRipOut = currentRipIn;
+			extendedOpcodeOut = extendedOpcodeIn;
+			hasExtendedOpcodeOut = hasExtendedOpcodeIn;
+			opcodeLengthOut = opcodeLengthIn;
+			instructionLengthOut = instructionLengthIn;
+			opcodeValidOut = opcodeValidIn;
+			opcodeOut = opcodeIn;
+			operand1ValOut = operand1ValIn;
+			operand2ValOut = operand2ValIn;
+			immLenOut = immLenIn;
+			dispLenOut = dispLenIn;
+			imm8Out = imm8In;
+			imm16Out = imm16In;
+			imm32Out = imm32In;
+			imm64Out = imm64In;
+			disp8Out = disp8In;
+			disp16Out = disp16In;
+			disp32Out = disp32In;
+			disp64Out = disp64In;
+			destRegOut = destRegIn;
+			destRegValidOut = destRegValidIn;
+			destRegSpecialOut = destRegSpecialIn;
+			destRegSpecialValidOut = destRegSpecialValidIn;
+			sourceRegCode1Out = sourceReg1In;
+			sourceRegCode2Out = sourceReg2In;
+			sourceRegCode1ValidOut = sourceReg1ValidIn;
+			sourceRegCode2ValidOut = sourceReg2ValidIn;
+			isMemoryAccessSrc1Out = isMemoryAccessSrc1In;
+			isMemoryAccessSrc2Out = isMemoryAccessSrc2In;
+			isMemoryAccessDestOut = isMemoryAccessDestIn;
 			destRegValueOut = destRegValueIn;
+			useRIPSrc1Out = useRIPSrc1In;
+			useRIPSrc2Out = useRIPSrc2In;
+			useRIPDestOut = useRIPDestIn;
 
 		end else begin 
-               if (!stallIn && !wbStallIn) begin
-			   isAddressCalculationSuccessfulOut = 0;
-               end
+			if (!stallIn && !wbStallIn) begin
+				isAddressCalculationSuccessfulOut = 0;
+			end
 		end
-	        operand1ValValidOut = operand1ValValidIn;
-	        operand2ValValidOut = operand2ValValidIn;
+		operand1ValValidOut = operand1ValValidIn;
+		operand2ValValidOut = operand2ValValidIn;
 	end
 endmodule

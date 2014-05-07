@@ -35,6 +35,9 @@ module Execute (
 		input [0:63]  destRegValueIn,
 		input [0:3]   destRegSpecialIn,
 		input 	      destRegSpecialValidIn,
+		input	      useRIPSrc1In,
+		input	      useRIPSrc2In,
+		input	      useRIPDestIn,
 		input 	      isMemoryAccessSrc1In,
 		input 	      isMemoryAccessSrc2In,
 		input 	      isMemoryAccessDestIn,
@@ -77,6 +80,9 @@ module Execute (
 		output [0:63] destRegValueOut,
 		output [0:3]  destRegSpecialOut,
 		output 	      destRegSpecialValidOut,
+		output	      useRIPSrc1Out,
+		output	      useRIPSrc2Out,
+		output	      useRIPDestOut,
 		output 	      isMemoryAccessSrc1Out,
 		output 	      isMemoryAccessSrc2Out,
 		output 	      isMemoryAccessDestOut,
@@ -90,7 +96,7 @@ module Execute (
 		output 	      killOut
 		);
 
-   	import "DPI-C" function longint syscall_cse502(input longint rax, input longint rdi, input longint rsi, input longint rdx, input longint r10, input longint r8, input longint r9);
+ 	import "DPI-C" function longint syscall_cse502(input longint rax, input longint rdi, input longint rsi, input longint rdx, input longint r10, input longint r8, input longint r9);
 
 	logic [0:63] operandValue1 = 0;
 	logic [0:63] operandValue2 = 0;
@@ -123,9 +129,17 @@ module Execute (
 				operandValue2 = operand2ValIn;
 			end
 
-		        didJump = 0;
-		        jumpTarget = currentRipIn;
+			didJump = 0;
+			jumpTarget = currentRipIn;
+
 			if ((opcodeLengthIn == 1) && (opcodeIn == 8'h90)) begin
+				/* NOP */
+
+				isExecuteSuccessfulOut = 1;
+			end else if ((opcodeLengthIn == 2) && (opcodeIn == 8'hAE)
+				&& (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b111)) begin
+				/* CLFLUSH treated as NOP */
+
 				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hC7) &&
 				(hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b000)) begin
@@ -149,6 +163,11 @@ module Execute (
 				/* MOV immediate into operand 1 */
 
 				aluResultOut = imm64In;
+				isExecuteSuccessfulOut = 1;
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h8D)) begin
+				/* LEA */
+
+				aluResultOut = operandValue1;
 				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h83 || opcodeIn == 8'h81)
 				&& (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b001)) begin
@@ -2020,38 +2039,42 @@ module Execute (
 			end else begin
 				isExecuteSuccessfulOut = 0;
 			end
-  		        currentRipOut = currentRipIn;
-		        extendedOpcodeOut = extendedOpcodeIn;
-		        hasExtendedOpcodeOut = hasExtendedOpcodeIn;
-		        opcodeLengthOut = opcodeLengthIn;
-		        opcodeValidOut = opcodeValidIn;
-		        opcodeOut = opcodeIn;
-		        operand1ValOut = operand1ValIn;
-		        operand2ValOut = operand2ValIn;
-		        immLenOut = immLenIn;
-		        dispLenOut = dispLenIn;
-		        imm8Out = imm8In;
-		        imm16Out = imm16In;
-		        imm32Out = imm32In;
-		        imm64Out = imm64In;
-		        disp8Out = disp8In;
-		        disp16Out = disp16In;
-		        disp32Out = disp32In;
-		        disp64Out = disp64In;
-		        destRegOut = destRegIn;
-		        destRegValidOut = destRegValidIn;
-		        destRegSpecialOut = destRegSpecialIn;
-		        destRegSpecialValidOut = destRegSpecialValidIn;
-		        sourceRegCode1Out = sourceReg1In;
-		        sourceRegCode2Out = sourceReg2In;
-		        sourceRegCode1ValidOut = sourceReg1ValidIn;
-		        sourceRegCode2ValidOut = sourceReg2ValidIn;
-		        isMemoryAccessSrc1Out = isMemoryAccessSrc1In;
-		        isMemoryAccessSrc2Out = isMemoryAccessSrc2In;
-		        isMemoryAccessDestOut = isMemoryAccessDestIn;
+
+			currentRipOut = currentRipIn;
+			extendedOpcodeOut = extendedOpcodeIn;
+			hasExtendedOpcodeOut = hasExtendedOpcodeIn;
+			opcodeLengthOut = opcodeLengthIn;
+			opcodeValidOut = opcodeValidIn;
+			opcodeOut = opcodeIn;
+			operand1ValOut = operand1ValIn;
+			operand2ValOut = operand2ValIn;
+			immLenOut = immLenIn;
+			dispLenOut = dispLenIn;
+			imm8Out = imm8In;
+			imm16Out = imm16In;
+			imm32Out = imm32In;
+			imm64Out = imm64In;
+			disp8Out = disp8In;
+			disp16Out = disp16In;
+			disp32Out = disp32In;
+			disp64Out = disp64In;
+			destRegOut = destRegIn;
+			destRegValidOut = destRegValidIn;
+			destRegSpecialOut = destRegSpecialIn;
+			destRegSpecialValidOut = destRegSpecialValidIn;
+			sourceRegCode1Out = sourceReg1In;
+			sourceRegCode2Out = sourceReg2In;
+			sourceRegCode1ValidOut = sourceReg1ValidIn;
+			sourceRegCode2ValidOut = sourceReg2ValidIn;
+			isMemoryAccessSrc1Out = isMemoryAccessSrc1In;
+			isMemoryAccessSrc2Out = isMemoryAccessSrc2In;
+			isMemoryAccessDestOut = isMemoryAccessDestIn;
 			memoryAddressSrc1Out = memoryAddressSrc1In;
 			memoryAddressSrc2Out = memoryAddressSrc2In;
 			destRegValueOut = destRegValueIn;
+			useRIPSrc1Out = useRIPSrc1In;
+			useRIPSrc2Out = useRIPSrc2In;
+			useRIPDestOut = useRIPDestIn;
 
 		        if ((opcodeLengthIn == 1) && opcodeIn == 8'hE8) begin
 			   // We have to do some shoe-horning here.
@@ -2084,15 +2107,15 @@ module Execute (
 			end else
 			/* We manually set the memoryAddressDestOut for PUSH */
 			if (!((opcodeLengthIn == 1) && (opcodeIn == 8'h50 ||
-                                                        opcodeIn == 8'h51 ||
-                                                        opcodeIn == 8'h52 ||
-                                                        opcodeIn == 8'h53 ||
-                                                        opcodeIn == 8'h54 ||
-                                                        opcodeIn == 8'h55 ||
-                                                        opcodeIn == 8'h56 ||
-                                                        opcodeIn == 8'h57 ||
-                                                        opcodeIn == 8'h6A ||
-                                                        opcodeIn == 8'h68 ||
+							opcodeIn == 8'h51 ||
+							opcodeIn == 8'h52 ||
+							opcodeIn == 8'h53 ||
+							opcodeIn == 8'h54 ||
+							opcodeIn == 8'h55 ||
+							opcodeIn == 8'h56 ||
+							opcodeIn == 8'h57 ||
+							opcodeIn == 8'h6A ||
+							opcodeIn == 8'h68 ||
 							((opcodeIn == 8'hFF) && (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b110))))) begin
 				memoryAddressDestOut = memoryAddressDestIn;
 			end
@@ -2102,8 +2125,8 @@ module Execute (
 				isExecuteSuccessfulOut = 0;
 			end
 		end
-	        operand1ValValidOut = operand1ValValidIn;
-	        operand2ValValidOut = operand2ValValidIn;
+		operand1ValValidOut = operand1ValValidIn;
+		operand2ValValidOut = operand2ValValidIn;
 	end
 
 	always @ (posedge clk) begin

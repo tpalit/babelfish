@@ -10,7 +10,7 @@ module Memory (
 		input [0:2]   extendedOpcodeIn,
 		input [0:31]  hasExtendedOpcodeIn,
 		input [0:31]  opcodeLengthIn,
-	        input [0:31]  instructionLengthIn,
+		input [0:31]  instructionLengthIn,
 		input [0:0]   opcodeValidIn,
 		input [0:7]   opcodeIn,
 		input [0:3]   sourceReg1In,
@@ -36,6 +36,9 @@ module Memory (
 		input [0:63]  destRegValueIn,
 		input [0:3]   destRegSpecialIn,
 		input         destRegSpecialValidIn,
+		input	      useRIPSrc1In,
+		input	      useRIPSrc2In,
+		input	      useRIPDestIn,
 		input         isMemoryAccessSrc1In,
 		input         isMemoryAccessSrc2In,
 		input         isMemoryAccessDestIn,
@@ -47,7 +50,7 @@ module Memory (
 		output [0:2]  extendedOpcodeOut,
 		output [0:31] hasExtendedOpcodeOut,
 		output [0:31] opcodeLengthOut,
-	        output  [0:31] instructionLengthOut,
+		output  [0:31] instructionLengthOut,
 		output [0:0]  opcodeValidOut,
 		output [0:7]  opcodeOut,
 		output [0:63] operand1ValOut,
@@ -73,6 +76,9 @@ module Memory (
 		output [0:63] destRegValueOut,
 		output [0:3]  destRegSpecialOut,
 		output        destRegSpecialValidOut,
+		output	      useRIPSrc1Out,
+		output	      useRIPSrc2Out,
+		output	      useRIPDestOut,
 		output        isMemoryAccessSrc1Out,
 		output        isMemoryAccessSrc2Out,
 		output        isMemoryAccessDestOut,
@@ -82,9 +88,9 @@ module Memory (
 		output [0:63] memoryDataOut,
 		output	      stallOnMemoryOut,
 		output        isMemorySuccessfulOut,
-	        output didMemoryReadOut, // To indicate we completed a memory read this cycle.
-		input [0:31]  core_memaccess_inprogress_in,	       
-	        output [0:31] core_memaccess_inprogress_out
+		output 	      didMemoryReadOut, // To indicate we completed a memory read this cycle.
+		input [0:31]  core_memaccess_inprogress_in,
+		output [0:31] core_memaccess_inprogress_out
 		);
 
 	enum { memory_access_idle, memory_access_active } memory_access_state;
@@ -101,85 +107,89 @@ module Memory (
 				isMemorySuccessfulOut = 0;
 			end
 
-  		        currentRipOut = currentRipIn;
-		        extendedOpcodeOut = extendedOpcodeIn;
-		        hasExtendedOpcodeOut = hasExtendedOpcodeIn;
-		        opcodeLengthOut = opcodeLengthIn;
-		        instructionLengthOut = instructionLengthIn;
-		        opcodeValidOut = opcodeValidIn;
-		        opcodeOut = opcodeIn;
-		        immLenOut = immLenIn;
-		        dispLenOut = dispLenIn;
-		        imm8Out = imm8In;
-		        imm16Out = imm16In;
-		        imm32Out = imm32In;
-		        imm64Out = imm64In;
-		        disp8Out = disp8In;
-		        disp16Out = disp16In;
-		        disp32Out = disp32In;
-		        disp64Out = disp64In;
-		        destRegOut = destRegIn;
-		        destRegValidOut = destRegValidIn;
-		        destRegSpecialOut = destRegSpecialIn;
-		        destRegSpecialValidOut = destRegSpecialValidIn;
-		        sourceRegCode1Out = sourceReg1In;
-		        sourceRegCode2Out = sourceReg2In;
-		        sourceRegCode1ValidOut = sourceReg1ValidIn;
-		        sourceRegCode2ValidOut = sourceReg2ValidIn;
-		        isMemoryAccessSrc1Out = isMemoryAccessSrc1In;
-		        isMemoryAccessSrc2Out = isMemoryAccessSrc2In;
-		        isMemoryAccessDestOut = isMemoryAccessDestIn;
+			currentRipOut = currentRipIn;
+			extendedOpcodeOut = extendedOpcodeIn;
+			hasExtendedOpcodeOut = hasExtendedOpcodeIn;
+			opcodeLengthOut = opcodeLengthIn;
+			instructionLengthOut = instructionLengthIn;
+			opcodeValidOut = opcodeValidIn;
+			opcodeOut = opcodeIn;
+			immLenOut = immLenIn;
+			dispLenOut = dispLenIn;
+			imm8Out = imm8In;
+			imm16Out = imm16In;
+			imm32Out = imm32In;
+			imm64Out = imm64In;
+			disp8Out = disp8In;
+			disp16Out = disp16In;
+			disp32Out = disp32In;
+			disp64Out = disp64In;
+			destRegOut = destRegIn;
+			destRegValidOut = destRegValidIn;
+			destRegSpecialOut = destRegSpecialIn;
+			destRegSpecialValidOut = destRegSpecialValidIn;
+			sourceRegCode1Out = sourceReg1In;
+			sourceRegCode2Out = sourceReg2In;
+			sourceRegCode1ValidOut = sourceReg1ValidIn;
+			sourceRegCode2ValidOut = sourceReg2ValidIn;
+			isMemoryAccessSrc1Out = isMemoryAccessSrc1In;
+			isMemoryAccessSrc2Out = isMemoryAccessSrc2In;
+			isMemoryAccessDestOut = isMemoryAccessDestIn;
 			memoryAddressSrc1Out = memoryAddressSrc1In;
 			memoryAddressSrc2Out = memoryAddressSrc2In;
 			memoryAddressDestOut = memoryAddressDestIn;
-        		operand1ValOut = operand1ValIn;
-        		operand2ValOut = operand2ValIn;
+			operand1ValOut = operand1ValIn;
+			operand2ValOut = operand2ValIn;
 			destRegValueOut = destRegValueIn;
+			useRIPSrc1Out = useRIPSrc1In;
+			useRIPSrc2Out = useRIPSrc2In;
+			useRIPDestOut = useRIPDestIn;
 
-		        if (memory_access_state == memory_access_idle && (isMemoryAccessSrc1In || isMemoryAccessSrc2In)) begin
-			   stallOnMemoryOut = 1;
+			if (memory_access_state == memory_access_idle && (isMemoryAccessSrc1In || isMemoryAccessSrc2In)) begin
+				stallOnMemoryOut = 1;
 			end else if (memory_access_state == memory_access_state && dCacheCoreBus.respcyc == 1) begin
-			   stallOnMemoryOut = 0;
+				stallOnMemoryOut = 0;
 			end
-		        if ((isMemoryAccessSrc1In || isMemoryAccessSrc2In) 
-			    && memory_access_state == memory_access_state
-			    && dCacheCoreBus.respcyc == 1) begin
-			   core_memaccess_inprogress_out = 0; // Completed the read access
-			   didMemoryReadOut = 1;
+			if ((isMemoryAccessSrc1In || isMemoryAccessSrc2In) 
+				&& memory_access_state == memory_access_state
+				&& dCacheCoreBus.respcyc == 1) begin
+				core_memaccess_inprogress_out = 0; // Completed the read access
+				didMemoryReadOut = 1;
 			end else begin
-			   core_memaccess_inprogress_out = core_memaccess_inprogress_in;
-			   didMemoryReadOut = 0;
+				core_memaccess_inprogress_out = core_memaccess_inprogress_in;
+				didMemoryReadOut = 0;
 			end
 		end else begin
 			isMemorySuccessfulOut = 0;
-		        didMemoryReadOut = 0;
+			didMemoryReadOut = 0;
 		end
-	        operand1ValValidOut = operand1ValValidIn;
-	        operand2ValValidOut = operand2ValValidIn;
+		operand1ValValidOut = operand1ValValidIn;
+		operand2ValValidOut = operand2ValValidIn;
 	end
 
 	always @ (posedge dCacheCoreBus.clk)
 		if (dCacheCoreBus.reset) begin
 			memory_access_state <= memory_access_idle;
 		end else begin
-		   // If there's a memory access in progress, continue it even if canMemoryIn is low.
-		   if (memory_access_state == memory_access_active) begin
-		      if (dCacheCoreBus.reqack == 1) begin
-			 dCacheCoreBus.reqcyc <= 0;
-		      end
+			// If there's a memory access in progress, continue it even if canMemoryIn is low.
+			if (memory_access_state == memory_access_active) begin
+				if (dCacheCoreBus.reqack == 1) begin
+					dCacheCoreBus.reqcyc <= 0;
+				end
 
-		      if (dCacheCoreBus.respcyc == 1) begin
-			 memoryDataOut <= dCacheCoreBus.resp;
-			 dCacheCoreBus.respack <= 1;
-			 memory_access_state <= memory_access_idle;
-		      end
-		   end
+				if (dCacheCoreBus.respcyc == 1) begin
+					memoryDataOut <= dCacheCoreBus.resp;
+					dCacheCoreBus.respack <= 1;
+					memory_access_state <= memory_access_idle;
+				end
+			end
+
 			if ((opcodeValidIn == 1) && (canMemoryIn == 1)) begin
 				if (memory_access_state == memory_access_idle) begin
-                        dCacheCoreBus.respack <= 0;
+					dCacheCoreBus.respack <= 0;
 					if (isMemoryAccessSrc1In == 0 && isMemoryAccessSrc2In == 0) begin
 						/* Nothing to read from Memory. */
-			        		memoryDataOut <= 0;
+						memoryDataOut <= 0;
 					end else if (isMemoryAccessSrc1In == 1) begin
 						/* Send request for Src1 to Memory */
 
@@ -196,7 +206,7 @@ module Memory (
 						memory_access_state <= memory_access_active;
 					end
 	
+				end
 			end
 		end
-             end
 endmodule

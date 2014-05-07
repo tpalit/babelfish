@@ -33,7 +33,10 @@ module Read (
 	     input 	   destRegValidIn,
              input [0:3]   destRegisterSpecialIn, // TODO: Treat IMUL as special case with dest as RDX:RAX
              input 	   destRegisterSpecialValidIn, // TODO: Treat IMUL as special case with dest as RDX:RAX
-	     
+	     input	   useRIPSrc1In,
+	     input	   useRIPSrc2In,
+	     input	   useRIPDestIn,
+
 	     output [63:0] operandVal1Out,
 	     output [63:0] operandVal2Out,
 	     output 	   operandVal1ValidOut,
@@ -68,6 +71,9 @@ module Read (
 	     output [63:0] destRegValueOut,
              output [0:3]  destRegisterSpecialOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
              output 	   destRegisterSpecialValidOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
+	     output	   useRIPSrc1Out,
+	     output	   useRIPSrc2Out,
+	     output	   useRIPDestOut,
 	     output 	   isReadSuccessfulOut
 	     );
 
@@ -109,6 +115,9 @@ module Read (
 	    destRegValidOut = destRegValidIn;
 	    destRegisterSpecialOut = destRegisterSpecialIn;
 	    destRegisterSpecialValidOut = destRegisterSpecialValidIn;
+	    useRIPSrc1Out = useRIPSrc1In;
+	    useRIPSrc2Out = useRIPSrc2In;
+	    useRIPDestOut = useRIPDestIn;
 
 	    sourceRegCode1Out = sourceReg1In;
 	    sourceRegCode2Out = sourceReg2In;
