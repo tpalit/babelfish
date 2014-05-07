@@ -1070,7 +1070,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 0;
@@ -1126,7 +1126,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 0;
@@ -1182,7 +1182,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 0;
@@ -1293,7 +1293,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 1;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -1383,7 +1383,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -1432,7 +1432,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -1480,7 +1480,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -1528,7 +1528,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 0;
@@ -1597,7 +1597,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -1646,7 +1646,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -1694,7 +1694,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -1742,7 +1742,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 0;
@@ -1811,7 +1811,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -1860,7 +1860,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -1908,7 +1908,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -1956,7 +1956,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 0;
@@ -2025,7 +2025,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -2074,7 +2074,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -2122,7 +2122,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -2170,7 +2170,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 0;
@@ -2239,7 +2239,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -2288,7 +2288,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -2336,7 +2336,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -2384,7 +2384,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 0;
@@ -2453,7 +2453,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -2502,7 +2502,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -2550,7 +2550,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -2598,7 +2598,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 0;
@@ -2667,7 +2667,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -2716,7 +2716,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -2764,7 +2764,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -2812,7 +2812,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 0;
@@ -2882,7 +2882,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -2931,7 +2931,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -2979,7 +2979,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -3027,7 +3027,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 0;
@@ -3117,7 +3117,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -3169,7 +3169,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -3220,7 +3220,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -3272,7 +3272,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -3323,7 +3323,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -3375,7 +3375,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -3461,7 +3461,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -3512,7 +3512,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -3561,7 +3561,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -3610,7 +3610,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -3660,7 +3660,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -3709,7 +3709,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 0;
@@ -3758,7 +3758,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 0;
@@ -3829,7 +3829,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -3906,7 +3906,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 1;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -3955,7 +3955,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -4004,7 +4004,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
@@ -4197,7 +4197,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;
