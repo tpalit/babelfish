@@ -1092,6 +1092,14 @@ module Decode (
 			/* TODO: Handle SIB Byte Here, disp = 0 */
 		end else if (mod_field == 2'b00 && rm_field == 3'b101) begin
 			/* TODO: Handle Special case, RIP + disp32 */
+			useRIPSrc1Out = 0;
+			useRIPSrc2Out = 0;
+			useRIPDestOut = 1;
+			disp64Out = sign_extend_32_to_64(disp32);
+			dispLenOut = 4;
+			isMemoryAccessSrc1Out = 0;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
 		end else if (mod_field == 2'b01 && rm_field == 3'b100) begin
 			/* TODO: Handle SIB Byte Here, disp = 8 */
 		end else if (mod_field == 2'b10 && rm_field == 3'b100) begin
@@ -1140,6 +1148,14 @@ module Decode (
 			/* TODO: Handle SIB Byte Here, disp = 0 */
 		end else if (mod_field == 2'b00 && rm_field == 3'b101) begin
 			/* TODO: Handle Special case, RIP + disp32 */
+			useRIPSrc1Out = 0;
+			useRIPSrc2Out = 0;
+			useRIPDestOut = 1;
+			disp64Out = sign_extend_32_to_64(disp32);
+			dispLenOut = 4;
+			isMemoryAccessSrc1Out = 0;
+			isMemoryAccessSrc2Out = 0;
+			isMemoryAccessDestOut = 1;
 		end else if (mod_field == 2'b01 && rm_field == 3'b100) begin
 			/* TODO: Handle SIB Byte Here, disp = 8 */
 		end else if (mod_field == 2'b10 && rm_field == 3'b100) begin
@@ -1188,6 +1204,14 @@ module Decode (
 			/* TODO: Handle SIB Byte Here, disp = 0 */
 		end else if (mod_field == 2'b00 && rm_field == 3'b101) begin
 			/* TODO: Handle Special case, RIP + disp32 */
+			useRIPSrc1Out = 0;
+			useRIPSrc2Out = 1;
+			useRIPDestOut = 0;
+			disp64Out = sign_extend_32_to_64(disp32);
+			dispLenOut = 4;
+			isMemoryAccessSrc1Out = 0;
+			isMemoryAccessSrc2Out = 1;
+			isMemoryAccessDestOut = 0;
 		end else if (mod_field == 2'b01 && rm_field == 3'b100) begin
 			/* TODO: Handle SIB Byte Here, disp = 8 */
 		end else if (mod_field == 2'b10 && rm_field == 3'b100) begin
@@ -4056,7 +4080,7 @@ module Decode (
 			isMemoryAccessSrc1Out = 0;
 			isMemoryAccessSrc2Out = 0;
 			isMemoryAccessDestOut = 0;
-		end else if (mod_field == 2'b00 && (rm_field != 3'b100 || rm_field != 3'b101)) begin
+		end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			disp64Out = 0;
 			dispLenOut = 0;
 			isMemoryAccessSrc1Out = 1;

@@ -157,6 +157,11 @@ module Execute (
 
 				aluResultOut = imm64In;
 				isExecuteSuccessfulOut = 1;
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h8D)) begin
+				/* LEA */
+
+				aluResultOut = operandValue1;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h83 || opcodeIn == 8'h81)
 				&& (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b001)) begin
 				/* OR operand 1 with immediate and write into operand 1 */
