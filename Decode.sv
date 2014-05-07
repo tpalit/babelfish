@@ -306,6 +306,9 @@ module Decode (
       imm_array[8'hE3] = 1;
       
       //*********** Length 2 Opcodes ************
+      // For CLFLUSH
+      op_len2_modrm_array[8'hAE] = 1;
+
       // For BSF
       // RM
       op_len2_modrm_array[8'hBC] = 1;
@@ -882,7 +885,8 @@ module Decode (
             end else begin 
 
                 imm_len = get_imm(decode_bytes[opcode_start_index*8 +: 8]);
-                if((modrm_array[decode_bytes[opcode_start_index*8 +: 8]] == 0) && (imm_len == 0)) begin
+                //if((modrm_array[decode_bytes[opcode_start_index*8 +: 8]] == 0) && (imm_len == 0)) begin
+                if((modrm_array[decode_bytes[opcode_end_index*8 +: 8]] == 0) && (imm_len == 0)) begin
                    if (/*opcode == 8'h70 ||
                                  opcode == 8'h71 ||
                                  opcode == 8'h72 ||
@@ -931,7 +935,8 @@ module Decode (
                 end
             end
 
-            if(modrm_array[decode_bytes[opcode_start_index*8 +: 8]] == 1) begin
+            //if(modrm_array[decode_bytes[opcode_start_index*8 +: 8]] == 1) begin
+            if(modrm_array[decode_bytes[opcode_end_index*8 +: 8]] == 1) begin
                instr_count = instr_count+1;
 
                // Process ModRM
@@ -4132,12 +4137,20 @@ module Decode (
 
             end
          end else if (((opcode_end_index - opcode_start_index) == 1) && (exit_after_print == 0)) begin
+		$write("\nLength 2 opcode: %x, regfield: %b, rm_field: %b, mod_field: %b\n", opcode, reg_field, rm_field, mod_field);
             if (opcode == 8'hBC) begin
                //$write("bsf     ,");
                decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
             end else if (opcode == 8'hBD) begin
                //$write("bsr     ,");
                decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
+            end else if (opcode == 8'hAE && reg_field == 3'b111) begin
+		/* Handling CLFLUSH as NOP */
+
+		opcodeValidOut = 1;
+		extendedOpcodeOut = 3'b111;
+		hasExtendedOpcodeOut = 1;
+		$write("CLFLUSH Instruction: Handled as NOP as our caching policy is write-through.");
             end else if (opcode == 8'hC8 ||
                 opcode == 8'hC9 ||
                 opcode == 8'hCA ||

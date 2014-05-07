@@ -133,6 +133,13 @@ module Execute (
 			jumpTarget = currentRipIn;
 
 			if ((opcodeLengthIn == 1) && (opcodeIn == 8'h90)) begin
+				/* NOP */
+
+				isExecuteSuccessfulOut = 1;
+			end else if ((opcodeLengthIn == 2) && (opcodeIn == 8'hAE)
+				&& (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b111)) begin
+				/* CLFLUSH treated as NOP */
+
 				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hC7) &&
 				(hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b000)) begin
