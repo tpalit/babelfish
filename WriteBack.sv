@@ -157,6 +157,11 @@ module WriteBack (
                                                         (opcodeIn == 8'h5F) ||
 							(opcodeIn == 8'h8F && hasExtendedOpcodeIn == 1 && extendedOpcodeIn == 3'b000))) begin
 				regFileOut[4'b0100] = aluResultSpecialIn;
+			   end // if ((opcodeLengthIn == 1) && ((opcodeIn == 8'h58) ||...
+
+			   /* Special handling for CALLQ */
+			   if ((opcodeLengthIn == 1) && (opcodeIn == 8'hE8)) begin
+			      regFileOut[4'b0100] = aluResultSpecialIn;
 			   end
 
   			   if (isMemoryAccessDestIn == 0 && killIn == 0) begin

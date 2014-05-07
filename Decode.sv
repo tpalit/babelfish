@@ -9,6 +9,7 @@ module Decode (
 	       input 		regInUseBitMapIn[16],
 	       input [0:63] 	currentRipIn,
 	       input 		canDecodeIn,
+	       input 		stallOnCallqIn, 
 	       output 		stallOut,
 	       output 		regInUseBitMapOut[16],
 	       output [0:63] 	currentRipOut,
@@ -41,7 +42,8 @@ module Decode (
 	       input [0:31] 	core_memaccess_inprogress_in,
 	       output [0:31] 	core_memaccess_inprogress_out,
 	       input 		stallOnJumpIn, 
-	       output 		stallOnJumpOut, 
+	       output 		stallOnJumpOut,
+	       output           stallOnCallqOut, 		
 	       output [0:3] 	bytesDecodedThisCycleOut 	
 	       );
    
@@ -741,6 +743,11 @@ module Decode (
 	 return 1;
       end
 
+      // Stalled on a call?
+      if (stallOnCallqIn != 0) begin
+	 return 1;
+      end
+
       return 0;
    endfunction
 
@@ -760,6 +767,10 @@ module Decode (
 	 return 1;
       end
 
+      // Stalled on a call?
+      if (stallOnCallqIn != 0) begin
+	 return 1;
+      end
       return 0;
    endfunction
 
@@ -4017,6 +4028,9 @@ module Decode (
 	       stallOnJumpOut = 1;
             end else if (opcode == 8'hE8) begin
                decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });
+	       opcodeValidOut = 1;
+	       imm64Out = sign_extend_32_to_64(imm32);
+	       stallOnCallqOut = 1;
             end else if (opcode == 8'h91 ||
                 opcode == 8'h92 ||
                 opcode == 8'h93 ||
@@ -4217,7 +4231,6 @@ module Decode (
             end else begin
 	       regInUseBitMapOut[destRegSpecialOut] = regInUseBitMapIn[destRegSpecialOut];
 	    end
-        
 	    if (destRegValidOut) begin 
                regInUseBitMapOut[destRegOut] = 1;
 	    end else begin
@@ -4241,6 +4254,7 @@ module Decode (
             bytesDecodedThisCycleOut = 0;
 	    core_memaccess_inprogress_out = core_memaccess_inprogress_in;
 	    stallOnJumpOut = stallOnJumpIn;
+	    stallOnCallqOut = stallOnCallqIn;
          end
 
       
@@ -4248,7 +4262,8 @@ module Decode (
       end else begin
          bytesDecodedThisCycleOut = 0;
 	 stallOnJumpOut = stallOnJumpIn;
-
+	 stallOnCallqOut = stallOnCallqIn;
+	 
       end // else: !if(canDecodeIn)
 
       currentRipOut = currentRipIn;

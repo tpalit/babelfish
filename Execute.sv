@@ -5,7 +5,7 @@ module Execute (
 		input [0:63]  currentRipIn,
 		input 	      canExecuteIn,
 		input 	      wbStallIn,
-		input [63:0]  registerFileIn[16],	// Added for syscall only
+		input [63:0]  registerFileIn[16],	// Added for syscall and callq only
 		input [0:2]   extendedOpcodeIn,
 		input [0:31]  hasExtendedOpcodeIn,
 		input [0:31]  opcodeLengthIn,
@@ -2053,6 +2053,26 @@ module Execute (
 			memoryAddressSrc2Out = memoryAddressSrc2In;
 			destRegValueOut = destRegValueIn;
 
+		        if ((opcodeLengthIn == 1) && opcodeIn == 8'hE8) begin
+			   // We have to do some shoe-horning here.
+			   // 1. Tell the Writeback stage to decrement the RSP
+			   destRegValidOut = 1;
+			   destRegOut = 4'b0100;
+			   aluResultSpecialOut = registerFileIn[destRegOut] - 8;
+			   // 2. Tell the Writeback stage to write to the memory pointed by
+			   // the updated Stack pointer with the address of the next instruction
+			   isMemoryAccessDestOut = 1;
+			   memoryAddressDestOut = aluResultSpecialOut;
+			   /* verilator lint_off WIDTH */
+			   aluResultOut = currentRipIn + instructionLengthIn;
+			   /* verilator lint_on WIDTH */
+			   // 3. Set the called target address on the jumpTarget lines
+			   didJump = 1;
+			   /* verilator lint_off WIDTH */
+			   jumpTarget = currentRipIn + imm64In + instructionLengthIn;
+			   /* verilator lint_on WIDTH */
+			   isExecuteSuccessfulOut = 1;
+			end else
 			/* We manually set the memoryAddressDestOut for PUSH */
 			if (!((opcodeLengthIn == 1) && (opcodeIn == 8'h50 ||
                                                         opcodeIn == 8'h51 ||

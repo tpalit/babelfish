@@ -42,6 +42,11 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	 end else begin
 	    resteerFetchIn = 0;
 	 end
+      end else if (stallOnCallqLatch && fetch_state == fetch_idle && wbDidMemoryWriteLatch) begin
+	 if (exJumpTarget != 0) begin // We know that calls always cause a "jump". No need to check if exDidJump. But the main reason for not using the exDidJumpOut signal is that it'd have gone low by now, since we're waiting for wbDidMemoryWrite.
+	    core_entry = exJumpTarget & ~7; // word aligned
+	    resteerFetchIn = 1; 
+	 end 
       end else begin
 	 resteerFetchIn = 0;
       end
@@ -101,7 +106,15 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	  */
       end else begin
 	 stallOnJumpLatch <= idStallOnJumpOut;
-      end
+      end // else: !if(exDidJumpOut && stallOnJumpLatch && fetch_state == fetch_idle)
+
+      if (wbDidMemoryWriteLatch && stallOnCallqLatch && fetch_state == fetch_idle) begin
+	 stallOnCallqLatch <= 0;
+	 decode_offset <= {4'b0000, exJumpTarget[61:63]}; // The offset inside the word
+	 wbDidMemoryWriteLatch <= 0;
+      end else begin
+	 stallOnCallqLatch <= idStallOnCallqOut;
+      end 
    end
 
 
@@ -112,8 +125,11 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
     * the Execute stage, it will return the RIP value to jump to. 
     */
    bit stallOnJumpLatch;
+   bit stallOnCallqLatch;
+   
    /* verilator lint_off UNUSED */
    bit idStallOnJumpOut;
+   bit idStallOnCallqOut;
    /* verilator lint_on UNUSED */
 
    
@@ -516,6 +532,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    logic [0:63]         wbMemoryAddressDestOut = 0;
    bit			wbStallOnMemoryWrOut = 0;
    bit 			wbDidMemoryWrite = 0;
+   bit                  wbDidMemoryWriteLatch = 0; // Will latch the value for wbDidMemoryWrite till it is used (for calls)
+   
    logic [0:7] 		wbOpcodeOut = 0;
    logic [0:31]		wbOpcodeLengthOut = 0;
    logic [0:2] 		wbExtendedOpcodeOut = 0;
@@ -652,6 +670,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		regInUseBitMap,     
 		ifidCurrentRip,
 		can_decode,
+		stallOnCallqLatch,
 		idStallOut,
 		regInUseBitMapOut,
 		idCurrentRipOut,
@@ -685,6 +704,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		id_core_memaccess_inprogress,
 		stallOnJumpLatch,
 		idStallOnJumpOut,
+		idStallOnCallqOut,
 		bytes_decoded_this_cycle
 		);
 
@@ -1107,7 +1127,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		$finish;
 	end
 
-	if (!stallOnJumpLatch) begin
+	if (!stallOnJumpLatch && !stallOnCallqLatch) begin
            decode_offset <= decode_offset + { 3'b0, bytes_decoded_this_cycle };
 	end
         if (bytes_decoded_this_cycle > 0) begin
@@ -1322,7 +1342,10 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	exwbMemoryAddressSrc2 <= exMemoryAddressSrc2Out;
 	exwbMemoryAddressDest <= exMemoryAddressDestOut;
 
-
+	if (!wbDidMemoryWriteLatch) begin
+	   wbDidMemoryWriteLatch <= wbDidMemoryWrite;
+	end
+	
 	idrdCurrentRip <= idCurrentRipOut;
 	rdacCurrentRip <= rdCurrentRipOut;
 	acmemCurrentRip <= acCurrentRipOut;
@@ -1330,7 +1353,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	exwbCurrentRip <= exCurrentRipOut;
 
         /* verilator lint_off WIDTH */
-	if (stallOnJumpLatch && exDidJumpOut && exJumpTarget != 0) begin
+	if ((stallOnJumpLatch || stallOnCallqLatch) && exDidJumpOut && exJumpTarget != 0) begin
 	   ifidCurrentRip <= exJumpTarget;
 	end else begin
            ifidCurrentRip <= ifidCurrentRip + bytes_decoded_this_cycle;
