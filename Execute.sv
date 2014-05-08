@@ -5,7 +5,7 @@ module Execute (
 		input [0:63]  currentRipIn,
 		input 	      canExecuteIn,
 		input 	      wbStallIn,
-		input [63:0]  registerFileIn[16],	// Added for syscall and callq only
+		input [63:0]  registerFileIn[16], // Added for syscall and callq only
 		input [0:2]   extendedOpcodeIn,
 		input [0:31]  hasExtendedOpcodeIn,
 		input [0:31]  opcodeLengthIn,
@@ -35,9 +35,9 @@ module Execute (
 		input [0:63]  destRegValueIn,
 		input [0:3]   destRegSpecialIn,
 		input 	      destRegSpecialValidIn,
-		input	      useRIPSrc1In,
-		input	      useRIPSrc2In,
-		input	      useRIPDestIn,
+		input 	      useRIPSrc1In,
+		input 	      useRIPSrc2In,
+		input 	      useRIPDestIn,
 		input 	      isMemoryAccessSrc1In,
 		input 	      isMemoryAccessSrc2In,
 		input 	      isMemoryAccessDestIn,
@@ -80,9 +80,9 @@ module Execute (
 		output [0:63] destRegValueOut,
 		output [0:3]  destRegSpecialOut,
 		output 	      destRegSpecialValidOut,
-		output	      useRIPSrc1Out,
-		output	      useRIPSrc2Out,
-		output	      useRIPDestOut,
+		output 	      useRIPSrc1Out,
+		output 	      useRIPSrc2Out,
+		output 	      useRIPDestOut,
 		output 	      isMemoryAccessSrc1Out,
 		output 	      isMemoryAccessSrc2Out,
 		output 	      isMemoryAccessDestOut,
@@ -91,8 +91,9 @@ module Execute (
 		output [0:63] memoryAddressDestOut,
 		output 	      isExecuteSuccessfulOut,
 		output 	      didJump,
+		output 	      didRetq, 
 		output [0:63] jumpTarget,
-		output [63:0] rflagsOut,		
+		output [63:0] rflagsOut, 
 		output 	      killOut
 		);
 
@@ -103,7 +104,8 @@ module Execute (
 
 	always_comb begin
 		if ((opcodeValidIn == 1) && (canExecuteIn == 1) && !wbStallIn) begin
-
+		        
+		   
 			logic [0:63] temp_var = 0;
 			logic [0:64] add_temp_var = 0;
 			logic [0:127] mul_temp_var = 0;
@@ -113,6 +115,7 @@ module Execute (
 
 			killOut = 0;
 
+		        didRetq = 0;
 			rflagsOut = rflagsIn;
 
 			assert(!((isMemoryAccessSrc1In == 1) && (isMemoryAccessSrc2In == 1))) else $fatal("\nBoth source operands access Memory!\n");
@@ -2090,7 +2093,7 @@ module Execute (
 			   aluResultOut = currentRipIn + instructionLengthIn;
 			   /* verilator lint_on WIDTH */
 			   // 3. Set the called target address on the jumpTarget lines
-			   didJump = 1;
+//			   didJump = 1;
 			   /* verilator lint_off WIDTH */
 			   jumpTarget = currentRipIn + imm64In + instructionLengthIn;
 			   /* verilator lint_on WIDTH */
@@ -2101,9 +2104,14 @@ module Execute (
 			   destRegOut = 4'b0100;
 			   aluResultSpecialOut = registerFileIn[destRegOut] + 8;
 			   // 2. Set the returning address (read by the memory stage) as the jump target
-			   didJump = 1;
+			   didRetq = 1;
 			   jumpTarget = memoryDataIn;
 			   isExecuteSuccessfulOut = 1;
+			   // 3. Clear the isMemory flags
+			   isMemoryAccessDestOut = 0;
+			   isMemoryAccessSrc1Out = 0;
+			   isMemoryAccessSrc2Out = 0;
+			   
 			end else
 			/* We manually set the memoryAddressDestOut for PUSH */
 			if (!((opcodeLengthIn == 1) && (opcodeIn == 8'h50 ||

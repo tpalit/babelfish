@@ -927,6 +927,7 @@ module Decode (
                                  opcode == 8'h7D ||
                                  opcode == 8'h7E ||
                                  opcode == 8'h7F || */
+		                 opcode == 8'hC3 ||
                                  opcode == 8'hE3 ||
                                  opcode == 8'h50 ||
                                  opcode == 8'h51 ||
@@ -1273,7 +1274,28 @@ module Decode (
                isMemoryAccessSrc1Out = 0;
 	       isMemoryAccessSrc2Out = 0;
 	       isMemoryAccessDestOut = 0;
-            end else if ((opcode == 8'h50) ||
+            end else if (opcode == 8'hC3) begin // if (opcode == 8'hB8 ||...
+		sourceRegCode1Out = 4'b0100; // RSP read operand
+		sourceRegCode2Out = 0;
+		sourceRegCode1ValidOut = 1;
+		sourceRegCode2ValidOut = 0;	       
+		immLenOut = 0;
+		extendedOpcodeOut = 0;
+		hasExtendedOpcodeOut = 0;
+		isMemoryAccessSrc1Out = 1;
+		isMemoryAccessSrc2Out = 0;
+		isMemoryAccessDestOut = 0;
+		disp64Out = 0;
+		dispLenOut = 0;
+	       
+	       stallOnRetqOut = 1;
+               opcodeValidOut = 1;
+	       destRegOut = 4'b0100; // write operand RSP
+	       destRegValidOut = 1;
+	       isMemoryAccessSrc1Out = 1;
+	       isMemoryAccessSrc2Out = 0;
+	       isMemoryAccessDestOut = 0;
+	    end else if ((opcode == 8'h50) ||
                (opcode == 8'h51) ||
                (opcode == 8'h52) ||
                (opcode == 8'h53) ||
@@ -4074,8 +4096,29 @@ module Decode (
 	       imm64Out = sign_extend_32_to_64(imm32);
 	       stallOnJumpOut = 1;
             end else if (opcode == 8'hE8) begin
+	       /* Callq */
                decode_D(imm8, imm32, 0, currentRipIn+{ 32'b0, instr_count });
+	       sourceRegCode1Out = 0 ; // No read operands
+	       sourceRegCode2Out = 0;
+	       sourceRegCode1ValidOut = 0;
+	       sourceRegCode2ValidOut = 0;	       
+	       immLenOut = 0;
+	       extendedOpcodeOut = 0;
+	       hasExtendedOpcodeOut = 0;
+	       isMemoryAccessSrc1Out = 1;
+	       isMemoryAccessSrc2Out = 0;
+	       isMemoryAccessDestOut = 0;
+	       disp64Out = 0;
+	       dispLenOut = 0;
+	       
+
+	       isMemoryAccessSrc1Out = 1;
+	       isMemoryAccessSrc2Out = 0;
+	       isMemoryAccessDestOut = 0;
+	       
 	       opcodeValidOut = 1;
+	       destRegOut = 4'b0100; // write operand RSP
+	       destRegValidOut = 1;
 	       imm64Out = sign_extend_32_to_64(imm32);
 	       stallOnCallqOut = 1;
             end else if (opcode == 8'h91 ||
@@ -4164,7 +4207,7 @@ module Decode (
 
             end
          end else if (((opcode_end_index - opcode_start_index) == 1) && (exit_after_print == 0)) begin
-		$write("\nLength 2 opcode: %x, regfield: %b, rm_field: %b, mod_field: %b\n", opcode, reg_field, rm_field, mod_field);
+//		$write("\nLength 2 opcode: %x, regfield: %b, rm_field: %b, mod_field: %b\n", opcode, reg_field, rm_field, mod_field);
             if (opcode == 8'hBC) begin
                //$write("bsf     ,");
                decode_RM(rex_field, disp32, disp8, mod_field, rm_field, reg_field, scale_field, index_field, base_field, currentRipIn+{ 32'b0, instr_count });
@@ -4308,14 +4351,16 @@ module Decode (
             end
          end
 
+	 /*
          if((opcode_start_index == opcode_end_index) && (opcodeOut == 8'hC3 || opcodeOut == 8'hCB || opcodeOut == 8'hCF)) begin
 	    stallOnRetqOut = 1;
             opcodeValidOut = 1;
-	    
+	    destRegOut = 4'b0100; // write operand RSP
          end
+	  */
 
          if ((opcodeLengthOut == 2) && (opcodeOut == 8'h05) && (!toStallOrNotToStallSyscall(regInUseBitMapIn))) begin
-            /* Special handling for syscall */
+             /* Special handling for syscall */
             regInUseBitMapOut[0] = 1;
             regInUseBitMapOut[7] = 1;
             regInUseBitMapOut[6] = 1;
@@ -4371,7 +4416,7 @@ module Decode (
 
       
          //if (decode_bytes == 0 && fetch_state == fetch_idle) $finish;
-      end else begin
+      end else begin  
          bytesDecodedThisCycleOut = 0;
 	 stallOnJumpOut = stallOnJumpIn;
 	 stallOnCallqOut = stallOnCallqIn;

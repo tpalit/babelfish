@@ -20,12 +20,12 @@ module WriteBack (
 		input 	      sourceReg2ValidIn,
 		input [0:3]   destRegIn,
 		input [0:63]  destRegValueIn,
-		input         destRegValidIn,
+		input 	      destRegValidIn,
 		input [0:3]   destRegSpecialIn,
 		input 	      destRegSpecialValidIn,
-		input	      useRIPSrc1In,
-		input	      useRIPSrc2In,
-		input	      useRIPDestIn,
+		input 	      useRIPSrc1In,
+		input 	      useRIPSrc2In,
+		input 	      useRIPDestIn,
 		input 	      isMemoryAccessSrc1In,
 		input 	      isMemoryAccessSrc2In,
 		input 	      isMemoryAccessDestIn,
@@ -47,12 +47,12 @@ module WriteBack (
 		output 	      sourceRegCode2ValidOut,
 		output [0:3]  destRegOut,
 		output [0:63] destRegValueOut,
-		output        destRegValidOut,
+		output 	      destRegValidOut,
 		output [0:3]  destRegSpecialOut,
 		output 	      destRegSpecialValidOut,
-		output	      useRIPSrc1Out,
-		output	      useRIPSrc2Out,
-		output	      useRIPDestOut,
+		output 	      useRIPSrc1Out,
+		output 	      useRIPSrc2Out,
+		output 	      useRIPDestOut,
 		output [0:63] aluResultOut,
 		output [0:63] aluResultSpecialOut,
 
@@ -71,7 +71,8 @@ module WriteBack (
 		output 	      killOut,
 		output 	      didMemoryWriteOut, // To indicate we completed a memory write this cycle
 		input [0:31]  core_memaccess_inprogress_in,
-		output [0:31] core_memaccess_inprogress_out
+		output [0:31] core_memaccess_inprogress_out,
+		output        didCallWritebackOut // completed the callq	      
 		);
 
 	/* verilator lint_off UNUSED */
@@ -84,7 +85,7 @@ module WriteBack (
 		//if (canWriteBackIn == 1 && killIn == 0) begin
 		if (canWriteBackIn == 1) begin
 			/* Check regInUseBitMapIn, and set all sources and dest as unused. */
-
+		   
 			if ((opcodeLengthIn == 2) && (opcodeIn == 8'h05)) begin
 				/* Special handling for syscall. */
 				regInUseBitMapOut[0] = 0;
@@ -165,7 +166,9 @@ module WriteBack (
 					regFileOut[4'b0100] = aluResultSpecialIn;
 				end
 
-				if (isMemoryAccessDestIn == 0 && killIn == 0) begin
+			        if ((opcodeLengthIn == 1) && ((opcodeIn == 8'hE8) || (opcodeIn == 8'hC3))) begin
+				   regFileOut[4'b0100] = aluResultSpecialIn;				   
+				end else if (isMemoryAccessDestIn == 0 && killIn == 0) begin
 					regFileOut[destRegIn] = aluResultIn;
 				end
 			end
@@ -223,6 +226,10 @@ module WriteBack (
 	       memory_write_state <= memory_write_idle;
 	       memoryWriteDone <= 1;
 	       core_memaccess_inprogress_out <= 0; // Completed the write access
+	       if(opcodeIn == 8'hE8) begin
+	       	  didCallWritebackOut <= 1;
+	       end
+
 	       didMemoryWriteOut <= 1;
 	    end else begin
 	       core_memaccess_inprogress_out <= core_memaccess_inprogress_in;
@@ -254,6 +261,10 @@ module WriteBack (
 	    if (memory_write_state != memory_write_active) begin
 	       didMemoryWriteOut <= 0;
 	       core_memaccess_inprogress_out <= core_memaccess_inprogress_in;
+	       if(opcodeIn == 8'hE8) begin
+	       	  didCallWritebackOut <= 0;
+	       end
+	       
 	    end
 	 end
       end

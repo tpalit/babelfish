@@ -42,15 +42,15 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	 end else begin
 	    resteerFetchIn = 0;
 	 end
-      end else if (stallOnCallqLatch && fetch_state == fetch_idle && wbDidMemoryWriteLatch) begin
-	 if (exJumpTarget != 0) begin // We know that calls always cause a "jump". No need to check if exDidJump. But the main reason for not using the exDidJumpOut signal is that it'd have gone low by now, since we're waiting for wbDidMemoryWrite.
+      end else if (stallOnCallqLatch && fetch_state == fetch_idle) begin
+	 if (exJumpTarget != 0 && wbDidCallWritebackOut) begin 
 	    core_entry = exJumpTarget & ~7; // word aligned
 	    resteerFetchIn = 1; 
 	 end else begin
 	    resteerFetchIn = 0;
 	 end
       end else if (stallOnRetqLatch && fetch_state == fetch_idle)  begin
-	 if (exJumpTarget != 0) begin
+	 if (exJumpTarget != 0 && exDidRetqOut) begin
 	    core_entry = exJumpTarget & ~7; // word aligned
 	    resteerFetchIn = 1; 
 	 end else begin
@@ -117,15 +117,15 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	 stallOnJumpLatch <= idStallOnJumpOut;
       end // else: !if(exDidJumpOut && stallOnJumpLatch && fetch_state == fetch_idle)
 
-      if (wbDidMemoryWriteLatch && stallOnCallqLatch && fetch_state == fetch_idle) begin
+      if (wbDidCallWritebackOut && stallOnCallqLatch && fetch_state == fetch_idle) begin
 	 stallOnCallqLatch <= 0;
 	 decode_offset <= {4'b0000, exJumpTarget[61:63]}; // The offset inside the word
-	 wbDidMemoryWriteLatch <= 0;
+
       end else begin
 	 stallOnCallqLatch <= idStallOnCallqOut;
       end
 
-      if (stallOnRetqLatch && exDidJumpOut && fetch_state == fetch_idle) begin
+      if (stallOnRetqLatch && exDidRetqOut && fetch_state == fetch_idle) begin
 	 stallOnRetqLatch <= 0;
 	 decode_offset <= {4'b0000, exJumpTarget[61:63]}; // The offset inside the word
       end else begin
@@ -560,6 +560,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    bit	 		exUseRIPSrc1Out = 0;
    bit	 		exUseRIPSrc2Out = 0;
    bit	 		exUseRIPDestOut = 0;
+   bit 			exDidRetqOut = 0;
+   
 
    logic [0:3] 		wbSourceRegCode1Out = 0;
    logic [0:3] 		wbSourceRegCode2Out = 0;
@@ -590,6 +592,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
    bit	 		wbUseRIPSrc1Out = 0;
    bit	 		wbUseRIPSrc2Out = 0;
    bit	 		wbUseRIPDestOut = 0;
+   bit 			wbDidCallWritebackOut = 0;
+   
    /* verilator lint_on UNUSED */
 
    bit			readSuccessfulOut = 0;
@@ -1106,6 +1110,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		exMemoryAddressDestOut,
 		executeSuccessfulOut,
 	        exDidJumpOut,
+		exDidRetqOut,
 		exJumpTarget,
 		rflags,
           	killOut
@@ -1181,7 +1186,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		killOutWb,
 		wbDidMemoryWrite,
 		core_memaccess_inprogress_latch,
-		wb_core_memaccess_inprogress			       
+		wb_core_memaccess_inprogress,
+		wbDidCallWritebackOut		       
 		);
 
    assign memexMemoryData = memMemoryDataOut;
@@ -1458,7 +1464,9 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	exwbCurrentRip <= exCurrentRipOut;
 
         /* verilator lint_off WIDTH */
-	if ((stallOnJumpLatch || stallOnCallqLatch || stallOnRetqLatch) && exDidJumpOut && exJumpTarget != 0) begin
+	if ((stallOnJumpLatch && exDidJumpOut && exJumpTarget != 0)
+	    || (stallOnCallqLatch && wbDidCallWritebackOut) 
+	    || (stallOnRetqLatch && exDidRetqOut)) begin
 	   ifidCurrentRip <= exJumpTarget;
 	end else begin
            ifidCurrentRip <= ifidCurrentRip + bytes_decoded_this_cycle;
@@ -1482,6 +1490,9 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
                                                         wbOpcodeOut == 8'h5F ||
 							(wbOpcodeOut == 8'h8F && wbHasExtendedOpcodeOut == 1 && wbExtendedOpcodeOut == 3'b000))) begin
 		regFile[4'b0100] <= regFileOut[4'b0100];
+	end else begin
+	   regFile[wbDestRegOut] <= regFileOut[wbDestRegOut];
+	   regFile[wbDestRegSpecialOut] <= regFileOut[wbDestRegSpecialOut];
 	end
 
      	killLatch <= killOut;

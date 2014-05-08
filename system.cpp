@@ -246,7 +246,6 @@ long long syscall_cse502(long long rax, long long rdi, long long rsi, long long 
 		return main_time/ps_per_clock;
 		// return __syscall2(rax, rdi, (uint64_t)(global_ram+rsi));
 	default:
-		cout<<"OOPS!"<<endl;
-		//		assert(0);	// no other syscall is implemented.
+		assert(0);	// no other syscall is implemented.
 	}
 }
