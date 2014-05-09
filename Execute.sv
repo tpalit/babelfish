@@ -120,6 +120,8 @@ module Execute (
 
 			assert(!((isMemoryAccessSrc1In == 1) && (isMemoryAccessSrc2In == 1))) else $fatal("\nBoth source operands access Memory!\n");
 
+             $display("Opcode = %x", opcodeIn);
+             
 			if (isMemoryAccessSrc1In == 1) begin
 				operandValue1 = memoryDataIn;
 			end else begin
@@ -2080,38 +2082,36 @@ module Execute (
 			useRIPDestOut = useRIPDestIn;
 
 		        if ((opcodeLengthIn == 1) && opcodeIn == 8'hE8) begin
+				/* CALL */
 			   // We have to do some shoe-horning here.
 			   // 1. Tell the Writeback stage to decrement the RSP
-			   destRegValidOut = 1;
-			   destRegOut = 4'b0100;
 			   aluResultSpecialOut = registerFileIn[destRegOut] - 8;
 			   // 2. Tell the Writeback stage to write to the memory pointed by
 			   // the updated Stack pointer with the address of the next instruction
-			   isMemoryAccessDestOut = 1;
 			   memoryAddressDestOut = aluResultSpecialOut;
 			   /* verilator lint_off WIDTH */
 			   aluResultOut = currentRipIn + instructionLengthIn;
 			   /* verilator lint_on WIDTH */
 			   // 3. Set the called target address on the jumpTarget lines
-//			   didJump = 1;
 			   /* verilator lint_off WIDTH */
 			   jumpTarget = currentRipIn + imm64In + instructionLengthIn;
 			   /* verilator lint_on WIDTH */
 			   isExecuteSuccessfulOut = 1;
+			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hFF) && (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b010)) begin
+				aluResultSpecialOut = registerFileIn[destRegOut] - 8;
+				memoryAddressDestOut = aluResultSpecialOut;
+				/* verilator lint_off WIDTH */
+				aluResultOut = currentRipIn + instructionLengthIn;
+				/* verilator lint_on WIDTH */
+				jumpTarget = operandValue1;
+				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && opcodeIn == 8'hC3) begin
-			   // 1. Tell the Writeback stage to update the RSP
-			   destRegValidOut = 1;
-			   destRegOut = 4'b0100;
-			   aluResultSpecialOut = registerFileIn[destRegOut] + 8;
+				/* RET */
+			   aluResultSpecialOut = operand1ValIn + 8;
 			   // 2. Set the returning address (read by the memory stage) as the jump target
 			   didRetq = 1;
 			   jumpTarget = memoryDataIn;
 			   isExecuteSuccessfulOut = 1;
-			   // 3. Clear the isMemory flags
-			   isMemoryAccessDestOut = 0;
-			   isMemoryAccessSrc1Out = 0;
-			   isMemoryAccessSrc2Out = 0;
-			   
 			end else
 			/* We manually set the memoryAddressDestOut for PUSH */
 			if (!((opcodeLengthIn == 1) && (opcodeIn == 8'h50 ||
