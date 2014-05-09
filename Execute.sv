@@ -120,8 +120,6 @@ module Execute (
 
 			assert(!((isMemoryAccessSrc1In == 1) && (isMemoryAccessSrc2In == 1))) else $fatal("\nBoth source operands access Memory!\n");
 
-             $display("Opcode = %x", opcodeIn);
-             
 			if (isMemoryAccessSrc1In == 1) begin
 				operandValue1 = memoryDataIn;
 			end else begin
@@ -136,6 +134,10 @@ module Execute (
 
 			didJump = 0;
 			jumpTarget = currentRipIn;
+
+							/* BABELFISH DEBUG BEGIN */
+             		$display("Opcode = %x", opcodeIn);
+							/* BABELFISH DEBUG END */
 
 			if ((opcodeLengthIn == 1) && (opcodeIn == 8'h90)) begin
 				/* NOP */

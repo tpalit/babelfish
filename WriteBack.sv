@@ -260,7 +260,12 @@ module WriteBack (
 		  dCacheCoreBus.reqcyc <= 1;
 		  dCacheCoreBus.req <= memoryAddressDestIn;
 		  dCacheCoreBus.reqdata <= aluResultIn;
-		  dCacheCoreBus.reqtag <= { dCacheCoreBus.WRITE, dCacheCoreBus.MEMORY, dCacheCoreBus.DATA, 7'b0 };
+
+			/* BABELFISH DEBUG BEGIN */
+		  //dCacheCoreBus.reqtag <= { dCacheCoreBus.WRITE, dCacheCoreBus.MEMORY, dCacheCoreBus.DATA, 7'b0 };
+		  dCacheCoreBus.reqtag <= { dCacheCoreBus.WRITE, dCacheCoreBus.MEMORY, opcodeIn };
+			/* BABELFISH DEBUG END */
+
 		  memory_write_state <= memory_write_active;
 		  memoryWriteDone <= 0;//TODO - What's this signal for?
 	       end

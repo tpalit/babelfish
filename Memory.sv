@@ -1,6 +1,10 @@
 /* Copyright Tapti Palit, Amitav Paul, Sonam Mandal, 2014, All rights reserved. */
 
-module Memory (
+			/* BABELFISH DEBUG BEGIN */
+module Memory (input [63:0]  registerFileIn[16],
+		input [63:0] rflagsReg,
+			/* BABELFISH DEBUG END */
+
 		/* verilator lint_off UNDRIVEN */ /* verilator lint_off UNUSED */
 		CacheCoreInterface dCacheCoreBus,
 		/* verilator lint_on UNDRIVEN */ /* verilator lint_on UNUSED */
@@ -106,7 +110,7 @@ module Memory (
 			end else begin
 				isMemorySuccessfulOut = 0;
 			end
-
+             
 			currentRipOut = currentRipIn;
 			extendedOpcodeOut = extendedOpcodeIn;
 			hasExtendedOpcodeOut = hasExtendedOpcodeIn;
@@ -195,14 +199,46 @@ module Memory (
 
 						dCacheCoreBus.reqcyc <= 1;
 						dCacheCoreBus.req <= memoryAddressSrc1In;
-						dCacheCoreBus.reqtag <= { dCacheCoreBus.READ, dCacheCoreBus.MEMORY, dCacheCoreBus.DATA, 7'b0 };
+
+							/* BABELFISH DEBUG BEGIN */
+						$write("\nSending request: %x, opcode: %x\n", memoryAddressSrc1In, opcodeIn);
+						dCacheCoreBus.reqtag <= { dCacheCoreBus.READ, dCacheCoreBus.MEMORY, opcodeIn };
+							/* BABELFISH DEBUG END */
+
+						//dCacheCoreBus.reqtag <= { dCacheCoreBus.READ, dCacheCoreBus.MEMORY, dCacheCoreBus.DATA, 7'b0 };
 						memory_access_state <= memory_access_active;
 					end else if (isMemoryAccessSrc2In == 1) begin
 						/* Send request for Src2 to Memory */
 
 						dCacheCoreBus.reqcyc <= 1;
 						dCacheCoreBus.req <= memoryAddressSrc2In;
-						dCacheCoreBus.reqtag <= { dCacheCoreBus.READ, dCacheCoreBus.MEMORY, dCacheCoreBus.DATA, 7'b0 };
+
+							/* BABELFISH DEBUG BEGIN */
+						$write("\nSending request: %x, opcode: %x\n", memoryAddressSrc2In, opcodeIn);
+						$write("\nDestREg: %x DestRegvalid: %x destRegValueIn %x, SrcReg1: %x, SrcReg2: %x, sourceReg1ValidIn %x, sourceReg2ValidIn %x operand1ValIn %x operand2ValIn %x operand1ValValidIn %x operand2ValValidIn %x\n", destRegIn, destRegValidIn, destRegValueIn, sourceReg1In, sourceReg2In, sourceReg1ValidIn, sourceReg2ValidIn, operand1ValIn, operand2ValIn, operand1ValValidIn, operand2ValValidIn);
+						$write("\nuseRIPSrc1In %d, useRIPSrc2In %d, useRIPDestIn %d, isMemoryAccessSrc1In %d, isMemoryAccessSrc2In %d, isMemoryAccessDestIn %d, memoryAddressSrc1In %x, memoryAddressSrc2In %x, memoryAddressDestIn %x\n", useRIPSrc1In, useRIPSrc2In, useRIPDestIn, isMemoryAccessSrc1In, isMemoryAccessSrc2In, isMemoryAccessDestIn, memoryAddressSrc1In, memoryAddressSrc2In, memoryAddressDestIn);
+      $write("\nRAX = %x", registerFileIn[0]);
+      $write("\nRBX = %x", registerFileIn[3]);
+      $write("\nRCX = %x", registerFileIn[1]);
+      $write("\nRDX = %x", registerFileIn[2]);
+      $write("\nRSI = %x", registerFileIn[6]);
+      $write("\nRDI = %x", registerFileIn[7]);
+      $write("\nRBP = %x", registerFileIn[5]);
+      $write("\nRSP = %x", registerFileIn[4]);
+      $write("\nR8  = %x", registerFileIn[8]);
+      $write("\nR9  = %x", registerFileIn[9]);
+      $write("\nR10 = %x", registerFileIn[10]);
+      $write("\nR11 = %x", registerFileIn[11]);
+      $write("\nR12 = %x", registerFileIn[12]);
+      $write("\nR13 = %x", registerFileIn[13]);
+      $write("\nR14 = %x", registerFileIn[14]);
+      $write("\nR15 = %x\n", registerFileIn[15]);
+      $write("\nRflags = %x\n\n", rflagsReg);
+
+						dCacheCoreBus.reqtag <= { dCacheCoreBus.READ, dCacheCoreBus.MEMORY, opcodeIn };
+							/* BABELFISH DEBUG END */
+
+						//dCacheCoreBus.reqtag <= { dCacheCoreBus.READ, dCacheCoreBus.MEMORY, dCacheCoreBus.DATA, 7'b0 };
 						memory_access_state <= memory_access_active;
 					end
 	

@@ -927,7 +927,11 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		addressCalculationSuccessfulOut
 		);
 
-   Memory memory(
+		/* BABELFISH DEBUG BEGIN */
+   Memory memory(regFile,
+		latch_rflags,
+		/* BABELFISH DEBUG END */
+
 		/* verilator lint_off UNDRIVEN */
 		memoryCacheCoreInf.CorePorts,
 		/* verilator lint_on UNDRIVEN */

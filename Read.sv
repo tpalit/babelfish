@@ -79,6 +79,9 @@ module Read (
 
    always_comb begin
       if (canReadIn && !stallIn && !wbStallIn) begin
+	    operandVal1ValidOut = 0;
+            operandVal2ValidOut = 0;
+
 	    if (sourceReg1ValidIn) begin
 	       operandVal1Out = registerFileIn[sourceReg1In];
 	       operandVal1ValidOut = 1;
