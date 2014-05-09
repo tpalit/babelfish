@@ -5,6 +5,7 @@ module Execute (
 		input [0:63]  currentRipIn,
 		input 	      canExecuteIn,
 		input 	      wbStallIn,
+		input [63:0]  rflagsReg,
 		input [63:0]  registerFileIn[16], // Added for syscall and callq only
 		input [0:2]   extendedOpcodeIn,
 		input [0:31]  hasExtendedOpcodeIn,
@@ -141,6 +142,24 @@ module Execute (
 				$display(", imm: %x", imm64In);
 			end
 			$display("\nCurrent RIP In Execute: %x\n", currentRipIn);
+
+      $write("\nRAX = %x", registerFileIn[0]);
+      $write("\nRBX = %x", registerFileIn[3]);
+      $write("\nRCX = %x", registerFileIn[1]);
+      $write("\nRDX = %x", registerFileIn[2]);
+      $write("\nRSI = %x", registerFileIn[6]);
+      $write("\nRDI = %x", registerFileIn[7]);
+      $write("\nRBP = %x", registerFileIn[5]);
+      $write("\nRSP = %x", registerFileIn[4]);
+      $write("\nR8  = %x", registerFileIn[8]);
+      $write("\nR9  = %x", registerFileIn[9]);
+      $write("\nR10 = %x", registerFileIn[10]);
+      $write("\nR11 = %x", registerFileIn[11]);
+      $write("\nR12 = %x", registerFileIn[12]);
+      $write("\nR13 = %x", registerFileIn[13]);
+      $write("\nR14 = %x", registerFileIn[14]);
+      $write("\nR15 = %x\n", registerFileIn[15]);
+      $write("\nRflags = %x\n\n", rflagsReg);
 							/* BABELFISH DEBUG END */
 
 			if ((opcodeLengthIn == 1) && (opcodeIn == 8'h90)) begin

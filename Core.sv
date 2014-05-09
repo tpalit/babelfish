@@ -1029,6 +1029,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		memexCurrentRip,
 		canExecute,
 		wbStall,
+		latch_rflags,
 		regFile,
 		memexExtendedOpcode,
 		memexHasExtendedOpcode,
