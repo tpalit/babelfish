@@ -137,9 +137,9 @@ module Execute (
 			jumpTarget = currentRipIn;
 
 							/* BABELFISH DEBUG BEGIN */
-             		$display("Opcode = %x, opcodeLen: %d", opcodeIn, opcodeLengthIn);
+//             		$display("Opcode = %x, opcodeLen: %d\n", opcodeIn, opcodeLengthIn);
 			if (immLenIn > 0) begin
-				$display(", imm: %x", imm64In);
+//				$display(", imm: %x", imm64In);
 			end
 			$display("\nCurrent RIP In Execute: %x\n", currentRipIn);
 

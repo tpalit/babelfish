@@ -4244,7 +4244,7 @@ module Decode (
 		     /* Extra processing for EXECUTE */
 		     opcodeValidOut = 1;
             end else begin
-               //$display("Couldn't decode this!!\n");
+               $display("Couldn't decode this!! What? %x of startindex = %x, end_index = %x\n", opcodeOut, opcode_start_index, opcode_end_index);
 
             end
          end else if (((opcode_end_index - opcode_start_index) == 1) && (exit_after_print == 0)) begin
@@ -4387,10 +4387,11 @@ module Decode (
 	          opcodeValidOut = 1;
 	          imm64Out = sign_extend_32_to_64(imm32);
 	          stallOnJumpOut = 1;
-            end else begin
-               $write("Couldn't decode this!!\n");
+            end else begin // if (opcode == 8'h80 ||...
+	       $display("Couldn't decode this!! What? %x of startindex = %x, end_index = %x\n", opcodeOut, opcode_start_index, opcode_end_index);
             end
-         end
+         end // if (((opcode_end_index - opcode_start_index) == 1) && (exit_after_print == 0))
+	 
 
 	    /*
           if((opcode_start_index == opcode_end_index) && (opcodeOut == 8'hC3 || opcodeOut == 8'hCB || opcodeOut == 8'hCF)) begin
