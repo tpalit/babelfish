@@ -140,6 +140,7 @@ module Execute (
 			if (immLenIn > 0) begin
 				$display(", imm: %x", imm64In);
 			end
+			$display("\nCurrent RIP In Execute: %x\n", currentRipIn);
 							/* BABELFISH DEBUG END */
 
 			if ((opcodeLengthIn == 1) && (opcodeIn == 8'h90)) begin
