@@ -81,6 +81,9 @@ module Read (
       if (canReadIn && !stallIn && !wbStallIn) begin
 	    operandVal1ValidOut = 0;
             operandVal2ValidOut = 0;
+	    operandVal1Out = 0;
+	    operandVal2Out = 0;
+	    destRegValueOut = 0;
 
 	    if (sourceReg1ValidIn) begin
 	       operandVal1Out = registerFileIn[sourceReg1In];

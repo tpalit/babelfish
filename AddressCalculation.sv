@@ -85,6 +85,9 @@ module AddressCalculation (
 
 	always_comb begin
 		if ((opcodeValidIn == 1) && (canAddressCalculationIn == 1) && !stallIn && !wbStallIn) begin
+			memoryAddressSrc1Out = 0;
+			memoryAddressSrc2Out = 0;
+			memoryAddressDestOut = 0;
 
 			if (isMemoryAccessSrc1In == 1) begin
 				/* We are dealing with memory here. Need to calculate address. */
