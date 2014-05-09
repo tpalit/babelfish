@@ -230,6 +230,7 @@ extern uint64_t global_ram_brkptr;
 
 long long syscall_cse502(long long rax, long long rdi, long long rsi, long long rdx, long long r10, long long r8, long long r9)
 {
+	cout<<"Syscall happened for "<<rax<<endl;
 	switch (rax) {
 	case __NR_exit:
 		return __syscall1(rax, rdi);

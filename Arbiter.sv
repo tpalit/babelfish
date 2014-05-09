@@ -104,7 +104,7 @@ module Arbiter #(WIDTH = 64, TAG_WIDTH = 13) (
 		end else begin
 			if (dcache_interface.reqcyc && d_write_count <= 7) begin
 //	   			dcache_interface.reqack <= 1; Commented as we're doing an always assign
-				bus.req <= dcache_interface.req;
+				bus.req <= swap_bytes(dcache_interface.req);
 				bus.reqtag <= dcache_interface.reqtag;
 				bus.reqcyc <= dcache_interface.reqcyc;
 				d_write_count <= d_write_count + 1;   
@@ -121,7 +121,7 @@ module Arbiter #(WIDTH = 64, TAG_WIDTH = 13) (
 	if (bus.respcyc) begin
 	   bus.respack <= 1;
 	   dcache_interface.respcyc <= 1;
-	   dcache_interface.resp <= bus.resp;
+	   dcache_interface.resp <= swap_bytes(bus.resp);
 	   dcache_interface.resptag <= bus.resptag;
 
 	   d_read_count <= d_read_count + 1;
@@ -159,5 +159,18 @@ module Arbiter #(WIDTH = 64, TAG_WIDTH = 13) (
 	   end
 	end
      end // if (arbiter_state == arbiter_instn)
+
+   function logic[0:63] swap_bytes(logic[0:63] data);
+      logic [0:63] out_data;
+      out_data[0:7] = data[56:63];
+      out_data[8:15] = data[48:55];
+      out_data[16:23] = data[40:47];
+      out_data[24:31] = data[32:39];
+      out_data[32:39] = data[24:31];
+      out_data[40:47] = data[16:23];
+      out_data[48:55] = data[8:15];
+      out_data[56:63] = data[0:7];
+      return out_data;
+   endfunction
 
 endmodule
