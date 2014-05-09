@@ -214,7 +214,7 @@ module Memory (input [63:0]  registerFileIn[16],
 						dCacheCoreBus.req <= memoryAddressSrc2In;
 
 							/* BABELFISH DEBUG BEGIN */
-						$write("\nSending request: %x, opcode: %x\n", memoryAddressSrc2In, opcodeIn);
+						$write("\nSending request: %x, opcode: %x, opcodeLen: %d\n", memoryAddressSrc2In, opcodeIn, opcodeLengthIn);
 						$write("\nDestREg: %x DestRegvalid: %x destRegValueIn %x, SrcReg1: %x, SrcReg2: %x, sourceReg1ValidIn %x, sourceReg2ValidIn %x operand1ValIn %x operand2ValIn %x operand1ValValidIn %x operand2ValValidIn %x\n", destRegIn, destRegValidIn, destRegValueIn, sourceReg1In, sourceReg2In, sourceReg1ValidIn, sourceReg2ValidIn, operand1ValIn, operand2ValIn, operand1ValValidIn, operand2ValValidIn);
 						$write("\nuseRIPSrc1In %d, useRIPSrc2In %d, useRIPDestIn %d, isMemoryAccessSrc1In %d, isMemoryAccessSrc2In %d, isMemoryAccessDestIn %d, memoryAddressSrc1In %x, memoryAddressSrc2In %x, memoryAddressDestIn %x\n", useRIPSrc1In, useRIPSrc2In, useRIPDestIn, isMemoryAccessSrc1In, isMemoryAccessSrc2In, isMemoryAccessDestIn, memoryAddressSrc1In, memoryAddressSrc2In, memoryAddressDestIn);
       $write("\nRAX = %x", registerFileIn[0]);
