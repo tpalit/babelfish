@@ -1029,7 +1029,6 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		memexCurrentRip,
 		canExecute,
 		wbStall,
-		latch_rflags,
 		regFile,
 		memexExtendedOpcode,
 		memexHasExtendedOpcode,
@@ -1481,8 +1480,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
 	idStallLatch <= idStallOut;
 
-	regFile[wbDestRegOut] <= regFileOut[wbDestRegOut];
-	regFile[wbDestRegSpecialOut] <= regFileOut[wbDestRegSpecialOut];
+//	regFile[wbDestRegOut] <= regFileOut[wbDestRegOut];
+//	regFile[wbDestRegSpecialOut] <= regFileOut[wbDestRegSpecialOut];
 
 	/* Handling Increment of RSP */
 	if ((writeBackSuccessfulOut == 1) && (wbOpcodeLengthOut == 1) && (wbOpcodeOut == 8'h58 ||
@@ -1529,6 +1528,30 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 				regInUseBitMap[wbSourceRegCode2Out] <= wbRegInUseBitMapOut[wbSourceRegCode2Out];	 
 			end
 		end
+
+		/* BABELFISH DEBUG BEGIN */
+		$write("\nOpcode: %x, wbCurrentRIPOut: %x\n", wbOpcodeOut, wbCurrentRipOut);
+
+		$display("RAX 0 = %x", regFile[0]);
+		$display("RCX 1 = %x", regFile[1]);
+		$display("RDX 2 = %x", regFile[2]);
+		$display("RBX 3 = %x", regFile[3]);
+		$display("RSP 4 = %x", regFile[4]);
+		$display("RBP 5 = %x", regFile[5]);
+		$display("RSI 6 = %x", regFile[6]);
+		$display("RDI 7 = %x", regFile[7]);
+		$display("R8  8 = %x", regFile[8]);
+		$display("R9  9 = %x", regFile[9]);
+		$display("R10 10 = %x", regFile[10]);
+		$display("R11 11 = %x", regFile[11]);
+		$display("R12 12 = %x", regFile[12]);
+		$display("R13 13 = %x", regFile[13]);
+		$display("R14 14 = %x", regFile[14]);
+		$display("R15 15 = %x", regFile[15]);
+		$display("RFLAGS = %x\n", latch_rflags);
+
+		$write("Newly written: Register: %d , Value: %x\n\n", wbDestRegOut, regFileOut[wbDestRegOut]);
+		/* BABELFISH DEBUG END */
 	end
 
 	if (bytes_decoded_this_cycle > 0) begin

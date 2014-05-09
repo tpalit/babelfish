@@ -4365,6 +4365,9 @@ module Decode (
                //$write("sysenter");
             end else if (opcode == 8'h35) begin
                //$write("sysexit");
+            end else if (opcode == 8'h1F  && reg_field == 3'b000) begin
+		/* nopw */
+		opcodeValidOut = 1;
             end else if (opcode == 8'h07) begin
                //$write("sysret");
             end else if (opcode == 8'h80 ||
