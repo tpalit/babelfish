@@ -137,6 +137,9 @@ module Execute (
 
 							/* BABELFISH DEBUG BEGIN */
              		$display("Opcode = %x, opcodeLen: %d", opcodeIn, opcodeLengthIn);
+			if (immLenIn > 0) begin
+				$display(", imm: %x", imm64In);
+			end
 							/* BABELFISH DEBUG END */
 
 			if ((opcodeLengthIn == 1) && (opcodeIn == 8'h90)) begin
