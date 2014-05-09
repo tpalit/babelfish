@@ -1494,6 +1494,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
                                                         wbOpcodeOut == 8'h5F ||
 							(wbOpcodeOut == 8'h8F && wbHasExtendedOpcodeOut == 1 && wbExtendedOpcodeOut == 3'b000))) begin
 		regFile[4'b0100] <= regFileOut[4'b0100];
+	   		$write("Newly written: Register: %d , Value: %x\n\n", 4, regFileOut[4]);
+
 	end else begin
 	   regFile[wbDestRegOut] <= regFileOut[wbDestRegOut];
 	   regFile[wbDestRegSpecialOut] <= regFileOut[wbDestRegSpecialOut];
