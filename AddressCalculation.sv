@@ -89,70 +89,73 @@ module AddressCalculation (
 			memoryAddressSrc2Out = 0;
 			memoryAddressDestOut = 0;
 
+			if (useRIPSrc1In == 1) begin
+				assert(dispLenIn > 0);
+				assert(isMemoryAccessSrc1In == 0);
+
+				operand1ValOut = currentRipIn + disp64In + { 32'b0 , instructionLengthIn };
+			end
+
 			if (isMemoryAccessSrc1In == 1) begin
 				/* We are dealing with memory here. Need to calculate address. */
 
-				if (useRIPSrc1In == 1) begin
-					assert(dispLenIn > 0);
+				if (dispLenIn == 0) begin
+					/* Directly use the value of operand1ValIn as Memory address */
 
-					memoryAddressSrc1Out = currentRipIn + disp64In;
+					memoryAddressSrc1Out = operand1ValIn;
 				end else begin
-					if (dispLenIn == 0) begin
-						/* Directly use the value of operand1ValIn as Memory address */
+					/* Decode should have sent us a sign extended 64 bit displacement already */
 
-						memoryAddressSrc1Out = operand1ValIn;
-					end else begin
-						/* Decode should have sent us a sign extended 64 bit displacement already */
-
-						/* TODO: What happens if there is an overflow? */
-						memoryAddressSrc1Out = operand1ValIn + disp64In;
-					end
+					/* TODO: What happens if there is an overflow? */
+					memoryAddressSrc1Out = operand1ValIn + disp64In;
 				end
 			end else begin
 				memoryAddressSrc1Out = 0;
 			end
 
+			if (useRIPSrc2In == 1) begin
+				assert(dispLenIn > 0);
+				assert(isMemoryAccessSrc2In == 0);
+
+				operand2ValOut = currentRipIn + disp64In + { 32'b0 , instructionLengthIn };
+			end
+
 			if (isMemoryAccessSrc2In == 1) begin
 				/* We are dealing with memory here. Need to calculate address. */
 
-				if (useRIPSrc2In == 1) begin
-					assert(dispLenIn > 0);
+				if (dispLenIn == 0) begin
+					/* Directly use the value of operand1ValIn as Memory address */
 
-					memoryAddressSrc2Out = currentRipIn + disp64In;
+					memoryAddressSrc2Out = operand2ValIn;
 				end else begin
-					if (dispLenIn == 0) begin
-						/* Directly use the value of operand1ValIn as Memory address */
+					/* Decode should have sent us a sign extended 64 bit displacement already */
 
-						memoryAddressSrc2Out = operand2ValIn;
-					end else begin
-						/* Decode should have sent us a sign extended 64 bit displacement already */
-
-						/* TODO: What happens if there is an overflow? */
-						memoryAddressSrc2Out = operand2ValIn + disp64In;
-					end
+					/* TODO: What happens if there is an overflow? */
+					memoryAddressSrc2Out = operand2ValIn + disp64In;
 				end
 			end else begin
 				memoryAddressSrc2Out = 0;
 			end
 
+			if (useRIPDestIn == 1) begin
+				assert(dispLenIn > 0);
+				assert(isMemoryAccessDestIn == 0);
+
+				destRegValueOut = currentRipIn + disp64In + { 32'b0 , instructionLengthIn };
+			end
+
 			if (isMemoryAccessDestIn == 1) begin
 				/* We are dealing with memory here. Need to calculate address. */
 
-				if (useRIPDestIn == 1) begin
-					assert(dispLenIn > 0);
+				if (dispLenIn == 0) begin
+					/* Directly use the value of operand1ValIn as Memory address */
 
-					memoryAddressDestOut = currentRipIn + disp64In;
+					memoryAddressDestOut = destRegValueIn;
 				end else begin
-					if (dispLenIn == 0) begin
-						/* Directly use the value of operand1ValIn as Memory address */
+					/* Decode should have sent us a sign extended 64 bit displacement already */
 
-						memoryAddressDestOut = destRegValueIn;
-					end else begin
-						/* Decode should have sent us a sign extended 64 bit displacement already */
-
-						/* TODO: What happens if there is an overflow? */
-						memoryAddressDestOut = destRegValueIn + disp64In;
-					end
+					/* TODO: What happens if there is an overflow? */
+					memoryAddressDestOut = destRegValueIn + disp64In;
 				end
 			end else begin
 				memoryAddressDestOut = 0;
@@ -166,8 +169,15 @@ module AddressCalculation (
 			instructionLengthOut = instructionLengthIn;
 			opcodeValidOut = opcodeValidIn;
 			opcodeOut = opcodeIn;
-			operand1ValOut = operand1ValIn;
-			operand2ValOut = operand2ValIn;
+
+			if (useRIPSrc1In == 0) begin
+				operand1ValOut = operand1ValIn;
+			end
+
+			if (useRIPSrc2In == 0) begin
+				operand2ValOut = operand2ValIn;
+			end
+
 			immLenOut = immLenIn;
 			dispLenOut = dispLenIn;
 			imm8Out = imm8In;
@@ -189,7 +199,11 @@ module AddressCalculation (
 			isMemoryAccessSrc1Out = isMemoryAccessSrc1In;
 			isMemoryAccessSrc2Out = isMemoryAccessSrc2In;
 			isMemoryAccessDestOut = isMemoryAccessDestIn;
-			destRegValueOut = destRegValueIn;
+
+			if (useRIPDestIn == 0) begin
+				destRegValueOut = destRegValueIn;
+			end
+
 			useRIPSrc1Out = useRIPSrc1In;
 			useRIPSrc2Out = useRIPSrc2In;
 			useRIPDestOut = useRIPDestIn;
