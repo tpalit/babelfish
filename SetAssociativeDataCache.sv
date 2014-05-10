@@ -197,6 +197,11 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
                      rwArbiterCacheBus.reqack <= 0;
                    end
              */
+	    writeEnableSet1 <= 0;
+	    writeEnableSet2 <= 0;
+	    writeEnableTagSet1 <= 0;
+	    writeEnableTagSet2 <= 0;
+
             rwArbiterCacheBus.reqack <= 1;
             rwArbiterCacheBus.respcyc <= 0;
             // Check the state, if the index is valid, go to SRAM to get tags.
@@ -224,6 +229,10 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
             read_count <= 0;
         end else if ((rwArbiterCacheBus.reqcyc == 0) && (cache_state == cache_idle)) begin
         	rwArbiterCacheBus.respcyc <= 0;
+	        writeEnableSet1 <= 0;
+	        writeEnableSet2 <= 0;
+	        writeEnableTagSet1 <= 0;
+	        writeEnableTagSet2 <= 0;
         end else if ((cache_state == cache_waiting_sram)) begin
             rwArbiterCacheBus.reqack <= 0;
 

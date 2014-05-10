@@ -187,6 +187,8 @@ module Memory (
 
 				if (dCacheCoreBus.respcyc == 1) begin
 					memoryDataOut <= dCacheCoreBus.resp;
+				   $display("Reading from location %x, value %x", dCacheCoreBus.req, dCacheCoreBus.resp);
+				   
 					dCacheCoreBus.respack <= 1;
 					memory_access_state <= memory_access_idle;
 				end

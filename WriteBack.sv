@@ -262,6 +262,7 @@ module WriteBack (
 		  dCacheCoreBus.reqdata <= aluResultIn;
 
 			/* BABELFISH DEBUG BEGIN */
+		  $display("Writing to location %x, value %x ...", dCacheCoreBus.req, dCacheCoreBus.reqdata);
 		  //dCacheCoreBus.reqtag <= { dCacheCoreBus.WRITE, dCacheCoreBus.MEMORY, dCacheCoreBus.DATA, 7'b0 };
 		  dCacheCoreBus.reqtag <= { dCacheCoreBus.WRITE, dCacheCoreBus.MEMORY, opcodeIn };
 			/* BABELFISH DEBUG END */

@@ -4245,7 +4245,8 @@ module Decode (
 		     opcodeValidOut = 1;
             end else begin
                $display("Couldn't decode this!! What? %x of startindex = %x, end_index = %x\n", opcodeOut, opcode_start_index, opcode_end_index);
-
+	       $finish;
+	       
             end
          end else if (((opcode_end_index - opcode_start_index) == 1) && (exit_after_print == 0)) begin
             //		$write("\nLength 2 opcode: %x, regfield: %b, rm_field: %b, mod_field: %b\n", opcode, reg_field, rm_field, mod_field);
@@ -4261,7 +4262,7 @@ module Decode (
 		     opcodeValidOut = 1;
 		     extendedOpcodeOut = 3'b111;
 		     hasExtendedOpcodeOut = 1;
-		     $write("CLFLUSH Instruction: Handled as NOP as our caching policy is write-through.");
+//		     $write("CLFLUSH Instruction: Handled as NOP as our caching policy is write-through.");
             end else if (opcode == 8'hC8 ||
                          opcode == 8'hC9 ||
                          opcode == 8'hCA ||
@@ -4392,6 +4393,8 @@ module Decode (
 	          stallOnJumpOut = 1;
             end else begin // if (opcode == 8'h80 ||...
 	       $display("Couldn't decode this!! What? %x of startindex = %x, end_index = %x\n", opcodeOut, opcode_start_index, opcode_end_index);
+	       $finish;
+	       
             end
          end // if (((opcode_end_index - opcode_start_index) == 1) && (exit_after_print == 0))
 	 

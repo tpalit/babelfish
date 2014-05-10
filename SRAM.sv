@@ -39,6 +39,19 @@ module SRAM(
 			if (writeEnable[i]) begin
 				mem[writeAddr][i*wordsize+:wordsize] <= writeData[i*wordsize+:wordsize];
 			end
+		   /*
+		   if (writeAddr == 9'h7A) begin
+		      $display("Cache dump cache content= %x, writeAddr = %x, i=%x, writeEnable[i] = %x, writeData = %x", mem[writeAddr][i*wordsize+:wordsize], writeAddr, i, writeEnable[i], writeData[i*wordsize+:wordsize]);
+		   end 
+		    */
 		end
+	   /*
+	   for (i=0; i<8;i++) begin
+	      if (writeEnable[i]) begin
+		 $write("%x ", i);
+	      end
+	   end
+	   $write("high for %x\n", writeAddr);
+	    */
 	end
 endmodule
