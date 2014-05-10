@@ -89,14 +89,10 @@ module AddressCalculation (
 			memoryAddressSrc2Out = 0;
 			memoryAddressDestOut = 0;
 
-			if (useRIPSrc1In == 1) begin
+			if (useRIPSrc1In == 1 && isMemoryAccessSrc1In == 1) begin
 				assert(dispLenIn > 0);
-				assert(isMemoryAccessSrc1In == 0);
-
-				operand1ValOut = currentRipIn + disp64In + { 32'b0 , instructionLengthIn };
-			end
-
-			if (isMemoryAccessSrc1In == 1) begin
+				memoryAddressSrc1Out = currentRipIn + disp64In + { 32'b0 , instructionLengthIn };
+			end else if (isMemoryAccessSrc1In == 1) begin
 				/* We are dealing with memory here. Need to calculate address. */
 
 				if (dispLenIn == 0) begin
@@ -113,14 +109,10 @@ module AddressCalculation (
 				memoryAddressSrc1Out = 0;
 			end
 
-			if (useRIPSrc2In == 1) begin
+			if (useRIPSrc2In == 1 && isMemoryAccessSrc2In == 1) begin
 				assert(dispLenIn > 0);
-				assert(isMemoryAccessSrc2In == 0);
-
-				operand2ValOut = currentRipIn + disp64In + { 32'b0 , instructionLengthIn };
-			end
-
-			if (isMemoryAccessSrc2In == 1) begin
+				memoryAddressSrc2Out = currentRipIn + disp64In + { 32'b0 , instructionLengthIn };
+			end else if (isMemoryAccessSrc2In == 1) begin
 				/* We are dealing with memory here. Need to calculate address. */
 
 				if (dispLenIn == 0) begin
@@ -137,14 +129,10 @@ module AddressCalculation (
 				memoryAddressSrc2Out = 0;
 			end
 
-			if (useRIPDestIn == 1) begin
+			if (useRIPDestIn == 1 && isMemoryAccessDestIn == 1) begin
 				assert(dispLenIn > 0);
-				assert(isMemoryAccessDestIn == 0);
-
-				destRegValueOut = currentRipIn + disp64In + { 32'b0 , instructionLengthIn };
-			end
-
-			if (isMemoryAccessDestIn == 1) begin
+				memoryAddressDestOut = currentRipIn + disp64In + { 32'b0 , instructionLengthIn };
+			end else if (isMemoryAccessDestIn == 1) begin
 				/* We are dealing with memory here. Need to calculate address. */
 
 				if (dispLenIn == 0) begin

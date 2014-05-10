@@ -1240,7 +1240,7 @@ module Decode (
 			   disp64Out = sign_extend_32_to_64(disp32);
 			   dispLenOut = 4;
 			   isMemoryAccessSrc1Out = 0;
-			   isMemoryAccessSrc2Out = 0;
+			   isMemoryAccessSrc2Out = 1;
 			   isMemoryAccessDestOut = 0;
 		     end else if (mod_field == 2'b01 && rm_field == 3'b100) begin
 			   /* TODO: Handle SIB Byte Here, disp = 8 */
@@ -4226,7 +4226,7 @@ module Decode (
 			   useRIPDestOut = 0;
 			   disp64Out = sign_extend_32_to_64(disp32);
 			   dispLenOut = 4;
-			   isMemoryAccessSrc1Out = 0;
+			   isMemoryAccessSrc1Out = 1;
 			   isMemoryAccessSrc2Out = 0;
 			   isMemoryAccessDestOut = 0;
 		     end else if (mod_field == 2'b01 && rm_field == 3'b100) begin
