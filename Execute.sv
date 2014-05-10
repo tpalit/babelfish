@@ -46,7 +46,7 @@ module Execute (
 		input [0:63]  memoryAddressDestIn,
 		input [0:63]  memoryDataIn,
 		input [63:0]  rflagsIn,
-
+		input         stallOnJumpLatchIn,	      
 		output [0:63] aluResultOut,
 		output [0:63] aluResultSpecialOut,
 		output [0:63] aluResultSyscallOut,
@@ -175,7 +175,15 @@ module Execute (
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h8D)) begin
 				/* LEA */
 
-				aluResultOut = operandValue1;
+				if (useRIPSrc1In == 1) begin
+					aluResultOut = currentRipIn + disp64In + { 32'b0 , instructionLengthIn };
+				end else begin
+					if (dispLenIn > 0) begin
+						aluResultOut = operandValue1 + disp64In;
+					end else begin
+						aluResultOut = operandValue1;
+					end
+				end
 				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h83 || opcodeIn == 8'h81)
 				&& (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b001)) begin
@@ -2022,7 +2030,7 @@ module Execute (
 			        /* Jump near if not less or equal (ZF=0 and SF=OF) */
 			        isExecuteSuccessfulOut = 1;
 			        didJump = 1;
-                                if (rflagsIn[6] == 1 || (rflagsIn[7] == rflagsIn[11])) begin
+                                if (rflagsIn[6] == 0 && (rflagsIn[7] == rflagsIn[11])) begin
 			           /* verilator lint_off WIDTH */
 			           jumpTarget = currentRipIn + imm64In + instructionLengthIn;
 			           /* verilator lint_on WIDTH */
@@ -2134,6 +2142,9 @@ module Execute (
 		end else begin // if ((opcodeValidIn == 1) && (canExecuteIn == 1) && !wbStallIn)
 			if (!wbStallIn) begin
 				isExecuteSuccessfulOut = 0;
+			end
+		        if (!canExecuteIn && stallOnJumpLatchIn == 0) begin
+			        didJump = 0;
 			end
 		end
 		operand1ValValidOut = operand1ValValidIn;

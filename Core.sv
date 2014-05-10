@@ -1070,7 +1070,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		memexMemoryAddressDest,
 		memexMemoryData,
 		latch_rflags,
-
+		stallOnJumpLatch,
 		exAluResultOut,
 		exAluResultSpecialOut,
 		exAluResultSyscallOut,
@@ -1533,7 +1533,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
 		/* BABELFISH DEBUG BEGIN */
 		//$write("\nOpcode: %x, wbCurrentRIPOut: %x\n", wbOpcodeOut, wbCurrentRipOut);
-		$write("%x\n", wbCurrentRipOut);
+		$write("%x, %x, %x %x %x\n", wbCurrentRipOut, regFile[0], regFile[1], wbOpcodeOut, wbOpcodeLengthOut);
 /*
 		$display("RAX 0 = %x", regFile[0]);
 		$display("RCX 1 = %x", regFile[1]);

@@ -4202,19 +4202,19 @@ module Decode (
 		     end else if (mod_field == 2'b00 && rm_field != 3'b100 && rm_field != 3'b101) begin
 			   disp64Out = 0;
 			   dispLenOut = 0;
-			   isMemoryAccessSrc1Out = 1;
+			   isMemoryAccessSrc1Out = 0;
 			   isMemoryAccessSrc2Out = 0;
 			   isMemoryAccessDestOut = 0;
 		     end else if (mod_field == 2'b01 && rm_field != 3'b100) begin
 			   disp64Out = sign_extend_8_to_64(disp8);
 			   dispLenOut = 1;
-			   isMemoryAccessSrc1Out = 1;
+			   isMemoryAccessSrc1Out = 0;
 			   isMemoryAccessSrc2Out = 0;
 			   isMemoryAccessDestOut = 0;
 		     end else if (mod_field == 2'b10 && rm_field != 3'b100) begin
 			   disp64Out = sign_extend_32_to_64(disp32);
 			   dispLenOut = 4;
-			   isMemoryAccessSrc1Out = 1;
+			   isMemoryAccessSrc1Out = 0;
 			   isMemoryAccessSrc2Out = 0;
 			   isMemoryAccessDestOut = 0;
 		     end else if (mod_field == 2'b00 && rm_field == 3'b100) begin
@@ -4226,7 +4226,7 @@ module Decode (
 			   useRIPDestOut = 0;
 			   disp64Out = sign_extend_32_to_64(disp32);
 			   dispLenOut = 4;
-			   isMemoryAccessSrc1Out = 1;
+			   isMemoryAccessSrc1Out = 0;
 			   isMemoryAccessSrc2Out = 0;
 			   isMemoryAccessDestOut = 0;
 		     end else if (mod_field == 2'b01 && rm_field == 3'b100) begin
