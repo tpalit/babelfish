@@ -1494,7 +1494,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
                                                         wbOpcodeOut == 8'h5F ||
 							(wbOpcodeOut == 8'h8F && wbHasExtendedOpcodeOut == 1 && wbExtendedOpcodeOut == 3'b000))) begin
 		regFile[4'b0100] <= regFileOut[4'b0100];
-	   		$write("Newly written: Register: %d , Value: %x\n\n", 4, regFileOut[4]);
+//	   		$write("Newly written: Register: %d , Value: %x\n\n", 4, regFileOut[4]);
 
 	end else begin
 	   regFile[wbDestRegOut] <= regFileOut[wbDestRegOut];
@@ -1532,8 +1532,9 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		end
 
 		/* BABELFISH DEBUG BEGIN */
-		$write("\nOpcode: %x, wbCurrentRIPOut: %x\n", wbOpcodeOut, wbCurrentRipOut);
-
+		//$write("\nOpcode: %x, wbCurrentRIPOut: %x\n", wbOpcodeOut, wbCurrentRipOut);
+		$write("%x\n", wbCurrentRipOut);
+/*
 		$display("RAX 0 = %x", regFile[0]);
 		$display("RCX 1 = %x", regFile[1]);
 		$display("RDX 2 = %x", regFile[2]);
@@ -1551,8 +1552,8 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		$display("R14 14 = %x", regFile[14]);
 		$display("R15 15 = %x", regFile[15]);
 		$display("RFLAGS = %x\n", latch_rflags);
-
-		$write("Newly written: Register: %d , Value: %x\n\n", wbDestRegOut, regFileOut[wbDestRegOut]);
+*/
+//		$write("Newly written: Register: %d , Value: %x\n\n", wbDestRegOut, regFileOut[wbDestRegOut]);
 		/* BABELFISH DEBUG END */
 	end
 

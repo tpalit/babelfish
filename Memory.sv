@@ -205,7 +205,7 @@ module Memory (
 						dCacheCoreBus.req <= memoryAddressSrc1In;
 
 							/* BABELFISH DEBUG BEGIN */
-						$write("\nSending request: %x, opcode: %x\n", memoryAddressSrc1In, opcodeIn);
+//						$write("\nSending request: %x, opcode: %x\n", memoryAddressSrc1In, opcodeIn);
 						dCacheCoreBus.reqtag <= { dCacheCoreBus.READ, dCacheCoreBus.MEMORY, opcodeIn };
 							/* BABELFISH DEBUG END */
 
