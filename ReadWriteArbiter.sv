@@ -92,8 +92,6 @@ module ReadWriteArbiter #(WIDTH = 64, TAG_WIDTH = 13) (
 
 	      rw_arbiter_state <= rw_arbiter_idle;
 
-		$write("\nRWARBITER resp for %x is %x\n", rw_arbitercache_bus.req, rw_arbitercache_bus.resp);
-
 	   end else begin
 	      dcache_memory_interface.resp <= 64'1;
 	   end

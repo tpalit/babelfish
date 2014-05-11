@@ -228,11 +228,11 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
             // reset read_count
             read_count <= 0;
         end else if ((rwArbiterCacheBus.reqcyc == 0) && (cache_state == cache_idle)) begin
-        	rwArbiterCacheBus.respcyc <= 0;
-	        writeEnableSet1 <= 0;
-	        writeEnableSet2 <= 0;
-	        writeEnableTagSet1 <= 0;
-	        writeEnableTagSet2 <= 0;
+            rwArbiterCacheBus.respcyc <= 0;
+            writeEnableSet1 <= 0;
+            writeEnableSet2 <= 0;
+            writeEnableTagSet1 <= 0;
+            writeEnableTagSet2 <= 0;
         end else if ((cache_state == cache_waiting_sram)) begin
             rwArbiterCacheBus.reqack <= 0;
 
@@ -247,9 +247,11 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
                         arbiterCacheBus.reqtag <= rwArbiterCacheBus.reqtag;
                         cache_state <= cache_idle;
 
-			for (int c=0; c<8; c=c+1) begin
-				$write("\nReq addr: %x Set1: Req for %x, index: %x, tag: %x, Content at %d is: %x\n", rwArbiterCacheBus.req, reqAddrOffset, reqAddrIndex, reqAddrTag, c, readDataCacheLineSet1[c*WORDSIZE+:WORDSIZE]);
-    			end
+//			for (int c=0; c<8; c=c+1) begin
+//				if (rwArbiterCacheBus.req == 64'h0000000000007c10 || rwArbiterCacheBus.req == 64'h0000000000008030 || rwArbiterCacheBus.req == 64'h0000000000008038) begin
+//					$write("\nReq addr: %x Set1: Req for %x, index: %x, tag: %x, Content at %d is: %x\n", rwArbiterCacheBus.req, reqAddrOffset, reqAddrIndex, reqAddrTag, c, readDataCacheLineSet1[c*WORDSIZE+:WORDSIZE]);
+//    				end
+//    			end
 
         		/* Set current entry as the mostRecentlyUsed entry. */
         		mostRecentlyUsedSet[reqAddrIndex] <= 0;
@@ -293,10 +295,11 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
                         arbiterCacheBus.reqtag <= rwArbiterCacheBus.reqtag;
                         cache_state <= cache_idle;
 
-			for (int c=0; c<8; c=c+1) begin
-				$write("\nSet2: Req for %x, Content at %d is: %x\n", reqAddrOffset, c, readDataCacheLineSet2[c*8+:WORDSIZE]);
-    			end
-
+//			for (int c=0; c<8; c=c+1) begin
+//				if (rwArbiterCacheBus.req == 64'h0000000000007c10 || rwArbiterCacheBus.req == 64'h0000000000008030 || rwArbiterCacheBus.req == 64'h0000000000008038) begin
+//					$write("\nReq addr: %x Set2: Req for %x, index: %x, tag: %x, Content at %d is: %x\n", rwArbiterCacheBus.req, reqAddrOffset, reqAddrIndex, reqAddrTag, c, readDataCacheLineSet2[c*WORDSIZE+:WORDSIZE]);
+//    				end
+//    			end
     
         		/* Set current entry as the mostRecentlyUsed entry. */
         		mostRecentlyUsedSet[reqAddrIndex] <= 1;
