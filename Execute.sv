@@ -1531,6 +1531,13 @@ module Execute (
 						count = count + 1;
 				end
 
+				// ZF Flag
+				if (temp_var == 0) begin
+					rflagsOut[6] = 1;
+				end else begin
+					rflagsOut[6] = 0;
+				end
+			   
 				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
@@ -1557,6 +1564,14 @@ module Execute (
 					if (temp_var[56+i] == 1)
 						count = count + 1;
 				end
+
+			        // ZF Flag
+				if (temp_var == 0) begin
+					rflagsOut[6] = 1;
+				end else begin
+					rflagsOut[6] = 0;
+				end
+			   
 
 				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
@@ -1585,6 +1600,14 @@ module Execute (
 						count = count + 1;
 				end
 
+				// ZF Flag
+				if (temp_var == 0) begin
+					rflagsOut[6] = 1;
+				end else begin
+					rflagsOut[6] = 0;
+				end
+			   
+			   
 				if (count != 0 && count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
@@ -2152,8 +2175,11 @@ module Execute (
 		if ((opcodeValidIn == 1) && (canExecuteIn == 1) && !wbStallIn) begin
 			if ((opcodeLengthIn == 2) && (opcodeIn == 8'h05)) begin
 				/* syscall implementation. Requires registerFileIn. */
-
-				aluResultSyscallOut <= syscall_cse502(registerFileIn[0],
+			        if (registerFileIn[0] == 64'h3c) begin
+				   $finish;
+				   
+				end else begin
+				   aluResultSyscallOut <= syscall_cse502(registerFileIn[0],
 								registerFileIn[7],
 								registerFileIn[6],
 								registerFileIn[2],
@@ -2161,6 +2187,7 @@ module Execute (
 								registerFileIn[8],
 								registerFileIn[9]
 								);
+			       end
 			end
 		end
 	end
