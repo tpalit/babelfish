@@ -149,6 +149,8 @@ module DMDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 5)
 	  */
 	 rwArbiterCacheBus.reqack <= 1;
 	 rwArbiterCacheBus.respcyc <= 0;
+	 writeEnable <= 0;
+	 writeEnableTag <= 0;
 	 // Check the state, if the index is valid, go to SRAM to get tags.
 	 // Else, directly go to memory, 
 	 if (state[reqAddrIndex][0] == 0) begin
@@ -169,6 +171,8 @@ module DMDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLINEOFFSET = 5)
 	 read_count <= 0;
       end else if ((rwArbiterCacheBus.reqcyc == 0) && (cache_state == cache_idle)) begin
          rwArbiterCacheBus.respcyc <= 0;
+	 writeEnable <= 0;
+	 writeEnableTag <= 0;
       end else if ((cache_state == cache_waiting_sram)) begin
 	 rwArbiterCacheBus.reqack <= 0;
 	 if (waitCounter == 0) begin
