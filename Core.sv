@@ -1532,7 +1532,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		end
 
 		/* BABELFISH DEBUG BEGIN */
-		$write("%x,\n", wbCurrentRipOut);
+		$write("%x, %x\n", wbCurrentRipOut, regFile[0]);
 		//$write("%x, rax %x, rcx %x, rdx %x, rbx %x, rsp %x, rbp %x, rsi %x, rdi %x, r8 %x, r9 %x, r10 %x, r11 %x, r12 %x, r13 %x, r14 %x, r15 %x\n", wbCurrentRipOut, regFile[0], regFile[1], regFile[2], regFile[3], regFile[4], regFile[5], regFile[6], regFile[7], regFile[8], regFile[9], regFile[10], regFile[11], regFile[12], regFile[13], regFile[14], regFile[15]);
 /*
 		$display("RAX 0 = %x", regFile[0]);

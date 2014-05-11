@@ -2096,24 +2096,18 @@ module Execute (
 				/* CALL */
 			   // We have to do some shoe-horning here.
 			   // 1. Tell the Writeback stage to decrement the RSP
-			   aluResultSpecialOut = registerFileIn[destRegOut] - 8;
+			   aluResultSpecialOut = destRegValueIn - 8;
 			   // 2. Tell the Writeback stage to write to the memory pointed by
 			   // the updated Stack pointer with the address of the next instruction
 			   memoryAddressDestOut = aluResultSpecialOut;
-			   /* verilator lint_off WIDTH */
-			   aluResultOut = currentRipIn + instructionLengthIn;
-			   /* verilator lint_on WIDTH */
+			   aluResultOut = currentRipIn + { 32'b0, instructionLengthIn };
 			   // 3. Set the called target address on the jumpTarget lines
-			   /* verilator lint_off WIDTH */
-			   jumpTarget = currentRipIn + imm64In + instructionLengthIn;
-			   /* verilator lint_on WIDTH */
+			   jumpTarget = currentRipIn + imm64In + { 32'b0, instructionLengthIn };
 			   isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hFF) && (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b010)) begin
-				aluResultSpecialOut = registerFileIn[destRegOut] - 8;
+				aluResultSpecialOut = destRegValueIn - 8;
 				memoryAddressDestOut = aluResultSpecialOut;
-				/* verilator lint_off WIDTH */
-				aluResultOut = currentRipIn + instructionLengthIn;
-				/* verilator lint_on WIDTH */
+				aluResultOut = currentRipIn + { 32'b0, instructionLengthIn };
 				jumpTarget = operandValue1;
 				isExecuteSuccessfulOut = 1;
 			end else if ((opcodeLengthIn == 1) && opcodeIn == 8'hC3) begin
@@ -2123,8 +2117,9 @@ module Execute (
 			   didRetq = 1;
 			   jumpTarget = memoryDataIn;
 			   isExecuteSuccessfulOut = 1;
-			end else
-			/* We manually set the memoryAddressDestOut for PUSH */
+			end
+
+			/* We manually set the memoryAddressDestOut for PUSH and CALL */
 			if (!((opcodeLengthIn == 1) && (opcodeIn == 8'h50 ||
 							opcodeIn == 8'h51 ||
 							opcodeIn == 8'h52 ||
@@ -2135,7 +2130,9 @@ module Execute (
 							opcodeIn == 8'h57 ||
 							opcodeIn == 8'h6A ||
 							opcodeIn == 8'h68 ||
-							((opcodeIn == 8'hFF) && (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b110))))) begin
+							opcodeIn == 8'hE8 ||
+							((opcodeIn == 8'hFF) && (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b110)) ||
+							((opcodeIn == 8'hFF) && (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b010))))) begin
 				memoryAddressDestOut = memoryAddressDestIn;
 			end
 

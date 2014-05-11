@@ -150,8 +150,8 @@ module WriteBack (
 						(opcodeIn == 8'h6A) ||
 						(opcodeIn == 8'h68) ||
 						((opcodeIn == 8'hFF) && (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b110)))) begin
-			 		regFileOut[destRegIn] = aluResultSpecialIn;
-                         assert(isMemoryAccessDestIn == 1);
+					regFileOut[destRegIn] = aluResultSpecialIn;
+					assert(isMemoryAccessDestIn == 1);
 				end
 
 				/* Special handling for POP */
@@ -164,18 +164,18 @@ module WriteBack (
 						(opcodeIn == 8'h5E) ||
 						(opcodeIn == 8'h5F) ||
 						(opcodeIn == 8'h8F && hasExtendedOpcodeIn == 1 && extendedOpcodeIn == 3'b000))) begin
-                       assert(isMemoryAccessDestIn == 0);
+					assert(isMemoryAccessDestIn == 0);
 					regFileOut[4'b0100] = aluResultSpecialIn;
 				end
 
-                    if ((opcodeLengthIn == 1) && (opcodeIn == 8'hE8)) begin
-                       assert(isMemoryAccessDestIn == 1);
-                    end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hE8)) begin
-                       assert(isMemoryAccessDestIn == 0);
-                    end
+				if ((opcodeLengthIn == 1) && (opcodeIn == 8'hE8)) begin
+					assert(isMemoryAccessDestIn == 1);
+				end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hE8)) begin
+					assert(isMemoryAccessDestIn == 0);
+				end
                   
-			        if ((opcodeLengthIn == 1) && ((opcodeIn == 8'hE8) || (opcodeIn == 8'hC3) || ((opcodeIn == 8'hFF) && (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b010)))) begin
-				   regFileOut[4'b0100] = aluResultSpecialIn;
+				if ((opcodeLengthIn == 1) && ((opcodeIn == 8'hE8) || (opcodeIn == 8'hC3) || ((opcodeIn == 8'hFF) && (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b010)))) begin
+					regFileOut[4'b0100] = aluResultSpecialIn;
 				end else if (isMemoryAccessDestIn == 0 && killIn == 0) begin
 					regFileOut[destRegIn] = aluResultIn;
 				end
