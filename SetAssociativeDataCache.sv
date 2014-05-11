@@ -410,10 +410,14 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
 		    end
 
                     if (!isWrite) begin
-			if (mostRecentlyUsedSet[reqAddrIndex] == 1) begin
-			    rwArbiterCacheBus.resp <= writeDataCacheLineSet1[reqAddrOffset*8+:WORDSIZE];
+			if (reqAddrOffset == 6'h38) begin
+			    rwArbiterCacheBus.resp <= arbiterCacheBus.resp;
 			end else begin
-			    rwArbiterCacheBus.resp <= writeDataCacheLineSet2[reqAddrOffset*8+:WORDSIZE];
+			    if (mostRecentlyUsedSet[reqAddrIndex] == 1) begin
+				rwArbiterCacheBus.resp <= writeDataCacheLineSet1[reqAddrOffset*8+:WORDSIZE];
+			    end else begin
+				rwArbiterCacheBus.resp <= writeDataCacheLineSet2[reqAddrOffset*8+:WORDSIZE];
+			    end
 			end
 
                         rwArbiterCacheBus.resptag <= arbiterCacheBus.resptag;
