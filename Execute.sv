@@ -109,6 +109,8 @@ module Execute (
 			logic [0:63] temp_var = 0;
 			logic [0:64] add_temp_var = 0;
 			logic [0:127] mul_temp_var = 0;
+			logic [0:127] mul_ex_op1 = 0;
+			logic [0:127] mul_ex_op2 = 0;
 			logic [0:7] countMask = 8'h3F;
 			int count = 0;
 			int i = 0;
@@ -216,7 +218,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -251,7 +253,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -287,7 +289,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -313,25 +315,31 @@ module Execute (
 
 				// CF Flag
 				rflagsOut[0] = add_temp_var[0];
-
-				// OF Flag
-				if (operandValue1[0] == imm64In[0] && !add_temp_var[0]) begin
-					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+				// OF Flag(correct)
+				if (operandValue1[0] == imm64In[0] && operandValue1[0] != aluResultOut[0]) begin
+					rflagsOut[11] = 1;
 				end else begin
 					rflagsOut[11] = 0;
 				end
 
+				//AF Flag(correct)
+                                if(operandValue1[59]^imm64In[59] == aluResultOut[59]) begin
+					rflagsOut[4] = 0;
+				end else begin
+					rflagsOut[4] = 1;
+				end 
 				// PF Flag
 				for (i = 0; i < 8; i=i+1) begin
 					if (aluResultOut[56+i] == 1)
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
+				//$display("\naddimm\nop1 = %x\nop2 = %x\nres = %x\nrfl = %x",operandValue1, imm64In, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && ((opcodeIn == 8'h01) || (opcodeIn == 8'h03))) begin
 				/* ADD operand 1 with operand 2 and write into operand 1 */
 
@@ -353,25 +361,32 @@ module Execute (
 
 				// CF Flag
 				rflagsOut[0] = add_temp_var[0];
-
-				// OF Flag
-				if (operandValue1[0] == operandValue2[0] && !add_temp_var[0]) begin
-					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+				// OF Flag(correct)
+				if (operandValue1[0] == operandValue2[0] && operandValue1[0] != aluResultOut[0]) begin
+					rflagsOut[11] = 1;
 				end else begin
 					rflagsOut[11] = 0;
 				end
 
+				//AF Flag(correct)
+                                if(operandValue1[59]^operandValue2[59] == aluResultOut[59]) begin
+					rflagsOut[4] = 0;
+				end else begin
+					rflagsOut[4] = 1;
+				end 	
+				
 				// PF Flag
 				for (i = 0; i < 8; i=i+1) begin
 					if (aluResultOut[56+i] == 1)
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
+				//$display("\nadd_op2\nop1 = %x\nop2 = %x\nres = %x\nrfl = %x",operandValue1, operandValue2, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h05)) begin
 				/* ADD operand 1 (RAX) with immediate and write into operand 1 (RAX) */
 
@@ -392,25 +407,31 @@ module Execute (
 
 				// CF Flag
 				rflagsOut[0] = add_temp_var[0];
-
-				// OF Flag
-				if (operandValue1[0] == imm64In[0] && !add_temp_var[0]) begin
-					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+				// OF Flag(correct)
+				if (operandValue1[0] == imm64In[0] && operandValue1[0] != aluResultOut[0]) begin
+					rflagsOut[11] = 1;
 				end else begin
 					rflagsOut[11] = 0;
 				end
 
+				//AF Flag(correct)
+                                if(operandValue1[59]^imm64In[59] == aluResultOut[59]) begin
+					rflagsOut[4] = 0;
+				end else begin
+					rflagsOut[4] = 1;
+				end 
 				// PF Flag
 				for (i = 0; i < 8; i=i+1) begin
 					if (aluResultOut[56+i] == 1)
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
+				//$display("\nadd_imm\nop1 = %x\nop2 = %x\nres = %x\nrfl = %x",operandValue1, imm64In, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hF7) && (hasExtendedOpcodeIn == 1)
 				&& (extendedOpcodeIn == 3'b011)) begin
 				/* NEG operand 1 store in operand 1 */
@@ -436,25 +457,38 @@ module Execute (
 				end else begin
 					rflagsOut[0] = 1;
 				end
-
+				/*
 				// OF Flag
 				if (operandValue1[0] == imm64In[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
+				end*/
+				// OF Flag(correct)
+				if (operandValue1 != 0 && operandValue1 == aluResultOut) begin
+					rflagsOut[11] = 1;
+				end else begin
+					rflagsOut[11] = 0;
 				end
 
+				//AF Flag(correct)
+                                if(operandValue1[59] == aluResultOut[59]) begin
+					rflagsOut[4] = 0;
+				end else begin
+					rflagsOut[4] = 1;
+				end 	
 				// PF Flag
 				for (i = 0; i < 8; i=i+1) begin
 					if (aluResultOut[56+i] == 1)
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
+				//$display("\nNEG\nop1 = %x\nres = %x\nrfl = %x",operandValue1, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hF7) && (hasExtendedOpcodeIn == 1)
 				&& (extendedOpcodeIn == 3'b010)) begin
 				/* NOT operand 1 store in operand 1 */
@@ -463,6 +497,7 @@ module Execute (
 
 				aluResultOut = temp_var;
 				isExecuteSuccessfulOut = 1;
+				//$display("\nNOT\nop1 = %x\nres = %x\nrfl = %x",operandValue1, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hF7) && (hasExtendedOpcodeIn == 1)
 				&& (extendedOpcodeIn == 3'b100)) begin
 				/* MUL operand 1 with operand 2 (RAX) and write into operand 2 (RAX) and RDX the overflow? */
@@ -481,56 +516,128 @@ module Execute (
 					rflagsOut[0] = 1;
 					rflagsOut[11] = 1;
 				end
+				//$display("\nop1 = %x\nop2 = %x\nres = %x\nrfl = %x",operandValue1, operandValue2, mul_temp_var, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hF7) && (hasExtendedOpcodeIn == 1)
 				&& (extendedOpcodeIn == 3'b101)) begin
 				/* IMUL operand 1 with operand 2 (RAX) and write into operand 2 (RAX) and RDX the overflow? */
 
-				mul_temp_var = operandValue1 * operandValue2;
-
+				/* verilator lint_off WIDTH */
+				
+				if(operandValue1[0] != operandValue2[0]) begin // If both signs are different
+					
+					if(operandValue1[0] == 1'b1) begin
+						mul_ex_op1 = operandValue1;
+						mul_ex_op1 = mul_ex_op1|128'hffffffffffffffff0000000000000000; //Sign Extend First Operand
+						mul_ex_op2 = operandValue2;
+					end else begin
+						mul_ex_op1 = operandValue1;
+						mul_ex_op2 = operandValue2;
+						mul_ex_op2 = mul_ex_op2|128'hffffffffffffffff0000000000000000; //Sign Extend Second Operand
+					end
+					
+					mul_temp_var = mul_ex_op1*mul_ex_op2;	//Multiply
+				end else begin					// If both signs are same
+					
+					if(operandValue1[0] == 1'b1) begin	// If both negetive
+						operandValue1 = -operandValue1;
+						operandValue2 = -operandValue2;
+					end
+					
+					mul_temp_var = operandValue1*operandValue2; //Multiply
+				end
 				aluResultOut = mul_temp_var[64:127];
 				aluResultSpecialOut = mul_temp_var[0:63];
 				isExecuteSuccessfulOut = 1;
 
 				// CF and OF
-				if (aluResultSpecialOut == 0) begin
+				if (mul_temp_var[0:64] == 68'h1ffffffffffffffff || mul_temp_var[0:64] == 65'b0) begin
 					rflagsOut[0] = 0;
 					rflagsOut[11] = 0;
 				end else begin
 					rflagsOut[0] = 1;
 					rflagsOut[11] = 1;
 				end
+				//$display("1rf = %x\nop1 = %x\nop2 = %x\nmul = %x",rflagsOut,operandValue1,operandValue2,mul_temp_var);	
+			        /* verilator lint_on WIDTH */
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h6B || opcodeIn == 8'h69)) begin
 				/* IMUL RDX:operand 2 = operand 1 * imm8In sign-extended. */
-
-				mul_temp_var = operandValue2 * imm64In;
-
+				/* verilator lint_off WIDTH */
+				
+				if(imm64In[0] != operandValue2[0]) begin // If both signs are different
+					
+					if(imm64In[0] == 1'b1) begin
+						mul_ex_op1 = imm64In;
+						mul_ex_op1 = mul_ex_op1|128'hffffffffffffffff0000000000000000; //Sign Extend First Operand
+						mul_ex_op2 = operandValue2;
+					end else begin
+						mul_ex_op1 = imm64In;
+						mul_ex_op2 = operandValue2;
+						mul_ex_op2 = mul_ex_op2|128'hffffffffffffffff0000000000000000; //Sign Extend Second Operand
+					end
+					
+					mul_temp_var = mul_ex_op1*mul_ex_op2;	//Multiply
+				end else begin					// If both signs are same
+					operandValue1 = imm64In;
+					if(imm64In[0] == 1'b1) begin	// If both negetive
+						operandValue1 = -operandValue1;
+						operandValue2 = -operandValue2;
+					end
+					
+					mul_temp_var = operandValue1*operandValue2; //Multiply
+				end
 				aluResultOut = mul_temp_var[64:127];
 				isExecuteSuccessfulOut = 1;
 
 				// CF and OF
-				if (mul_temp_var[0:63] == 64'b0) begin
+				if (mul_temp_var[0:64] == 68'h1ffffffffffffffff || mul_temp_var[0:64] == 65'b0) begin
 					rflagsOut[0] = 0;
 					rflagsOut[11] = 0;
 				end else begin
 					rflagsOut[0] = 1;
 					rflagsOut[11] = 1;
 				end
+				//$display("2rf = %x\nop1 = %x\nop2 = %x\nmul = %x",rflagsOut,imm64In,operandValue2,mul_temp_var);	
+			        /* verilator lint_on WIDTH */
 			end else if ((opcodeLengthIn == 2) && (opcodeIn == 8'hAF)) begin
 				/* IMUL RDX:operand 2 = operand 1 * operand 2 */
-
-				mul_temp_var = operandValue1 * operandValue2;
-
+				/* verilator lint_off WIDTH */
+				
+				if(operandValue1[0] != operandValue2[0]) begin // If both signs are different
+					
+					if(operandValue1[0] == 1'b1) begin
+						mul_ex_op1 = operandValue1;
+						mul_ex_op1 = mul_ex_op1|128'hffffffffffffffff0000000000000000; //Sign Extend First Operand
+						mul_ex_op2 = operandValue2;
+					end else begin
+						mul_ex_op1 = operandValue1;
+						mul_ex_op2 = operandValue2;
+						mul_ex_op2 = mul_ex_op2|128'hffffffffffffffff0000000000000000; //Sign Extend Second Operand
+					end
+					
+					mul_temp_var = mul_ex_op1*mul_ex_op2;	//Multiply
+				end else begin					// If both signs are same
+					
+					if(operandValue1[0] == 1'b1) begin	// If both negetive
+						operandValue1 = -operandValue1;
+						operandValue2 = -operandValue2;
+					end
+					
+					mul_temp_var = operandValue1*operandValue2; //Multiply
+				end
 				aluResultOut = mul_temp_var[64:127];
 				isExecuteSuccessfulOut = 1;
 
 				// CF and OF
-				if (mul_temp_var[0:63] == 64'b0) begin
+				if (mul_temp_var[0:64] == 68'h1ffffffffffffffff || mul_temp_var[0:64] == 65'b0) begin
 					rflagsOut[0] = 0;
 					rflagsOut[11] = 0;
 				end else begin
 					rflagsOut[0] = 1;
 					rflagsOut[11] = 1;
 				end
+				//$display("3rf = %x\nop1 = %x\nop2 = %x\nmul = %x",rflagsOut,operandValue1,operandValue2,mul_temp_var);	
+			        /* verilator lint_on WIDTH */
+
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h83 || opcodeIn == 8'h81)
 				&& (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b110)) begin
 				/* XOR operand 1 with immediate and write into operand 1 */
@@ -562,7 +669,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -597,7 +704,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -632,7 +739,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -668,7 +775,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -703,7 +810,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -738,7 +845,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -768,25 +875,39 @@ module Execute (
 
 				// CF Flag
 				rflagsOut[0] = add_temp_var[0];
+				// OF Flag(correct/i)
+				if (operandValue1[0] == imm64In[0] && operandValue1[0] != aluResultOut[0]) begin
+					rflagsOut[11] = 1;
+				end else begin
+					rflagsOut[11] = 0;
+				end
 
+				//AF Flag(correct/i)
+                                if(operandValue1[59]^imm64In[59] == aluResultOut[59]) begin
+					rflagsOut[4] = 0;
+				end else begin
+					rflagsOut[4] = 1;
+				end 
+				/*
 				// OF Flag
 				if (operandValue1[0] == imm64In[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
 				end
-
+				*/
 				// PF Flag
 				for (i = 0; i < 8; i=i+1) begin
 					if (aluResultOut[56+i] == 1)
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
+				//$display("\n1ADC_imm\nop1 = %x\nop2 = %x\nres = %x\nrfl = %x",operandValue1, imm64In, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && ((opcodeIn == 8'h11) || (opcodeIn == 8'h13))) begin
 				/* ADC operand 1 with operand 2 and write into operand 1 */
 	
@@ -811,26 +932,41 @@ module Execute (
 
 				// CF Flag
 				rflagsOut[0] = add_temp_var[0];
+				// OF Flag(correct/i)
+				if (operandValue1[0] == operandValue2[0] && operandValue1[0] != aluResultOut[0]) begin
+					rflagsOut[11] = 1;
+				end else begin
+					rflagsOut[11] = 0;
+				end
 
+				/*
 				// OF Flag
 				if (operandValue1[0] == operandValue2[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
-				end
+				end*/
 
+				//AF Flag(correct/i)
+                                if(operandValue1[59]^operandValue2[59] == aluResultOut[59]) begin
+					rflagsOut[4] = 0;
+				end else begin
+					rflagsOut[4] = 1;
+				end 
+				
 				// PF Flag
 				for (i = 0; i < 8; i=i+1) begin
 					if (aluResultOut[56+i] == 1)
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
-
+				
+				//$display("\nADC_op2\nop1 = %x\nop2 = %x\nres = %x\nrfl = %x",operandValue1, operandValue2, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h15)) begin
 				/* ADC operand 1 (RAX) with immediate and write into operand 1 (RAX) */
 	
@@ -855,26 +991,41 @@ module Execute (
 
 				// CF Flag
 				rflagsOut[0] = add_temp_var[0];
+				// OF Flag(correct/i)
+				if (operandValue1[0] == imm64In[0] && operandValue1[0] != aluResultOut[0]) begin
+					rflagsOut[11] = 1;
+				end else begin
+					rflagsOut[11] = 0;
+				end
 
+				//AF Flag(correct/i)
+                                if(operandValue1[59]^imm64In[59] == aluResultOut[59]) begin
+					rflagsOut[4] = 0;
+				end else begin
+					rflagsOut[4] = 1;
+				end 
+				/*
+				
 				// OF Flag
 				if (operandValue1[0] == imm64In[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
 				end
-
+				*/
 				// PF Flag
 				for (i = 0; i < 8; i=i+1) begin
 					if (aluResultOut[56+i] == 1)
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
-
+				
+				//$display("\n2ADC_imm\nop1 = %x\nop2 = %x\nres = %x\nrfl = %x",operandValue1, imm64In, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h83 || opcodeIn == 8'h81)
 				&& (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b011)) begin
 				/* SBB operand 1 with immediate and write into operand 1 */
@@ -900,25 +1051,41 @@ module Execute (
 
 				// CF Flag
 				rflagsOut[0] = add_temp_var[0];
+				
+				// OF Flag(correct/i)
+				if (operandValue1[0] == !imm64In[0] && operandValue1[0] != aluResultOut[0]) begin
+					rflagsOut[11] = 1;
+				end else begin
+					rflagsOut[11] = 0;
+				end
+				//AF Flag(correct/i)
+                                if(operandValue1[59]^imm64In[59] == aluResultOut[59]) begin
+					rflagsOut[4] = 0;
+				end else begin
+					rflagsOut[4] = 1;
+				end 	
 
+
+				/*
 				// OF Flag
 				if (operandValue1[0] == imm64In[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
 				end
-
+				*/
 				// PF Flag
 				for (i = 0; i < 8; i=i+1) begin
 					if (aluResultOut[56+i] == 1)
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
+				//$display("\nSBB_imm\nop1 = %x\nop2 = %x\nres = %x\nrfl = %x",operandValue1, imm64In, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && ((opcodeIn == 8'h19) || (opcodeIn == 8'h1B))) begin
 				/* SBB operand 1 with operand 2 and write into operand 1 */
 	
@@ -943,25 +1110,40 @@ module Execute (
 
 				// CF Flag
 				rflagsOut[0] = add_temp_var[0];
+				
+				// OF Flag(correct/i)
+				if (operandValue1[0] == !operandValue2[0] && operandValue1[0] != aluResultOut[0]) begin
+					rflagsOut[11] = 1;
+				end else begin
+					rflagsOut[11] = 0;
+				end
+				//AF Flag(correct/i)
+                                if(operandValue1[59]^operandValue2[59] == aluResultOut[59]) begin
+					rflagsOut[4] = 0;
+				end else begin
+					rflagsOut[4] = 1;
+				end 	
 
+/*	
 				// OF Flag
 				if (operandValue1[0] == operandValue2[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
 				end
-
+				*/
 				// PF Flag
 				for (i = 0; i < 8; i=i+1) begin
 					if (aluResultOut[56+i] == 1)
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
+				//$display("\nSBB_op2\nop1 = %x\nop2 = %x\nres = %x\nrfl = %x",operandValue1, operandValue2, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h1D)) begin
 				/* SBB operand 1 (RAX) with immediate and write into operand 1 (RAX) */
 	
@@ -986,25 +1168,41 @@ module Execute (
 
 				// CF Flag
 				rflagsOut[0] = add_temp_var[0];
+				// OF Flag(correct/i)
+				if (operandValue1[0] == !imm64In[0] && operandValue1[0] != aluResultOut[0]) begin
+					rflagsOut[11] = 1;
+				end else begin
+					rflagsOut[11] = 0;
+				end
+				//AF Flag(correct/i)
+                                if(operandValue1[59]^imm64In[59] == aluResultOut[59]) begin
+					rflagsOut[4] = 0;
+				end else begin
+					rflagsOut[4] = 1;
+				end 	
 
+
+
+				/*
 				// OF Flag
 				if (operandValue1[0] == imm64In[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
 				end
-
+				*/
 				// PF Flag
 				for (i = 0; i < 8; i=i+1) begin
 					if (aluResultOut[56+i] == 1)
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
+				//$display("\nSBB_imm\nop1 = %x\nop2 = %x\nres = %x\nrfl = %x",operandValue1, imm64In, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h83 || opcodeIn == 8'h81)
 				&& (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b101)) begin
 				/* SUB operand 1 with immediate and write into operand 1 */
@@ -1026,30 +1224,45 @@ module Execute (
 
 				// CF Flag
 				rflagsOut[0] = add_temp_var[0];
+				// OF Flag(correct)
+				if (operandValue1[0] == !imm64In[0] && operandValue1[0] != aluResultOut[0]) begin
+					rflagsOut[11] = 1;
+				end else begin
+					rflagsOut[11] = 0;
+				end
+				//AF Flag(correct)
+                                if(operandValue1[59]^imm64In[59] == aluResultOut[59]) begin
+					rflagsOut[4] = 0;
+				end else begin
+					rflagsOut[4] = 1;
+				end 	
 
+
+				/*
 				// OF Flag
 				if (operandValue1[0] == imm64In[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
 				end
-
+				*/
 				// PF Flag
 				for (i = 0; i < 8; i=i+1) begin
 					if (aluResultOut[56+i] == 1)
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
+				//$display("\nSUB_imm\nop1 = %x\nop2 = %x\nres = %x\nrfl = %x",operandValue1, imm64In, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && ((opcodeIn == 8'h29) || (opcodeIn == 8'h2B))) begin
 				/* SUB operand 1 with operand 2 and write into operand 1 */
 	
 				add_temp_var = operandValue1 - operandValue2;
-	
+
 				aluResultOut = add_temp_var[1:64];
 				isExecuteSuccessfulOut = 1;
 
@@ -1065,13 +1278,19 @@ module Execute (
 
 				// CF Flag
 				rflagsOut[0] = add_temp_var[0];
-
-				// OF Flag
-				if (operandValue1[0] == operandValue2[0] && !add_temp_var[0]) begin
-					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+				
+				// OF Flag(correct)
+				if (operandValue1[0] == !operandValue2[0] && operandValue1[0] != aluResultOut[0]) begin
+					rflagsOut[11] = 1;
 				end else begin
 					rflagsOut[11] = 0;
 				end
+				//AF Flag(correct)
+                                if(operandValue1[59]^operandValue2[59] == aluResultOut[59]) begin
+					rflagsOut[4] = 0;
+				end else begin
+					rflagsOut[4] = 1;
+				end 	
 
 				// PF Flag
 				for (i = 0; i < 8; i=i+1) begin
@@ -1079,11 +1298,12 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
+				//$display("\nSUB_op2\nop1 = %x\nop2 = %x\nres = %x\nrfl = %x",operandValue1, operandValue2, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h2D)) begin
 				/* SUB operand 1 (RAX) with immediate and write into operand 1 (RAX) */
 	
@@ -1104,25 +1324,40 @@ module Execute (
 
 				// CF Flag
 				rflagsOut[0] = add_temp_var[0];
+				
+				// OF Flag(correct)
+				if (operandValue1[0] == !imm64In[0] && operandValue1[0] != aluResultOut[0]) begin
+					rflagsOut[11] = 1;
+				end else begin
+					rflagsOut[11] = 0;
+				end
+				//AF Flag(correct)
+                                if(operandValue1[59]^imm64In[59] == aluResultOut[59]) begin
+					rflagsOut[4] = 0;
+				end else begin
+					rflagsOut[4] = 1;
+				end 	
 
+				/*
 				// OF Flag
 				if (operandValue1[0] == imm64In[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
 				end
-
+				*/
 				// PF Flag
 				for (i = 0; i < 8; i=i+1) begin
 					if (aluResultOut[56+i] == 1)
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
+				//$display("\nSUB_imm\nop1 = %x\nop2 = %x\nres = %x\nrfl = %x",operandValue1, imm64In, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h83 || opcodeIn == 8'h81)
 				&& (hasExtendedOpcodeIn == 1) && (extendedOpcodeIn == 3'b111)) begin
 				/* CMP operand 1 with immediate and write into operand 1 */
@@ -1145,25 +1380,41 @@ module Execute (
 
 				// CF Flag
 				rflagsOut[0] = add_temp_var[0];
+				
+				// OF Flag(correct)
+				if (operandValue1[0] == !imm64In[0] && operandValue1[0] != temp_var[0]) begin
+					rflagsOut[11] = 1;
+				end else begin
+					rflagsOut[11] = 0;
+				end
+				//AF Flag(correct)
+                                if(operandValue1[59]^imm64In[59] == temp_var[59]) begin
+					rflagsOut[4] = 0;
+				end else begin
+					rflagsOut[4] = 1;
+				end 	
 
+
+				/*
 				// OF Flag
 				if (operandValue1[0] == imm64In[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = temp_var[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
 				end
-
+				*/
 				// PF Flag
 				for (i = 0; i < 8; i=i+1) begin
 					if (temp_var[56+i] == 1)
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
+				//$display("\nCMP_imm\nop1 = %x\nop2 = %x\nres = %x\nrfl = %x",operandValue1, imm64In, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && ((opcodeIn == 8'h39) || (opcodeIn == 8'h3B))) begin
 				/* CMP operand 1 with operand 2 and write into operand 1 */
 	
@@ -1185,25 +1436,42 @@ module Execute (
 
 				// CF Flag
 				rflagsOut[0] = add_temp_var[0];
+				
+				// OF Flag(correct)
+				if (operandValue1[0] == !operandValue2[0] && operandValue1[0] != temp_var[0]) begin
+					rflagsOut[11] = 1;
+				end else begin
+					rflagsOut[11] = 0;
+				end
+				//AF Flag(correct)
+                                if(operandValue1[59]^operandValue2[59] == temp_var[59]) begin
+					rflagsOut[4] = 0;
+				end else begin
+					rflagsOut[4] = 1;
+				end 	
 
+
+				
+				/*
 				// OF Flag
 				if (operandValue1[0] == operandValue2[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = temp_var[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
 				end
-
+				*/
 				// PF Flag
 				for (i = 0; i < 8; i=i+1) begin
 					if (temp_var[56+i] == 1)
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
+				//$display("\nCMP_op2\nop1 = %x\nop2 = %x\nres = %x\nrfl = %x",operandValue1, operandValue2, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h3D)) begin
 				/* CMP operand 1 (RAX) with immediate and write into operand 1 (RAX) */
 	
@@ -1225,25 +1493,42 @@ module Execute (
 
 				// CF Flag
 				rflagsOut[0] = add_temp_var[0];
+				
+				// OF Flag(correct)
+				if (operandValue1[0] == !imm64In[0] && operandValue1[0] != temp_var[0]) begin
+					rflagsOut[11] = 1;
+				end else begin
+					rflagsOut[11] = 0;
+				end
+				//AF Flag(correct)
+                                if(operandValue1[59]^imm64In[59] == temp_var[59]) begin
+					rflagsOut[4] = 0;
+				end else begin
+					rflagsOut[4] = 1;
+				end 	
 
+
+
+				/*
 				// OF Flag
 				if (operandValue1[0] == imm64In[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = temp_var[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
 				end
-
+				*/
 				// PF Flag
 				for (i = 0; i < 8; i=i+1) begin
 					if (temp_var[56+i] == 1)
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
+				//$display("\nCMP_imm\nop1 = %x\nop2 = %x\nres = %x\nrfl = %x",operandValue1, imm64In, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hFF) && (hasExtendedOpcodeIn == 1)
 				&& (extendedOpcodeIn == 3'b001)) begin
 				/* DEC operand 1 by 1 */
@@ -1262,25 +1547,38 @@ module Execute (
 
 				// SF Flag
 				rflagsOut[7] = aluResultOut[0];
+				// OF Flag(correct)
+				if (operandValue1[0] == 1 && aluResultOut[0] == 0) begin
+					rflagsOut[11] = 1;
+				end else begin
+					rflagsOut[11] = 0;
+				end
 
+				/*
 				// OF Flag
 				if (operandValue1[0] == operandValue2[0] && !add_temp_var[0]) begin
 					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
 				end else begin
 					rflagsOut[11] = 0;
-				end
-
+				end*/
+				//AF Flag(correct)
+                                if(operandValue1[59] == aluResultOut[59]) begin
+					rflagsOut[4] = 0;
+				end else begin
+					rflagsOut[4] = 1;
+				end 
 				// PF Flag
 				for (i = 0; i < 8; i=i+1) begin
 					if (aluResultOut[56+i] == 1)
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
+				//$display("\nDEC\nop1 = %x\nres = %x\nrfl = %x",operandValue1, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hFF) && (hasExtendedOpcodeIn == 1)
 				&& (extendedOpcodeIn == 3'b000)) begin
 				/* INC operand 1 by 1 */
@@ -1300,24 +1598,30 @@ module Execute (
 				// SF Flag
 				rflagsOut[7] = aluResultOut[0];
 
-				// OF Flag
-				if (operandValue1[0] == operandValue2[0] && !add_temp_var[0]) begin
-					rflagsOut[11] = aluResultOut[0] ^ operandValue1[0];
+				// OF Flag(correct)
+				if (operandValue1[0] == 0 && aluResultOut[0] == 1) begin
+					rflagsOut[11] = 1;
 				end else begin
 					rflagsOut[11] = 0;
 				end
-
+				//AF Flag(correct)
+                                if(operandValue1[59] == aluResultOut[59]) begin
+					rflagsOut[4] = 0;
+				end else begin
+					rflagsOut[4] = 1;
+				end 
 				// PF Flag
 				for (i = 0; i < 8; i=i+1) begin
 					if (aluResultOut[56+i] == 1)
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
+				//$display("\nINC\nop1 = %x\nres = %x\nrfl = %x",operandValue1, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hD1) && (hasExtendedOpcodeIn == 1)
 				&& (extendedOpcodeIn == 3'b100)) begin
 				/* SHL/SAL with immediate == 1 */
@@ -1351,7 +1655,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -1389,7 +1693,7 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
@@ -1397,9 +1701,11 @@ module Execute (
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hD1) && (hasExtendedOpcodeIn == 1)
 				&& (extendedOpcodeIn == 3'b111)) begin
 				/* SAR with immediate == 1 */
-	
-				add_temp_var = { operandValue1, 1'b0 } >>> 1;
-	
+				/* verilator lint_off WIDTH */	
+				add_temp_var = { operandValue1, 1'b0 } >> 1;
+				add_temp_var[0] = operandValue1[0];
+				/* verilator lint_on WIDTH */
+				//$display("\natv = %b\ntst = %b", add_temp_var, {operandValue1,1'b0}>>>2);	
 				aluResultOut = add_temp_var[0:63];
 				isExecuteSuccessfulOut = 1;
 
@@ -1427,17 +1733,23 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
+				//$display("\nop1 = %x\nres = %x\nrfl = %x",operandValue1, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hC1) && (hasExtendedOpcodeIn == 1)
 				&& (extendedOpcodeIn == 3'b111)) begin
 				/* SAR with immediate */
-	
-				add_temp_var = { operandValue1, 1'b0 } >>> imm8In;
-	
+				/* verilator lint_off WIDTH */	
+				add_temp_var = { operandValue1, 1'b0 } >> imm8In;
+				if(operandValue1[0] == 1'b1) begin
+					for (i = 0; i < imm8In; i=i+1) begin
+						add_temp_var[i] = 1'b1;
+					end
+				end
+				/* verilator lint_on WIDTH */
 				aluResultOut = add_temp_var[0:63];
 				isExecuteSuccessfulOut = 1;
 
@@ -1465,11 +1777,12 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
+				//$display("\nop1 = %x\nimm = %x\nres = %x\nrfl = %x",operandValue1, imm8In, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hD1) && (hasExtendedOpcodeIn == 1)
 				&& (extendedOpcodeIn == 3'b101)) begin
 				/* SHR with immediate == 1 */
@@ -1494,7 +1807,7 @@ module Execute (
 
 				// OF Flag
 				if ((countMask & 1) == 1) begin
-					rflagsOut[11] = aluResultOut[0];
+					rflagsOut[11] = operandValue1[0];
 				end
 
 				// PF Flag
@@ -1503,11 +1816,12 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
+				//$display("\nop1 = %x\nres = %x\nrfl = %x",operandValue1, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hF7) && (hasExtendedOpcodeIn == 1)
 				&& (extendedOpcodeIn == 3'b000)) begin
 				/* TEST with immediate */
@@ -1538,11 +1852,12 @@ module Execute (
 					rflagsOut[6] = 0;
 				end
 			   
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
+				//$display("\nTEST_imm\nop1 = %x\nop2 = %x\nres = %x\nrfl = %x",operandValue1, imm64In, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hA9)) begin
 				/* TEST RAX with immediate */
 	
@@ -1572,12 +1887,12 @@ module Execute (
 					rflagsOut[6] = 0;
 				end
 			   
-
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
+				//$display("\nTEST_imm\nop1 = %x\nop2 = %x\nres = %x\nrfl = %x",operandValue1, imm64In, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h85)) begin
 				/* TEST with another register */
 	
@@ -1607,12 +1922,12 @@ module Execute (
 					rflagsOut[6] = 0;
 				end
 			   
-			   
-				if (count != 0 && count % 2 == 0) begin
+				if (  count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
+				//$display("\nTEST_op2\nop1 = %x\nop2 = %x\nres = %x\nrfl = %x",operandValue1, operandValue2, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'hC1) && (hasExtendedOpcodeIn == 1)
 				&& (extendedOpcodeIn == 3'b101)) begin
 				/* SHR with immediate */
@@ -1637,7 +1952,7 @@ module Execute (
 
 				// OF Flag
 				if ((countMask & 1) == 1) begin
-					rflagsOut[11] = aluResultOut[0];
+					rflagsOut[11] = operandValue1[0];
 				end
 
 				// PF Flag
@@ -1646,11 +1961,12 @@ module Execute (
 						count = count + 1;
 				end
 
-				if (count != 0 && count % 2 == 0) begin
+				if (count % 2 == 0) begin
 					rflagsOut[2] = 1;
 				end else begin
 					rflagsOut[2] = 0;
 				end
+				//$display("\nop1 = %x\nimm = %x\nres = %x\nrfl = %x",operandValue1, imm8In, aluResultOut, rflagsOut);
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h58 ||                                         
 							opcodeIn == 8'h59 ||                                                  
 							opcodeIn == 8'h5A ||                                                  
@@ -1754,12 +2070,13 @@ module Execute (
 				end
 			end else if ((opcodeLengthIn == 1) && (opcodeIn == 8'h74)) begin
 			        /* Jump short if equal */
+				//$display("Jump");
 			        isExecuteSuccessfulOut = 1;
 			        didJump = 1;
                                 if (rflagsIn[6] == 1) begin
 			           /* verilator lint_off WIDTH */
 			           jumpTarget = currentRipIn + imm64In + instructionLengthIn;
-			           /* verilator lint_on WIDTH */
+			        //$display("Yes");   /* verilator lint_on WIDTH */
 				end else begin
 				   jumpTarget = 0;
 				end
@@ -2172,7 +2489,7 @@ module Execute (
 	   if (currentRipIn == 64'h400bbb ||
 	       currentRipIn == 64'h400a7d || 
 	       currentRipIn == 64'h40099c) begin
-//	      $display("At: %x", currentRipIn);
+//	      //$display("At: %x", currentRipIn);
 	   end
 	end
 
@@ -2180,11 +2497,11 @@ module Execute (
 		if ((opcodeValidIn == 1) && (canExecuteIn == 1) && !wbStallIn) begin
 			if ((opcodeLengthIn == 2) && (opcodeIn == 8'h05)) begin
 				/* syscall implementation. Requires registerFileIn. */
-			        if (registerFileIn[0] == 64'h3c) begin
-				   $finish;
+//			        if (registerFileIn[0] == 64'h3c) begin
+//				   $finish;
 				   
-				end else begin
-				   aluResultSyscallOut <= syscall_cse502(registerFileIn[0],
+//				end else begin
+				aluResultSyscallOut <= syscall_cse502(registerFileIn[0],
 								registerFileIn[7],
 								registerFileIn[6],
 								registerFileIn[2],
@@ -2192,7 +2509,7 @@ module Execute (
 								registerFileIn[8],
 								registerFileIn[9]
 								);
-			       end
+//			       end
 			end
 		end
 	end
