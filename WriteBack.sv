@@ -215,6 +215,10 @@ module WriteBack (
 		end else begin
 			writeBackSuccessfulOut = 0;
 		end
+//	   if(currentRipIn == 64'h40194e) begin
+//	      $display("Terminating on buggy instruction!\n");
+//	      $finish;
+//	   end
 	end
 
 

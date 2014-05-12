@@ -1910,7 +1910,7 @@ module Execute (
 			        /* Jump near if carry. */
 			        isExecuteSuccessfulOut = 1;
 			        didJump = 1;
-                                if (rflagsIn[1] == 1) begin
+                                if (rflagsIn[0] == 1) begin
 			           /* verilator lint_off WIDTH */
 			           jumpTarget = currentRipIn + imm64In + instructionLengthIn;
 			           /* verilator lint_on WIDTH */
@@ -1921,7 +1921,7 @@ module Execute (
 			        /* Jump near if not carry. */
 			        isExecuteSuccessfulOut = 1;
 			        didJump = 1;
-                                if (rflagsIn[1] == 0) begin
+                                if (rflagsIn[0] == 0) begin
 			           /* verilator lint_off WIDTH */
 			           jumpTarget = currentRipIn + imm64In + instructionLengthIn;
 			           /* verilator lint_on WIDTH */
@@ -2169,6 +2169,11 @@ module Execute (
 		end
 		operand1ValValidOut = operand1ValValidIn;
 		operand2ValValidOut = operand2ValValidIn;
+	   if (currentRipIn == 64'h400bbb ||
+	       currentRipIn == 64'h400a7d || 
+	       currentRipIn == 64'h40099c) begin
+//	      $display("At: %x", currentRipIn);
+	   end
 	end
 
 	always @ (posedge clk) begin

@@ -44,7 +44,7 @@ module Fetch (
 			fetch_skip_in <= entry[5:0];
 			fetch_offset_in <= 0;
 			decode_buffer_in <= 0;
-		end else if (resteerFetchIn && fetch_state_in == fetch_idle) begin
+		end else if (resteerFetchIn && fetch_state_in == fetch_idle && !iCacheCoreBus.reqcyc) begin
 		   fetch_rip_in <=  entry & ~63;
 		   fetch_skip_in <= entry[5:0];
 		   fetch_offset_in <= 0;
