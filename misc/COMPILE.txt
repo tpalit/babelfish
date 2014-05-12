@@ -1,0 +1,5 @@
+Compile for babelfish(the project):
+	gcc -nostdlib -nostdinc  -Wl,-Ttext=0x8000e0 -o <out_file_name> <in_file_name.s>
+
+Compile for gdb:
+	gcc -g -nostdlib -nostdinc  -Wl,-Ttext=0x8000e0 -o <out_file_name> <in_file_name.s>
