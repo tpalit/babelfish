@@ -92,9 +92,6 @@ module AddressCalculation (
 			if (useRIPSrc1In == 1 && isMemoryAccessSrc1In == 1) begin
 				assert(dispLenIn > 0);
 				memoryAddressSrc1Out = currentRipIn + disp64In + { 32'b0 , instructionLengthIn };
-//			end else if (useRIPSrc1In == 1 && isMemoryAccessSrc1In == 0) begin
-//				assert(dispLenIn > 0);
-//				operand1ValOut = currentRipIn + disp64In + { 32'b0 , instructionLengthIn };
 			end else if (isMemoryAccessSrc1In == 1) begin
 				/* We are dealing with memory here. Need to calculate address. */
 
@@ -115,9 +112,6 @@ module AddressCalculation (
 			if (useRIPSrc2In == 1 && isMemoryAccessSrc2In == 1) begin
 				assert(dispLenIn > 0);
 				memoryAddressSrc2Out = currentRipIn + disp64In + { 32'b0 , instructionLengthIn };
-//			end else if (useRIPSrc2In == 1 && isMemoryAccessSrc2In == 0) begin
-//				assert(dispLenIn > 0);
-//				operand2ValOut = currentRipIn + disp64In + { 32'b0 , instructionLengthIn };
 			end else if (isMemoryAccessSrc2In == 1) begin
 				/* We are dealing with memory here. Need to calculate address. */
 
@@ -138,9 +132,6 @@ module AddressCalculation (
 			if (useRIPDestIn == 1 && isMemoryAccessDestIn == 1) begin
 				assert(dispLenIn > 0);
 				memoryAddressDestOut = currentRipIn + disp64In + { 32'b0 , instructionLengthIn };
-//			end else if (useRIPDestIn == 1 && isMemoryAccessDestIn == 0) begin
-//				assert(dispLenIn > 0);
-//				destRegValueOut = currentRipIn + disp64In + { 32'b0 , instructionLengthIn };
 			end else if (isMemoryAccessDestIn == 1) begin
 				/* We are dealing with memory here. Need to calculate address. */
 
@@ -166,15 +157,8 @@ module AddressCalculation (
 			instructionLengthOut = instructionLengthIn;
 			opcodeValidOut = opcodeValidIn;
 			opcodeOut = opcodeIn;
-
-//			if (useRIPSrc1In == 0 && isMemoryAccessSrc1In == 0) begin
-				operand1ValOut = operand1ValIn;
-//			end
-
-//			if (useRIPSrc2In == 0 && isMemoryAccessSrc2In == 0) begin
-				operand2ValOut = operand2ValIn;
-//			end
-
+			operand1ValOut = operand1ValIn;
+			operand2ValOut = operand2ValIn;
 			immLenOut = immLenIn;
 			dispLenOut = dispLenIn;
 			imm8Out = imm8In;
@@ -196,11 +180,7 @@ module AddressCalculation (
 			isMemoryAccessSrc1Out = isMemoryAccessSrc1In;
 			isMemoryAccessSrc2Out = isMemoryAccessSrc2In;
 			isMemoryAccessDestOut = isMemoryAccessDestIn;
-
-//			if (useRIPDestIn == 0 && isMemoryAccessDestIn == 0) begin
-				destRegValueOut = destRegValueIn;
-//			end
-
+			destRegValueOut = destRegValueIn;
 			useRIPSrc1Out = useRIPSrc1In;
 			useRIPSrc2Out = useRIPSrc2In;
 			useRIPDestOut = useRIPDestIn;

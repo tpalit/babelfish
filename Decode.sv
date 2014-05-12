@@ -36,10 +36,10 @@ module Decode (
 	          output [0:15]    disp16Out,
 	          output [0:31]    disp32Out,
 	          output [0:63]    disp64Out,
-               output [0:3]     destRegOut,
-               output           destRegValidOut,
-               output [0:3]     destRegSpecialOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
-               output           destRegSpecialValidOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
+                  output [0:3]     destRegOut,
+                  output           destRegValidOut,
+                  output [0:3]     destRegSpecialOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
+                  output           destRegSpecialValidOut, // TODO: Treat IMUL as special case with dest as RDX:RAX
 	          output           useRIPSrc1Out,
 	          output           useRIPSrc2Out,
 	          output           useRIPDestOut,
@@ -3018,7 +3018,7 @@ module Decode (
 		     sourceRegCode2Out = { rex_field[5], reg_field }; // read operand
 		     sourceRegCode1ValidOut = 1;
 		     sourceRegCode2ValidOut = 1;	       
-               //		destRegOut = { rex_field[7], rm_field }; // write operand
+//		     destRegOut = { rex_field[7], rm_field }; // write operand
 		     destRegValidOut = 0;
 		     immLenOut = 0;
 		     extendedOpcodeOut = 0;
@@ -3066,7 +3066,7 @@ module Decode (
 		     sourceRegCode2Out = { rex_field[7], rm_field }; // read operand
 		     sourceRegCode1ValidOut = 1;
 		     sourceRegCode2ValidOut = 1;	       		  
-               //		destRegOut = { rex_field[5], reg_field }; // write operand
+//		     destRegOut = { rex_field[5], reg_field }; // write operand
 		     destRegValidOut = 0;
 		     immLenOut = 0;
 		     extendedOpcodeOut = 0;
@@ -4398,14 +4398,6 @@ module Decode (
             end
          end // if (((opcode_end_index - opcode_start_index) == 1) && (exit_after_print == 0))
 	 
-
-	    /*
-          if((opcode_start_index == opcode_end_index) && (opcodeOut == 8'hC3 || opcodeOut == 8'hCB || opcodeOut == 8'hCF)) begin
-	     stallOnRetqOut = 1;
-          opcodeValidOut = 1;
-	     destRegOut = 4'b0100; // write operand RSP
-         end
-	     */
 
          if ((opcodeLengthOut == 2) && (opcodeOut == 8'h05) && (!toStallOrNotToStallSyscall(regInUseBitMapIn))) begin
             /* Special handling for syscall */

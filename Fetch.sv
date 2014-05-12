@@ -62,8 +62,6 @@ module Fetch (
 					fetch_skip_in <= fetch_skip_in - 8;
 				end else begin
 					decode_buffer_in[fetch_offset_in*8 +: 64] <= iCacheCoreBus.resp;
-//				   $write("bus.respcyc: %x, bus.resp: %x\n", iCacheCoreBus.respcyc, iCacheCoreBus.resp);
-//				   $write("decode_buffer: %x\n", decode_buffer_in);
 				   
 					fetch_offset_in <= fetch_offset_in + 8;
 				        if (isResteering) begin

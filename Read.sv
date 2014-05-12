@@ -1,3 +1,5 @@
+/* Copyright Tapti Palit, Amitav Paul, Sonam Mandal, 2014, All rights reserved. */
+
 module Read (
 	     input 	   canReadIn,
 	     input 	   stallIn,

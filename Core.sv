@@ -927,11 +927,7 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 		addressCalculationSuccessfulOut
 		);
 
-		/* BABELFISH DEBUG BEGIN */
-   Memory memory(regFile,
-		latch_rflags,
-		/* BABELFISH DEBUG END */
-
+   Memory memory(
 		/* verilator lint_off UNDRIVEN */
 		memoryCacheCoreInf.CorePorts,
 		/* verilator lint_on UNDRIVEN */
@@ -1235,31 +1231,6 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 	canAddressCalculate <= readSuccessfulOut;
 	canMemory <= addressCalculationSuccessfulOut;
 
-     /*
-     if (memStallOnMemoryOut == 1) begin
-        memStall <= 1;
-     end else begin
-        memStall <= 0;
-     end
-     */
-     /*
-	if (memStallOnMemoryOut == 0) begin
-	        decode_offset <= decode_offset + { 3'b0, bytes_decoded_this_cycle };
-	        if (bytes_decoded_this_cycle > 0) begin
-	           canRead <= 1;
-	        end else begin
-	           canRead <= 0;
-	        end
-		canAddressCalculate <= readSuccessfulOut;
-		canMemory <= addressCalculationSuccessfulOut;
-	end else begin
-	        decode_offset <= decode_offset;
-	        canRead <= 0;
-		canAddressCalculate <= 0;
-		canMemory <= 1;
-	end
-     */
-
 	canExecute <= memorySuccessfulOut;
 	canWriteBack <= executeSuccessfulOut;
 
@@ -1480,9 +1451,6 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 
 	idStallLatch <= idStallOut;
 
-//	regFile[wbDestRegOut] <= regFileOut[wbDestRegOut];
-//	regFile[wbDestRegSpecialOut] <= regFileOut[wbDestRegSpecialOut];
-
 	/* Handling Increment of RSP */
 	if ((writeBackSuccessfulOut == 1) && (wbOpcodeLengthOut == 1) && (wbOpcodeOut == 8'h58 ||
                                                         wbOpcodeOut == 8'h59 ||
@@ -1494,8 +1462,6 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
                                                         wbOpcodeOut == 8'h5F ||
 							(wbOpcodeOut == 8'h8F && wbHasExtendedOpcodeOut == 1 && wbExtendedOpcodeOut == 3'b000))) begin
 		regFile[4'b0100] <= regFileOut[4'b0100];
-//	   		$write("Newly written: Register: %d , Value: %x\n\n", 4, regFileOut[4]);
-
 	end else begin
 	   regFile[wbDestRegOut] <= regFileOut[wbDestRegOut];
 	   regFile[wbDestRegSpecialOut] <= regFileOut[wbDestRegSpecialOut];
@@ -1530,32 +1496,6 @@ module Core #(DATA_WIDTH = 64, TAG_WIDTH = 13) (
 				regInUseBitMap[wbSourceRegCode2Out] <= wbRegInUseBitMapOut[wbSourceRegCode2Out];	 
 			end
 		end
-
-		/* BABELFISH DEBUG BEGIN */
-//	   $write("%x, %x, %x \n", wbCurrentRipOut, regFile[0], regFile[1]);
-//		$write("%x, %x, %x \n", wbCurrentRipOut, regFile[0], regFile[1]);
-		//$write("%x, rax %x, rcx %x, rdx %x, rbx %x, rsp %x, rbp %x, rsi %x, rdi %x, r8 %x, r9 %x, r10 %x, r11 %x, r12 %x, r13 %x, r14 %x, r15 %x\n", wbCurrentRipOut, regFile[0], regFile[1], regFile[2], regFile[3], regFile[4], regFile[5], regFile[6], regFile[7], regFile[8], regFile[9], regFile[10], regFile[11], regFile[12], regFile[13], regFile[14], regFile[15]);
-/*
-		$display("RAX 0 = %x", regFile[0]);
-		$display("RCX 1 = %x", regFile[1]);
-		$display("RDX 2 = %x", regFile[2]);
-		$display("RBX 3 = %x", regFile[3]);
-		$display("RSP 4 = %x", regFile[4]);
-		$display("RBP 5 = %x", regFile[5]);
-		$display("RSI 6 = %x", regFile[6]);
-		$display("RDI 7 = %x", regFile[7]);
-		$display("R8  8 = %x", regFile[8]);
-		$display("R9  9 = %x", regFile[9]);
-		$display("R10 10 = %x", regFile[10]);
-		$display("R11 11 = %x", regFile[11]);
-		$display("R12 12 = %x", regFile[12]);
-		$display("R13 13 = %x", regFile[13]);
-		$display("R14 14 = %x", regFile[14]);
-		$display("R15 15 = %x", regFile[15]);
-		$display("RFLAGS = %x\n", latch_rflags);
-*/
-//		$write("Newly written: Register: %d , Value: %x\n\n", wbDestRegOut, regFileOut[wbDestRegOut]);
-		/* BABELFISH DEBUG END */
 	end
 
 	if (bytes_decoded_this_cycle > 0) begin

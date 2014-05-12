@@ -191,12 +191,6 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
     function void doDataCacheStuff();
         if ((rwArbiterCacheBus.reqcyc == 1) && (cache_state == cache_idle)) begin
             // Don't acknowledge here, wait for writeconfirm to go high -- for WRITE
-            /*     if (!isWrite) begin
-                     rwArbiterCacheBus.reqack <= 1;
-                   end else begin
-                     rwArbiterCacheBus.reqack <= 0;
-                   end
-             */
 	    writeEnableSet1 <= 0;
 	    writeEnableSet2 <= 0;
 	    writeEnableTagSet1 <= 0;
@@ -247,12 +241,6 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
                         arbiterCacheBus.reqtag <= rwArbiterCacheBus.reqtag;
                         cache_state <= cache_idle;
 
-//			for (int c=0; c<8; c=c+1) begin
-//				if (rwArbiterCacheBus.req == 64'h0000000000007c10 || rwArbiterCacheBus.req == 64'h0000000000008030 || rwArbiterCacheBus.req == 64'h0000000000008038) begin
-//					$write("\nReq addr: %x Set1: Req for %x, index: %x, tag: %x, Content at %d is: %x\n", rwArbiterCacheBus.req, reqAddrOffset, reqAddrIndex, reqAddrTag, c, readDataCacheLineSet1[c*WORDSIZE+:WORDSIZE]);
-//    				end
-//    			end
-
         		/* Set current entry as the mostRecentlyUsed entry. */
         		mostRecentlyUsedSet[reqAddrIndex] <= 0;
                     end else begin
@@ -295,12 +283,6 @@ module SetAssociativeDataCache #(WORDSIZE = 64, WIDTH = 64, LOGDEPTH = 9, LOGLIN
                         arbiterCacheBus.reqtag <= rwArbiterCacheBus.reqtag;
                         cache_state <= cache_idle;
 
-//			for (int c=0; c<8; c=c+1) begin
-//				if (rwArbiterCacheBus.req == 64'h0000000000007c10 || rwArbiterCacheBus.req == 64'h0000000000008030 || rwArbiterCacheBus.req == 64'h0000000000008038) begin
-//					$write("\nReq addr: %x Set2: Req for %x, index: %x, tag: %x, Content at %d is: %x\n", rwArbiterCacheBus.req, reqAddrOffset, reqAddrIndex, reqAddrTag, c, readDataCacheLineSet2[c*WORDSIZE+:WORDSIZE]);
-//    				end
-//    			end
-    
         		/* Set current entry as the mostRecentlyUsed entry. */
         		mostRecentlyUsedSet[reqAddrIndex] <= 1;
                     end else begin

@@ -121,14 +121,13 @@ module WriteBack (
 
 			if (isMemoryAccessDestIn == 0) begin
 				writeBackSuccessfulOut = 1;
-			//end else if (memoryWriteDone == 1) begin
 			end else if (memory_write_state == memory_write_active && dCacheCoreBus.reqack == 1) begin
 				writeBackSuccessfulOut = 1;
 			end else begin
 				writeBackSuccessfulOut = 0;
 			end
 
-			/* TODO: Check if this logic is correct. We need to exit out after we get a reqack. */
+			/* We need to exit out after we get a writeack. */
 			if (memory_write_state == memory_write_idle && (isMemoryAccessDestIn == 1)) begin
 				stallOnMemoryWrOut = 1;
 			end else if (memory_write_state == memory_write_active && dCacheCoreBus.reqack == 1) begin
@@ -215,10 +214,6 @@ module WriteBack (
 		end else begin
 			writeBackSuccessfulOut = 0;
 		end
-//	   if(currentRipIn == 64'h40194e) begin
-//	      $display("Terminating on buggy instruction!\n");
-//	      $finish;
-//	   end
 	end
 
 
@@ -265,11 +260,7 @@ module WriteBack (
 		  dCacheCoreBus.req <= memoryAddressDestIn;
 		  dCacheCoreBus.reqdata <= aluResultIn;
 
-			/* BABELFISH DEBUG BEGIN */
-//		  $display("Writing to location %x, value %x ...", dCacheCoreBus.req, dCacheCoreBus.reqdata);
-		  //dCacheCoreBus.reqtag <= { dCacheCoreBus.WRITE, dCacheCoreBus.MEMORY, dCacheCoreBus.DATA, 7'b0 };
-		  dCacheCoreBus.reqtag <= { dCacheCoreBus.WRITE, dCacheCoreBus.MEMORY, opcodeIn };
-			/* BABELFISH DEBUG END */
+		  dCacheCoreBus.reqtag <= { dCacheCoreBus.WRITE, dCacheCoreBus.MEMORY, dCacheCoreBus.DATA, 7'b0 };
 
 		  memory_write_state <= memory_write_active;
 		  memoryWriteDone <= 0;//TODO - What's this signal for?
